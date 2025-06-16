@@ -144,10 +144,10 @@ namespace WindowsSipPhone
                 return false;
             }            try
             {
-                StatusChanged?.Invoke(this, "🔄 Starting SIP registration (using working legacy method)...");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Registration CallID: {_callId}, FromTag: {_fromTag}");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Server: {_serverHost}:{_serverPort}, User: {_username}");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Registration Expires: {expires} seconds");
+                StatusChanged?.Invoke(this, "🔄 Starting SIP registration...");
+                Console.WriteLine($"[REGISTER DEBUG] Registration CallID: {_callId}, FromTag: {_fromTag}");
+                Console.WriteLine($"[REGISTER DEBUG] Server: {_serverHost}:{_serverPort}, User: {_username}");
+                Console.WriteLine($"[REGISTER DEBUG] Registration Expires: {expires} seconds");
                 
                 // Store expires value for refresh timer
                 _registrationExpiry = expires;
@@ -158,7 +158,7 @@ namespace WindowsSipPhone
                 // Send initial REGISTER request using working legacy method
                 var registerMessage = CreateRegisterMessage(expires);
                 StatusChanged?.Invoke(this, "📤 Sending REGISTER request...");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: REGISTER message length: {registerMessage.Length} bytes");
+                Console.WriteLine($"[REGISTER DEBUG] REGISTER message length: {registerMessage.Length} bytes");
                 MessageReceived?.Invoke(this, $"OUTGOING (REGISTER):\n{registerMessage}");
 
                 var messageBytes = Encoding.UTF8.GetBytes(registerMessage);
@@ -181,9 +181,9 @@ namespace WindowsSipPhone
                 StatusChanged?.Invoke(this, $"Registration failed: {ex.Message}");
                 return false;
             }
-        }public async Task<bool> MakeCallAsync(string targetNumber)
+        }        public async Task<bool> MakeCallAsync(string targetNumber)
         {
-            StatusChanged?.Invoke(this, $"🔍 DEBUG: MakeCallAsync called - _isConnected: {_isConnected}, _isRegistered: {_isRegistered}");
+            Console.WriteLine($"[CALL DEBUG] MakeCallAsync called - _isConnected: {_isConnected}, _isRegistered: {_isRegistered}");
             
             if (!_isConnected || _stream == null)
             {
@@ -193,11 +193,11 @@ namespace WindowsSipPhone
 
             if (!_isRegistered)
             {
-                StatusChanged?.Invoke(this, "🔍 DEBUG: Not registered - cannot make call");
+                Console.WriteLine("[CALL DEBUG] Not registered - cannot make call");
                 StatusChanged?.Invoke(this, "Not registered - cannot make call");
                 return false;
             }            try
-            {                StatusChanged?.Invoke(this, $"🔍 DEBUG: Starting call to {targetNumber}...");
+            {                Console.WriteLine($"[CALL DEBUG] Starting call to {targetNumber}...");
                     // Reset hold state for new call
                 _isCallOnHold = false;
                 _isResumeInProgress = false; // Reset resume flag for new call
@@ -281,14 +281,13 @@ namespace WindowsSipPhone
                 StatusChanged?.Invoke(this, "🔄 Starting hangup process...");
                 
                 // Stop RTP session immediately to prevent any audio restart during hangup
-                StatusChanged?.Invoke(this, "🛑 Stopping RTP session...");
-                _audioManager?.StopRtpSession();
+                StatusChanged?.Invoke(this, "🛑 Stopping RTP session...");                _audioManager?.StopRtpSession();
                 
                 // Find the active dialog
                 var dialog = _dialogManager.FindDialogByCallId(_activeCallId);                if (dialog != null)
                 {
                     StatusChanged?.Invoke(this, $"🔄 Terminating dialog: {dialog.CallId}");
-                    StatusChanged?.Invoke(this, $"🔍 DEBUG: Dialog state - RemoteTarget: '{dialog.RemoteTarget}', RemoteTag: '{dialog.RemoteTag}', RemoteUri: '{dialog.RemoteUri}'");
+                    Console.WriteLine($"[DIALOG DEBUG] Dialog state - RemoteTarget: '{dialog.RemoteTarget}', RemoteTag: '{dialog.RemoteTag}', RemoteUri: '{dialog.RemoteUri}'");
                     
                     // Create BYE message using message factory
                     var byeMessage = _messageFactory.CreateByeRequest(dialog, dialog.GetNextLocalSequenceNumber());
@@ -826,30 +825,30 @@ namespace WindowsSipPhone
                     dialog = dialogByCallId;
                 }
             }
-            Console.WriteLine($"[DIALOG DEBUG] ==========================================");// Handle registration responses with legacy method (working version)
+            Console.WriteLine($"[DIALOG DEBUG] ==========================================");            // Handle registration responses with legacy method (working version)
             if (cseqHeader.ToUpper().Contains("REGISTER"))
             {
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Processing REGISTER response - Status: {statusCode} {reasonPhrase}");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: CSeq Header: '{cseqHeader}'");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Current _isRegistered: {_isRegistered}");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: _registrationCompletion null? {_registrationCompletion == null}");
+                Console.WriteLine($"[REGISTER DEBUG] Processing REGISTER response - Status: {statusCode} {reasonPhrase}");
+                Console.WriteLine($"[REGISTER DEBUG] CSeq Header: '{cseqHeader}'");
+                Console.WriteLine($"[REGISTER DEBUG] Current _isRegistered: {_isRegistered}");
+                Console.WriteLine($"[REGISTER DEBUG] _registrationCompletion null? {_registrationCompletion == null}");
                 
                 switch (statusCode)
                 {
                     case "200":
-                        StatusChanged?.Invoke(this, "✅ Registration successful - Setting _isRegistered = true");
+                        StatusChanged?.Invoke(this, "✅ Registration successful");
                         _isRegistered = true;
-                        StatusChanged?.Invoke(this, $"🔍 DEBUG: After setting _isRegistered: {_isRegistered}");
+                        Console.WriteLine($"[REGISTER DEBUG] After setting _isRegistered: {_isRegistered}");
                         
                         if (_registrationCompletion != null)
                         {
-                            StatusChanged?.Invoke(this, "🔍 DEBUG: Calling _registrationCompletion.SetResult(true)");
+                            Console.WriteLine("[REGISTER DEBUG] Calling _registrationCompletion.SetResult(true)");
                             _registrationCompletion.SetResult(true);
-                            StatusChanged?.Invoke(this, "🔍 DEBUG: _registrationCompletion.SetResult(true) completed");
+                            Console.WriteLine("[REGISTER DEBUG] _registrationCompletion.SetResult(true) completed");
                         }
                         else
                         {
-                            StatusChanged?.Invoke(this, "⚠️ DEBUG: _registrationCompletion is null - cannot complete registration task");
+                            Console.WriteLine("[REGISTER DEBUG] _registrationCompletion is null - cannot complete registration task");
                         }
                         break;
                         
@@ -1706,12 +1705,11 @@ namespace WindowsSipPhone
                 }
             }
             return string.Empty;
-        }private async Task HandleAuthenticationChallenge(string challengeMessage)
-        {
+        }private async Task HandleAuthenticationChallenge(string challengeMessage)        {
             try
             {
-                StatusChanged?.Invoke(this, "🔍 DEBUG: HandleAuthenticationChallenge called");
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Challenge message length: {challengeMessage.Length} bytes");
+                Console.WriteLine("[AUTH DEBUG] HandleAuthenticationChallenge called");
+                Console.WriteLine($"[AUTH DEBUG] Challenge message length: {challengeMessage.Length} bytes");
                 StatusChanged?.Invoke(this, "🔍 Parsing authentication challenge...");
                 
                 // Extract WWW-Authenticate or Proxy-Authenticate header
@@ -1722,7 +1720,7 @@ namespace WindowsSipPhone
                     return;
                 }
 
-                StatusChanged?.Invoke(this, $"🔍 DEBUG: Auth header: {authHeader}");
+                Console.WriteLine($"[AUTH DEBUG] Auth header: {authHeader}");
 
                 // Parse authentication parameters
                 var authParams = ParseAuthHeader(authHeader);
@@ -2842,19 +2840,19 @@ namespace WindowsSipPhone
                 var fromHeader = ExtractHeader(message, "From:");
                 var toHeader = ExtractHeader(message, "To:");
                 var contactHeader = ExtractHeader(message, "Contact:");
-                
-                // Extract local tag from From header (this is our tag)
+                  // Extract local tag from From header (this is our tag)
                 var localTag = ExtractTag(fromHeader);
-                  if (!string.IsNullOrEmpty(callId) && !string.IsNullOrEmpty(localTag))
+                
+                if (!string.IsNullOrEmpty(callId) && !string.IsNullOrEmpty(localTag))
                 {
-                    StatusChanged?.Invoke(this, $"🔍 DEBUG: Updating dialog from response - CallId: {callId}, LocalTag: {localTag}, StatusCode: {statusCode}");
+                    Console.WriteLine($"[DIALOG DEBUG] Updating dialog from response - CallId: {callId}, LocalTag: {localTag}, StatusCode: {statusCode}");
                     _dialogManager.UpdateDialogFromResponse(callId, localTag, statusCode, toHeader, contactHeader);
                     
                     // Debug: Check dialog state after update
                     var updatedDialog = _dialogManager.FindDialog(callId, localTag);
                     if (updatedDialog != null)
                     {
-                        StatusChanged?.Invoke(this, $"🔍 DEBUG: Dialog after update - RemoteTarget: '{updatedDialog.RemoteTarget}', RemoteTag: '{updatedDialog.RemoteTag}', RemoteUri: '{updatedDialog.RemoteUri}'");
+                        Console.WriteLine($"[DIALOG DEBUG] Dialog after update - RemoteTarget: '{updatedDialog.RemoteTarget}', RemoteTag: '{updatedDialog.RemoteTag}', RemoteUri: '{updatedDialog.RemoteUri}'");
                     }
                 }
             }

@@ -4,8 +4,8 @@
 This document tracks all known bugs, issues, and defects in the SIP Phone application for systematic resolution.
 
 **Last Updated**: June 16, 2025  
-**Total Bugs**: 20  
-**Critical**: 4 | **High**: 5 | **Medium**: 4 | **Low**: 5 | **Fixed**: 2
+**Total Bugs**: 21  
+**Critical**: 4 | **High**: 5 | **Medium**: 5 | **Low**: 5 | **Fixed**: 2
 
 ---
 
@@ -277,6 +277,30 @@ In the call history list, the caller's name is displayed twice instead of follow
 - Call history data binding logic
 
 **Impact**: Redundant information display, missing phone number context
+
+---
+
+### **BUG-021**: Active Call Display Shows Full SIP Header Instead of Clean Name
+**Priority**: MEDIUM | **Status**: NEW | **Discovered**: June 16, 2025
+
+**Description**:
+During an active call, the dialer shows the full SIP header format instead of displaying a clean caller name.
+
+**Current Behavior**:
+- Shows: `Connected to "Alice" <sip:101@192.168.1.180>`
+
+**Required Behavior**:
+- Should show: `Connected to Alice` (just the display name)
+- Or if no display name: `Connected to 101` (just the number)
+
+**Root Cause**:
+The fix for BUG-019 modified `ExtractCallerInfo()` to preserve full SIP header format, which now affects active call display in DialerPage.
+
+**Files Involved**:
+- `Pages/DialerPage.xaml.cs` (CallStatusText property, line 284)
+- Caller info parsing logic
+
+**Impact**: Unprofessional UI display showing technical SIP formatting to end users
 
 ---
 

@@ -3,9 +3,9 @@
 ## 📊 **Bug Overview**
 This document tracks all known bugs, issues, and defects in the SIP Phone application for systematic resolution.
 
-**Last Updated**: June 14, 2025  
+**Last Updated**: June 16, 2025  
 **Total Bugs**: 17  
-**Critical**: 4 | **High**: 5 | **Medium**: 3 | **Low**: 5
+**Critical**: 3 | **High**: 5 | **Medium**: 3 | **Low**: 5 | **Fixed**: 2
 
 ---
 
@@ -61,7 +61,7 @@ The application shows "registered" status even after registration has been lost 
 ---
 
 ### **BUG-013**: Incoming Call Not Properly Accepted
-**Priority**: CRITICAL | **Status**: NEW | **Discovered**: June 14, 2025
+**Priority**: CRITICAL | **Status**: ✅ FIXED | **Discovered**: June 14, 2025 | **Fixed**: June 16, 2025
 
 **Description**:
 When an incoming call popup appears and user clicks Accept, the call doesn't actually get accepted. No call status indication.
@@ -72,7 +72,14 @@ When an incoming call popup appears and user clicks Accept, the call doesn't act
 - No visible call status or connection established
 - Call appears to be ignored/rejected
 
-**Impact**: Cannot answer incoming calls - core functionality broken
+**Resolution**:
+- Fixed data binding issues in IncomingCallWindow.xaml
+- Restored working caller name and number display from git commit 902c0bf
+- Updated button styling to use text labels instead of circular icons
+- Direct TextBlock assignment ensures caller information displays properly
+- Caller name and number now show correctly during incoming calls
+
+**Impact**: ✅ **RESOLVED** - Can now properly answer incoming calls with working caller identification
 
 ---
 
@@ -184,7 +191,7 @@ System tray functionality is implemented but may have edge cases with minimize/r
 
 ---
 
-### **BUG-009**: Build Warnings Were Present (Fixed)
+### **BUG-009**: Build Warnings Were Present
 **Priority**: MEDIUM | **Status**: ✅ FIXED | **Assigned**: -
 
 **Description**:
@@ -194,6 +201,24 @@ Project had CS0019 errors and CA1416 warnings that prevented clean builds.
 - Fixed null-coalescing operator usage in `DialerPage.xaml.cs`
 - Added `.editorconfig` to suppress Windows platform warnings
 - Build now succeeds with 0 errors, 0 warnings
+
+---
+
+### **BUG-013**: Incoming Call UI and Acceptance
+**Priority**: CRITICAL | **Status**: ✅ FIXED | **Fixed**: June 16, 2025
+
+**Description**:
+Incoming call window had display and functionality issues including caller info not showing and UI problems.
+
+**Resolution**:
+- Fixed XAML data binding issues for caller name and number display
+- Restored working implementation from git commit 902c0bf
+- Updated button styling to use clear "Answer"/"Decline" text labels
+- Implemented direct TextBlock assignment for reliable display
+- Fixed XML syntax errors in multiple XAML files
+- Added missing Mute_Click method to prevent build errors
+
+**Impact**: ✅ **RESOLVED** - Incoming calls now display caller information correctly with functional Accept/Decline buttons
 
 ---
 

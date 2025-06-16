@@ -5,7 +5,7 @@ This document tracks all known bugs, issues, and defects in the SIP Phone applic
 
 **Last Updated**: June 16, 2025  
 **Total Bugs**: 21  
-**Critical**: 4 | **High**: 5 | **Medium**: 5 | **Low**: 5 | **Fixed**: 2
+**Critical**: 4 | **High**: 5 | **Medium**: 4 | **Low**: 5 | **Fixed**: 3
 
 ---
 
@@ -281,26 +281,24 @@ In the call history list, the caller's name is displayed twice instead of follow
 ---
 
 ### **BUG-021**: Active Call Display Shows Full SIP Header Instead of Clean Name
-**Priority**: MEDIUM | **Status**: NEW | **Discovered**: June 16, 2025
+**Priority**: MEDIUM | **Status**: ✅ FIXED | **Discovered**: June 16, 2025 | **Fixed**: June 16, 2025
 
 **Description**:
-During an active call, the dialer shows the full SIP header format instead of displaying a clean caller name.
-
-**Current Behavior**:
-- Shows: `Connected to "Alice" <sip:101@192.168.1.180>`
-
-**Required Behavior**:
-- Should show: `Connected to Alice` (just the display name)
-- Or if no display name: `Connected to 101` (just the number)
+During an active call, the dialer showed the full SIP header format instead of displaying a clean caller name.
 
 **Root Cause**:
-The fix for BUG-019 modified `ExtractCallerInfo()` to preserve full SIP header format, which now affects active call display in DialerPage.
+The fix for BUG-019 modified `ExtractCallerInfo()` to preserve full SIP header format, which affected active call display in DialerPage when caller info was passed to `StartCall()`.
+
+**Resolution**:
+- Added `ExtractDisplayName()` method to DialerPage for parsing caller info into clean UI format
+- Added `ExtractNumberFromUri()` helper method for SIP URI parsing
+- Modified `StartCall()` method to use clean display name instead of raw caller info
+- Active calls now show professional format: "Connected to Alice" instead of technical SIP headers
 
 **Files Involved**:
-- `Pages/DialerPage.xaml.cs` (CallStatusText property, line 284)
-- Caller info parsing logic
+- `Pages/DialerPage.xaml.cs` (new helper methods and StartCall modification)
 
-**Impact**: Unprofessional UI display showing technical SIP formatting to end users
+**Impact**: ✅ **RESOLVED** - Active call display now shows clean, professional caller information
 
 ---
 

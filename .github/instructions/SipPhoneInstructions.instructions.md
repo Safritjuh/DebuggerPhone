@@ -52,6 +52,7 @@ applyTo: '**'
 
 ### General Git Guidelines
 - Always work on separate branches - never commit directly to main
+- **NEVER push to main branch** - if unclear about the workflow, ask for instructions
 - Use descriptive commit messages that explain what was changed and why
 - Push branches to origin for backup and collaboration
 - Clean up merged branches after successful integration

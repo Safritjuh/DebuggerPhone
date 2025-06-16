@@ -4,8 +4,8 @@
 This document tracks all known bugs, issues, and defects in the SIP Phone application for systematic resolution.
 
 **Last Updated**: June 16, 2025  
-**Total Bugs**: 18  
-**Critical**: 4 | **High**: 5 | **Medium**: 3 | **Low**: 5 | **Fixed**: 1
+**Total Bugs**: 20  
+**Critical**: 4 | **High**: 5 | **Medium**: 5 | **Low**: 5 | **Fixed**: 1
 
 ---
 
@@ -233,6 +233,50 @@ Project had CS0019 errors and CA1416 warnings that prevented clean builds.
 - Fixed null-coalescing operator usage in `DialerPage.xaml.cs`
 - Added `.editorconfig` to suppress Windows platform warnings
 - Build now succeeds with 0 errors, 0 warnings
+
+---
+
+### **BUG-019**: Duplicate Name Display in Incoming Call Window
+**Priority**: MEDIUM | **Status**: NEW | **Discovered**: June 16, 2025
+
+**Description**:
+In the incoming call window, the caller's name is displayed twice instead of following the proper format.
+
+**Current Behavior**:
+- Line 1: Shows caller name
+- Line 2: Shows caller name again
+
+**Required Behavior**:
+- Line 1: Show caller name, or if name not available, show the number
+- Line 2: Always show the number
+
+**Files Involved**:
+- `IncomingCallWindow.xaml` (caller info display)
+- `IncomingCallWindow.xaml.cs` (data binding logic)
+
+**Impact**: Confusing UI that doesn't provide complete caller information
+
+---
+
+### **BUG-020**: Duplicate Name Display in Call History List
+**Priority**: MEDIUM | **Status**: NEW | **Discovered**: June 16, 2025
+
+**Description**:
+In the call history list, the caller's name is displayed twice instead of following the proper format.
+
+**Current Behavior**:
+- Line 1: Shows caller name
+- Line 2: Shows caller name again
+
+**Required Behavior**:
+- Line 1: Show caller name, or if name not available, show the number
+- Line 2: Always show the number
+
+**Files Involved**:
+- Call history UI components
+- Call history data binding logic
+
+**Impact**: Redundant information display, missing phone number context
 
 ---
 

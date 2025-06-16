@@ -1,0 +1,174 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: 'Test'
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+        
+    - name: Restore dependencies
+      run: dotnet restore WindowsSipPhone.Tests/WindowsSipPhone.Tests.csproj
+      
+    - name: Run unit tests
+      run: dotnet test WindowsSipPhone.Tests/WindowsSipPhone.Tests.csproj --no-restore --verbosity normal --filter "Category!=Integration" --collect:"XPlat Code Coverage"
+      
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  integration-test:
+    runs-on: ubuntu-latest
+    name: 'Integration Tests'
+    needs: test
+    
+    services:
+      asterisk:
+        image: andrius/asterisk:latest
+        ports:
+          - 5060:5060/udp
+          - 5060:5060/tcp
+          - 5038:5038/tcp
+        env:
+          ASTERISK_MANAGER_USER: admin
+          ASTERISK_MANAGER_PASSWORD: amp111
+        options: >-
+          --health-cmd "asterisk -r -x 'sip show peers' | grep -q 'Name/username' || true"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+        
+    - name: Wait for Asterisk to be ready
+      run: |
+        echo "Waiting for Asterisk SIP server to be ready..."
+        # Wait for TCP port
+        timeout 60 bash -c 'until nc -z localhost 5060; do echo "Waiting for TCP port 5060..."; sleep 2; done'
+        echo "TCP port 5060 is ready"
+        
+        # Wait for UDP port (more comprehensive check)
+        timeout 60 bash -c 'until echo "test" | nc -u -w1 localhost 5060 2>/dev/null; do echo "Waiting for UDP port 5060..."; sleep 2; done'
+        echo "UDP port 5060 is ready"
+        
+        # Additional wait for Asterisk to fully initialize
+        echo "Waiting additional 15 seconds for Asterisk to fully initialize..."
+        sleep 15
+        
+        # Verify both TCP and UDP are responding
+        echo "Final verification of Asterisk readiness..."
+        nc -z localhost 5060 && echo "TCP ready" || echo "TCP not ready"
+        echo "test" | nc -u -w1 localhost 5060 && echo "UDP ready" || echo "UDP ready (timeout expected)"
+        
+    - name: Restore dependencies
+      run: dotnet restore WindowsSipPhone.Tests/WindowsSipPhone.Tests.csproj
+      
+    - name: Run integration tests
+      run: dotnet test WindowsSipPhone.Tests/WindowsSipPhone.Tests.csproj --no-restore --verbosity normal --filter "Category=Integration"
+      
+    - name: Run call recording tests
+      run: dotnet test WindowsSipPhone.Tests/WindowsSipPhone.Tests.csproj --no-restore --verbosity normal --filter "Category=CallRecording"
+      
+    - name: Upload audio test artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: audio-test-artifacts
+        path: /tmp/audio-test-artifacts/
+        retention-days: 30
+
+  build-windows:
+    runs-on: windows-latest
+    name: 'Build Windows App'
+    needs: [test, integration-test]
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+        
+    - name: Restore dependencies
+      run: dotnet restore WindowsSipPhone.csproj
+      
+    - name: Build application
+      run: dotnet build WindowsSipPhone.csproj --configuration Release --no-restore
+      
+    - name: Publish application
+      run: dotnet publish WindowsSipPhone.csproj --configuration Release --runtime win-x64 --self-contained true --output ./publish
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-sip-phone
+        path: ./publish
+
+  release:
+    runs-on: ubuntu-latest
+    name: 'Create Release'
+    needs: [test, integration-test, build-windows]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-sip-phone
+        path: ./artifacts
+        
+    - name: Create release with semantic-release
+      uses: cycjimmy/semantic-release-action@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,20 @@
+# Type of change
+# feat: A new feature
+# fix: A bug fix
+# docs: Documentation only changes
+# style: Changes that do not affect the meaning of the code
+# refactor: A code change that neither fixes a bug nor adds a feature
+# perf: A code change that improves performance
+# test: Adding missing tests or correcting existing tests
+# build: Changes that affect the build system or external dependencies
+# ci: Changes to our CI configuration files and scripts
+
+# Description
+# Please include a summary of the change and which issue is fixed.
+# Please also include relevant motivation and context.
+
+# Breaking Changes
+# List any breaking changes here
+
+# Related Issues
+# Fixes #(issue number)

@@ -1,0 +1,108 @@
+<UserControl x:Class="WindowsSipPhone.Controls.SipServerHealthControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Border Style="{StaticResource ModernCardStyle}" Background="{StaticResource SurfaceBrush}" Margin="0,8">
+        <StackPanel>
+            <TextBlock Text="📡 SIP Server Health" 
+                      Style="{StaticResource SubheaderTextStyle}"
+                      Margin="0,0,0,16"/>
+            
+            <!-- Server Status -->
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock x:Name="ServerAddressText"
+                              Text="Server: Not configured"
+                              FontWeight="Medium"
+                              Margin="0,0,0,4"/>
+                    <TextBlock x:Name="ConnectionStatusText"
+                              Text="⏸️ Not connected"
+                              Foreground="{StaticResource TextSecondaryBrush}"
+                              FontSize="12"/>
+                </StackPanel>
+                
+                <Button x:Name="TestConnectionButton"
+                       Grid.Column="1"
+                       Content="🔄 Test"
+                       Style="{StaticResource SecondaryButtonStyle}"
+                       Click="TestConnectionButton_Click"/>
+            </Grid>
+            
+            <!-- Registration Status -->
+            <Border Background="{StaticResource DividerBrush}" 
+                   CornerRadius="4" 
+                   Padding="12"
+                   Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Registration Status" 
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  FontSize="12"
+                                  FontWeight="Medium"
+                                  Margin="0,0,0,4"/>
+                        <TextBlock x:Name="RegistrationStatusText"
+                                  Text="❌ Not registered"
+                                  FontSize="14"
+                                  FontWeight="Medium"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Last Response" 
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  FontSize="12"
+                                  FontWeight="Medium"
+                                  Margin="0,0,0,4"/>
+                        <TextBlock x:Name="LastResponseText"
+                                  Text="None"
+                                  FontSize="14"
+                                  FontWeight="Medium"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Auto Reconnection -->
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Auto Reconnection" 
+                              FontWeight="Medium"
+                              Margin="0,0,0,4"/>
+                    <TextBlock x:Name="ReconnectionStatusText"
+                              Text="⏸️ Disabled"
+                              Foreground="{StaticResource TextSecondaryBrush}"
+                              FontSize="12"/>
+                </StackPanel>
+                
+                <ToggleButton x:Name="AutoReconnectToggle"
+                             Grid.Column="1"
+                             Style="{StaticResource ModernToggleButtonStyle}"
+                             Checked="AutoReconnectToggle_Checked"
+                             Unchecked="AutoReconnectToggle_Unchecked"/>
+            </Grid>
+            
+            <!-- Error Messages -->
+            <TextBlock x:Name="ErrorMessageText"
+                      Text=""
+                      Foreground="{StaticResource ErrorBrush}"
+                      FontSize="12"
+                      FontWeight="Medium"
+                      Visibility="Collapsed"
+                      TextWrapping="Wrap"
+                      Margin="0,8,0,0"/>
+        </StackPanel>
+    </Border>
+</UserControl>

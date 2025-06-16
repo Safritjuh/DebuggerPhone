@@ -1,0 +1,147 @@
+<UserControl x:Class="WindowsSipPhone.Controls.AudioQualityControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Border Background="#F8F9FA" CornerRadius="8" Padding="15" Margin="0,8">
+        <StackPanel>
+            <TextBlock Text="🎵 Audio Quality Settings" 
+                      FontSize="16" 
+                      FontWeight="Bold" 
+                      Foreground="#2C3E50"
+                      Margin="0,0,0,16"/>
+            
+            <!-- Quality Presets -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                          Text="Quality Preset:"
+                          Foreground="#2C3E50"
+                          FontSize="14"
+                          FontWeight="Medium"
+                          VerticalAlignment="Center"
+                          Margin="0,0,12,0"/>
+                
+                <ComboBox x:Name="QualityPresetsComboBox"
+                         Grid.Column="1"
+                         Style="{StaticResource SettingsComboBoxStyle}"
+                         SelectionChanged="QualityPresetsComboBox_SelectionChanged">
+                    <ComboBoxItem Content="🔋 Battery Saver" Tag="Battery"/>
+                    <ComboBoxItem Content="⚖️ Balanced" Tag="Balanced" IsSelected="True"/>
+                    <ComboBoxItem Content="⚡ High Performance" Tag="High"/>
+                    <ComboBoxItem Content="🎙️ Studio Quality" Tag="Studio"/>
+                </ComboBox>
+            </Grid>
+            
+            <!-- Quality Details -->
+            <Border Background="#ECF0F1" 
+                   CornerRadius="4" 
+                   Padding="12"
+                   Margin="0,0,0,16">
+                <StackPanel x:Name="QualityDetailsPanel">
+                    <TextBlock x:Name="QualityDescriptionText"
+                              Text="Balanced quality with moderate CPU usage"
+                              Foreground="#7F8C8D"
+                              FontSize="12"
+                              Margin="0,0,0,8"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Sample Rate:" 
+                                      Foreground="#7F8C8D"
+                                      FontSize="11"
+                                      FontWeight="Medium"/>
+                            <TextBlock x:Name="SampleRateText"
+                                      Text="16 kHz"
+                                      Foreground="#2C3E50"
+                                      FontSize="11"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Bit Rate:" 
+                                      Foreground="#7F8C8D"
+                                      FontSize="11"
+                                      FontWeight="Medium"/>
+                            <TextBlock x:Name="BitRateText"
+                                      Text="64 kbps"
+                                      Foreground="#2C3E50"
+                                      FontSize="11"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
+            <!-- Advanced Audio Settings -->
+            <TextBlock Text="🔧 Advanced Settings" 
+                      Foreground="#2C3E50"
+                      FontSize="14"
+                      FontWeight="Bold"
+                      Margin="0,0,0,12"/>
+              <!-- Echo Cancellation -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <CheckBox x:Name="EchoCancellationCheckBox"
+                         IsChecked="True"
+                         Checked="EchoCancellationCheckBox_CheckedChanged"
+                         Unchecked="EchoCancellationCheckBox_CheckedChanged"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Echo Cancellation" 
+                              Foreground="#2C3E50"
+                              FontSize="12"
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Reduces audio feedback and echo"
+                              Foreground="#7F8C8D"
+                              FontSize="10"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Noise Reduction -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <CheckBox x:Name="NoiseReductionCheckBox"
+                         IsChecked="True"
+                         Checked="NoiseReductionCheckBox_CheckedChanged"
+                         Unchecked="NoiseReductionCheckBox_CheckedChanged"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Noise Reduction" 
+                              Foreground="#2C3E50"
+                              FontSize="12"
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Filters background noise and static"
+                              Foreground="#7F8C8D"
+                              FontSize="10"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Voice Activation -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <CheckBox x:Name="VoiceActivationCheckBox"
+                         IsChecked="False"
+                         Checked="VoiceActivationCheckBox_CheckedChanged"
+                         Unchecked="VoiceActivationCheckBox_CheckedChanged"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Voice Activation (VAD)" 
+                              Foreground="#2C3E50"
+                              FontSize="12"
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Voice Activation (VAD)" 
+                              Foreground="#7F8C8D"
+                              FontSize="10"/>
+                </StackPanel>
+            </StackPanel>
+            
+        </StackPanel>
+    </Border>
+</UserControl>

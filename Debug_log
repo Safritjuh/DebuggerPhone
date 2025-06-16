@@ -1,0 +1,1534 @@
+Application starting up...
+Application startup completed.
+[CallHistory] ? Database initialized: C:\Users\marcb\AppData\Roaming\WindowsSipPhone\CallHistory.db
+[CallHistory] ? Retrieved 37 calls
+[CallHistory] Loaded 37 calls from database
+[AUDIO SETTINGS] Loaded saved audio configuration
+SIP Phone Service initialized
+[SYSTEM TRAY] System tray initialized successfully
+[KEYBOARD] ? Keyboard shortcuts initialized successfully
+[RTPAUDIO] Enhanced NAudio RtpAudioManager - Device conflict resolution enabled for Windows 10+
+[RTPAUDIO] Initializing audio devices for Windows 10+...
+[RTPAUDIO] Available WaveIn devices: 3
+[RTPAUDIO] Device 0: Microfoon (Logitech PRO X Wirel (Channels: 2)
+[RTPAUDIO] Device 1: Headset Microphone (Yealink WH6 (Channels: 2)
+[RTPAUDIO] Device 2: Bureaubladmicrofoon (2- Microso (Channels: 2)
+[RTPAUDIO] Available WaveOut devices: 4
+[RTPAUDIO] Device 0: Luidsprekers (Logitech PRO X Wi
+[RTPAUDIO] Device 1: PL2760Q (NVIDIA High Definition
+[RTPAUDIO] Device 2: Headset Earphone (Yealink WH62)
+[RTPAUDIO] Device 3: PL2730Q (NVIDIA High Definition
+[RTPAUDIO] ? Audio device initialization complete
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'c3f68dca78aa4c8f86810aeee1f5d6f0'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.180>;tag=1c42939d'
+[DIALOG DEBUG] - To Header: '<sip:103@192.168.1.180>;tag=bb77805e3bf3979c'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? False
+[DIALOG DEBUG] ==========================================
+[DIGEST DEBUG] Username: 103
+[DIGEST DEBUG] Password: 274104
+[DIGEST DEBUG] Realm: ipoffice
+[DIGEST DEBUG] Nonce: df23db8066a48084f4f0
+[DIGEST DEBUG] Method: REGISTER
+[DIGEST DEBUG] URI: sip:192.168.1.180:5060
+[DIGEST DEBUG] QOP: '' (empty=True)
+[DIGEST DEBUG] HA1 Input: 103:ipoffice:274104
+[DIGEST DEBUG] HA1: 40402188acc51f749762ef10c6a294be
+[DIGEST DEBUG] HA2 Input: REGISTER:sip:192.168.1.180:5060
+[DIGEST DEBUG] HA2: 46569092d4b720171fcdcdbf900d1838
+[DIGEST DEBUG] Using NO qop calculation
+[DIGEST DEBUG] Response Input: 40402188acc51f749762ef10c6a294be:df23db8066a48084f4f0:46569092d4b720171fcdcdbf900d1838
+[DIGEST DEBUG] Final Response: 2712c201b385515fdc51f80373511219
+[DIGEST DEBUG] Calculated Response: 2712c201b385515fdc51f80373511219
+[DIGEST DEBUG] Authorization Header: Digest username="103", realm="ipoffice", nonce="df23db8066a48084f4f0", uri="sip:192.168.1.180:5060", algorithm=MD5, response="2712c201b385515fdc51f80373511219"
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'c3f68dca78aa4c8f86810aeee1f5d6f0'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.180>;tag=1c42939d'
+[DIALOG DEBUG] - To Header: '<sip:103@192.168.1.180>;tag=1f7785bda5d8cfde'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? False
+[DIALOG DEBUG] ==========================================
+[CallHistory] ? Added call: 101 (Outgoing)
+[INVITE DEBUG] Preparing RTP socket for SDP offer...
+[RTPAUDIO] ? RTP socket prepared and bound to local port: 51269
+[INVITE DEBUG] ? RTP socket prepared, using port: 51269
+[INVITE DEBUG] *** SDP OFFER CREATED ***
+[INVITE DEBUG] Local IP: 192.168.1.9, RTP Port: 51269
+[INVITE DEBUG] SDP Content:
+v=0
+o=user 1749764279 1749764279 IN IP4 192.168.1.9
+s=Windows SIP Phone Call
+c=IN IP4 192.168.1.9
+t=0 0
+m=audio 51269 RTP/AVP 8 0 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=sendrecv
+
+[INVITE DEBUG] *** END SDP OFFER ***
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: ''
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '100'
+[CRITICAL DEBUG] CSeq Header: '1 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '180'
+[CRITICAL DEBUG] CSeq Header: '1 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '1 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '1 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 1
+[ACK DEBUG] - Current Target Number: '101'
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK840db615daa24bbfac889809f04f1614
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 1 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 774 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 774
+[AUDIO SETUP DEBUG] SDP extraction result: 202 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 202 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082089 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082089 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082089 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.15' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.15'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.15'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51269
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] - Local RTP Port: 51269
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: True
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.15:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.15:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.15:49328
+[RTPAUDIO] ? Reusing prepared RTP socket on port: 51269
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[RTPAUDIO] ?? RTP packet #0 received (160 bytes G.711 A-law -> 320 bytes PCM) | Payload Type: 8 | Buffer: 320 bytes
+[RTPAUDIO] Raw audio: 0,0% | Gate: CLOSED | Seq: 0
+[RTPAUDIO] ? Error sending RTP packet: Negating the minimum value of a twos complement number is invalid.
+[RTPAUDIO] ? Error sending RTP packet: Negating the minimum value of a twos complement number is invalid.
+[RTPAUDIO] ?? RTP packet #100 received (160 bytes G.711 A-law -> 320 bytes PCM) | Payload Type: 8 | Buffer: 1120 bytes
+[RTPAUDIO] ? Error sending RTP packet: Negating the minimum value of a twos complement number is invalid.
+[RTPAUDIO] ?? RTP packet #200 received (160 bytes G.711 A-law -> 320 bytes PCM) | Payload Type: 8 | Buffer: 1920 bytes
+[RTPAUDIO] RTP packet #100 sent to 192.168.1.15:49328 (640 bytes PCM -> 320 bytes G.711 A-law + 12 bytes RTP header) | Adaptive NR: ON (Floor: 31)
+=== [UI DEBUG] TOGGLE HOLD OPERATION ===
+[UI DEBUG] Current Call Active: True
+[UI DEBUG] Current Hold State: False
+[UI DEBUG] Active Call Number: '101'
+[UI DEBUG] SIP Service Available: True
+[UI DEBUG] SIP Service Registered: True
+[UI DEBUG] ?? Initiating HOLD from UI...
+[UI DEBUG] Calling _sipService.HoldCallAsync()...
+=== [SERVICE DEBUG] HOLD CALL ASYNC ===
+[SERVICE DEBUG] SipClient Available: True
+[SERVICE DEBUG] Service Registered: True
+[SERVICE DEBUG] SipClient Registered: True
+[SERVICE DEBUG] ?? Starting hold operation...
+=== [HOLD DEBUG] STARTING HOLD OPERATION ===
+[HOLD DEBUG] Connection State: True
+[HOLD DEBUG] Stream Available: True
+[HOLD DEBUG] Active Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[HOLD DEBUG] Current Hold State: False
+[HOLD DEBUG] ?? Initiating hold procedure...
+[HOLD DEBUG] Dialog Search Result: FOUND
+[HOLD DEBUG] Dialog Details - CallId: e4cd95c762b5430c9c5ddf74e78e279c, State: Confirmed
+[HOLD DEBUG] ?? Local IP: 192.168.1.9
+[HOLD DEBUG] ?? Current RTP Port: 51269
+[HOLD DEBUG] ?? Audio Manager Available: True
+[HOLD DEBUG] ?? Audio Manager Running: True
+[HOLD DEBUG] ?? Creating sendonly SDP for hold...
+[HOLD DEBUG] ?? Hold SDP Created:
+v=0
+o=user 1749764289 1749764289 IN IP4 192.168.1.9
+s=Windows SIP Phone Call (Send Only)
+c=IN IP4 192.168.1.9
+t=0 0
+m=audio 51269 RTP/AVP 8 0 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=sendonly
+
+[HOLD DEBUG] ?? Sending re-INVITE for hold...
+[HOLD DEBUG] ?? Dialog Sequence Number: 2
+[HOLD DEBUG] ?? Pausing RTP streams...
+[HOLD DEBUG] Audio Manager IsRunning before pause: True
+[RTPAUDIO] Pausing RTP streams for hold operation...
+[RTPAUDIO] ? Audio recording paused
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio output paused
+[RTPAUDIO] ? RTP streams paused - socket kept alive on port 51269
+[HOLD DEBUG] Audio Manager IsRunning after pause: False
+[HOLD DEBUG] ?? Setting hold state flag to TRUE
+[HOLD DEBUG] ? HOLD OPERATION COMPLETED SUCCESSFULLY
+[SERVICE DEBUG] Hold operation result: True
+[SERVICE DEBUG] ? Hold operation completed successfully
+[UI DEBUG] Hold result: True
+[UI DEBUG] IsCallOnHold property changing: False → True
+[UI DEBUG] Hold button text will change to: '?? Resume'
+[UI DEBUG] ? UI hold state set after successful hold
+[UI DEBUG] Final UI Hold State: True
+[UI DEBUG] Final Hold Button Text: '?? Resume'
+=== [UI DEBUG] TOGGLE HOLD OPERATION COMPLETED ===
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '100'
+[CRITICAL DEBUG] CSeq Header: '2 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[RTPAUDIO] ?? RTP listener stopped
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '2 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '2 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 3
+[ACK DEBUG] - Current Target Number: '101'
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK3f54c389a4b148b7bc28f72bc5874309
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 3 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 787 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 787
+[AUDIO SETUP DEBUG] SDP extraction result: 215 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 215 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082090 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.180' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] Processing line: 'a=recvonly'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.180'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.180'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51269
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] - Hold state: True
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] - Local RTP Port: 51269
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: True
+[AUDIO SETUP DEBUG] - Audio not running: True
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: True
+[AUDIO SETUP DEBUG] *** ATTEMPTING RESUME PATH ***
+[RTPAUDIO] ? Remote RTP endpoint updated to: 192.168.1.180:49328
+[RTPAUDIO] Resuming RTP streams after hold operation...
+[RTPAUDIO] ? Audio recording resumed
+[RTPAUDIO] ? Audio output resumed
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? Incoming RTP listener restarted after resume
+[RTPAUDIO] ? RTP streams resumed successfully on port 51269
+[AUDIO SETUP DEBUG] Resume result: True
+[AUDIO SETUP DEBUG] ? RESUME PATH SUCCESS - AUDIO RESTORED
+=== [UI DEBUG] TOGGLE HOLD OPERATION ===
+[UI DEBUG] Current Call Active: True
+[UI DEBUG] Current Hold State: True
+[UI DEBUG] Active Call Number: '101'
+[UI DEBUG] SIP Service Available: True
+[UI DEBUG] SIP Service Registered: True
+[UI DEBUG] ?? Initiating RESUME from UI...
+[UI DEBUG] Calling _sipService.ResumeCallAsync()...
+=== [SERVICE DEBUG] RESUME CALL ASYNC ===
+[SERVICE DEBUG] SipClient Available: True
+[SERVICE DEBUG] Service Registered: True
+[SERVICE DEBUG] SipClient Registered: True
+[SERVICE DEBUG] ?? Starting resume operation...
+=== [RESUME DEBUG] STARTING RESUME OPERATION ===
+[RESUME DEBUG] Connection State: True
+[RESUME DEBUG] Stream Available: True
+[RESUME DEBUG] Active Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[RESUME DEBUG] Current Hold State: False
+[RESUME DEBUG] ?? Initiating resume procedure...
+[RESUME DEBUG] ?? Resume in progress flag set to TRUE
+[RESUME DEBUG] Dialog Search Result: FOUND
+[RESUME DEBUG] Dialog Details - CallId: e4cd95c762b5430c9c5ddf74e78e279c, State: Confirmed
+[RESUME DEBUG] ?? Local IP: 192.168.1.9
+[RESUME DEBUG] ?? Audio Manager Available: True
+[RESUME DEBUG] ?? Audio Manager Running: True
+[RESUME DEBUG] ?? Current RTP Port: 51269
+[RTPAUDIO] ? RTP socket already prepared on port: 51269
+[RESUME DEBUG] ? RTP socket prepared for resume on port 51269
+[RESUME DEBUG] ?? Creating active SDP for resume...
+[RESUME DEBUG] ?? Resume SDP Created:
+v=0
+o=user 1749764290 1749764290 IN IP4 192.168.1.9
+s=Windows SIP Phone Call
+c=IN IP4 192.168.1.9
+t=0 0
+m=audio 51269 RTP/AVP 8 0 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=sendrecv
+
+[RESUME DEBUG] ?? Sending re-INVITE for resume...
+[RESUME DEBUG] ?? Dialog Sequence Number: 4
+[RESUME DEBUG] ?? Audio will be restarted when 200 OK is received
+[RESUME DEBUG] ?? Hold flag will be cleared in HandleAudioSetup after successful resume
+[RESUME DEBUG] ? RESUME OPERATION COMPLETED SUCCESSFULLY
+[SERVICE DEBUG] Resume operation result: True
+[SERVICE DEBUG] ? Resume operation completed successfully
+[UI DEBUG] Resume result: True
+[UI DEBUG] IsCallOnHold property changing: True → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[UI DEBUG] ? UI hold state cleared after successful resume
+[UI DEBUG] Final UI Hold State: False
+[UI DEBUG] Final Hold Button Text: '?? Hold'
+=== [UI DEBUG] TOGGLE HOLD OPERATION COMPLETED ===
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '100'
+[CRITICAL DEBUG] CSeq Header: '4 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '4 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '4 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 5
+[ACK DEBUG] - Current Target Number: '101'
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK3bafc5d78f1b4873a96a9254e48860ba
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 5 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 774 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 774
+[AUDIO SETUP DEBUG] SDP extraction result: 202 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 202 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082091 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.15' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.15'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.15'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51269
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: True
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] - Local RTP Port: 51269
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: False
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.15:49328
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[RTPAUDIO] Starting RTP session to 192.168.1.15:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] ?? Existing session detected, stopping gracefully...
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ?? RTP listener stopped
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ? RTP session stopped successfully
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.15:49328
+[RTPAUDIO] ? RTP socket bound to local port: 51273
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '2 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '2 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 5
+[ACK DEBUG] - Current Target Number: '101'
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK78cc5975cf6a46d2b69c5e7c8b5f1272
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 5 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 787 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 787
+[AUDIO SETUP DEBUG] SDP extraction result: 215 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 215 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082090 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.180' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] Processing line: 'a=recvonly'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.180'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.180'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51273
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] - Local RTP Port: 51273
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: False
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.180:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.180:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] ?? Existing session detected, stopping gracefully...
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ?? Error receiving RTP packet: De I/O-bewerking is afgebroken vanwege het afsluiten van een thread of vanwege een opdracht van een toepassing.
+[RTPAUDIO] ?? RTP listener stopped
+[RTPAUDIO] ? RTP session stopped successfully
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.180:49328
+[RTPAUDIO] ? RTP socket bound to local port: 51274
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[RTPAUDIO] RTP packet #200 sent to 192.168.1.180:49328 (640 bytes PCM -> 320 bytes G.711 A-law + 12 bytes RTP header) | Adaptive NR: ON (Floor: 804)
+[RTPAUDIO] Raw audio: 6,1% | Gate: CLOSED | Seq: 200
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '4 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '4 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 5
+[ACK DEBUG] - Current Target Number: '101'
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bKf776e45ba6c940ef947bd5e5ee65e594
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 5 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 774 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 774
+[AUDIO SETUP DEBUG] SDP extraction result: 202 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 202 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082091 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.15' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.15'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.15'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51274
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] - Local RTP Port: 51274
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: False
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.15:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.15:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] ?? Existing session detected, stopping gracefully...
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ?? Error receiving RTP packet: De I/O-bewerking is afgebroken vanwege het afsluiten van een thread of vanwege een opdracht van een toepassing.
+[RTPAUDIO] ?? RTP listener stopped
+[RTPAUDIO] ? RTP session stopped successfully
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.15:49328
+[RTPAUDIO] ? RTP socket bound to local port: 51275
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ?? Error receiving RTP packet: De I/O-bewerking is afgebroken vanwege het afsluiten van een thread of vanwege een opdracht van een toepassing.
+[RTPAUDIO] ?? RTP listener stopped
+[RTPAUDIO] ? RTP session stopped successfully
+=== [UI DEBUG] END CALL ===
+[UI DEBUG] Previous call state - Active: True, OnHold: False, Number: '101'
+[UI DEBUG] Resetting hold state to false...
+[UI DEBUG] IsCallOnHold property changing: False → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[CallHistory] ? Updated call: 101 (Outgoing) - 1 rows affected
+[CallHistory] ? Call ended and updated in database: 101 - Duration: 0s
+[UI DEBUG] ? End call completed - UI state reset
+=== [UI DEBUG] END CALL ===
+[UI DEBUG] Previous call state - Active: False, OnHold: False, Number: ''
+[UI DEBUG] Resetting hold state to false...
+[UI DEBUG] IsCallOnHold property changing: False → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[UI DEBUG] ? End call completed - UI state reset
+=== [UI DEBUG] END CALL ===
+[UI DEBUG] Previous call state - Active: False, OnHold: False, Number: ''
+[UI DEBUG] Resetting hold state to false...
+[UI DEBUG] IsCallOnHold property changing: False → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[UI DEBUG] ? End call completed - UI state reset
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+=== [UI DEBUG] END CALL ===
+[UI DEBUG] Previous call state - Active: False, OnHold: False, Number: ''
+[UI DEBUG] Resetting hold state to false...
+[UI DEBUG] IsCallOnHold property changing: False → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[UI DEBUG] ? End call completed - UI state reset
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '6 BYE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '6 BYE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? False
+[HANDLE SUCCESS DEBUG] ==========================================
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] ? RTP session stopped successfully
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+=== [UI DEBUG] END CALL ===
+[UI DEBUG] Previous call state - Active: False, OnHold: False, Number: ''
+[UI DEBUG] Resetting hold state to false...
+[UI DEBUG] IsCallOnHold property changing: False → False
+[UI DEBUG] Hold button text will change to: '?? Hold'
+[UI DEBUG] ? End call completed - UI state reset
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '2 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '2 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 6
+[ACK DEBUG] - Current Target Number: ''
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK26e2339c2ba3484b88c59f12cc69cbe8
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 6 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 787 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 787
+[AUDIO SETUP DEBUG] SDP extraction result: 215 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 215 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082090 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.180' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] Processing line: 'a=recvonly'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.180'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.180'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 0
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: False
+[AUDIO SETUP DEBUG] - Local RTP Port: 0
+[AUDIO SETUP DEBUG] - Has active RTP socket: False
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: True
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.180:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.180:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.180:49328
+[RTPAUDIO] ? RTP socket bound to local port: 51276
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '4 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '4 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 6
+[ACK DEBUG] - Current Target Number: ''
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK43380bd1df3c45139c7c0d9fae4aab6f
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 6 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 774 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 774
+[AUDIO SETUP DEBUG] SDP extraction result: 202 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 202 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082091 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.15
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082091 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.15'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.15' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.15'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.15'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51276
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] - Local RTP Port: 51276
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: False
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.15:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.15:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] ?? Existing session detected, stopping gracefully...
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ?? Error receiving RTP packet: De I/O-bewerking is afgebroken vanwege het afsluiten van een thread of vanwege een opdracht van een toepassing.
+[RTPAUDIO] ?? RTP listener stopped
+[RTPAUDIO] ? RTP session stopped successfully
+[RTPAUDIO] Testing microphone availability...
+[RTPAUDIO] ? Microphone availability test passed
+[RTPAUDIO] ? Remote RTP endpoint created: 192.168.1.15:49328
+[RTPAUDIO] ? RTP socket bound to local port: 51277
+[RTPAUDIO] ? Audio input recording started successfully
+[RTPAUDIO] ?? Starting incoming RTP packet listener for audio playback...
+[RTPAUDIO] ? RTP session started successfully
+[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: True ***
+[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***
+[AUDIO SETUP DEBUG] Resume in progress flag cleared
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] RTP packet #300 sent to 192.168.1.15:49328 (640 bytes PCM -> 320 bytes G.711 A-law + 12 bytes RTP header) | Adaptive NR: ON (Floor: 0)
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[RTPAUDIO] RTP packet #400 sent to 192.168.1.15:49328 (640 bytes PCM -> 320 bytes G.711 A-law + 12 bytes RTP header) | Adaptive NR: ON (Floor: 0)
+[RTPAUDIO] Raw audio: 0,0% | Gate: CLOSED | Seq: 400
+[RTPAUDIO] ?? Error receiving RTP packet: De externe host heeft een verbinding verbroken.
+[DIALOG DEBUG] ==========================================
+[DIALOG DEBUG] Dialog lookup for response:
+[DIALOG DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[DIALOG DEBUG] - From Header: '<sip:103@192.168.1.9>;tag=6224e408'
+[DIALOG DEBUG] - To Header: '<sip:101@192.168.1.180>;tag=779d6355473dc845'
+[DIALOG DEBUG] - Dialog found? False
+[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***
+[DIALOG DEBUG] - Dialog by Call ID? True
+[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '6224e408'
+[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '779d6355473dc845'
+[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***
+[DIALOG DEBUG] ==========================================
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] ProcessSipResponse - About to handle status code: '200'
+[CRITICAL DEBUG] CSeq Header: '2 INVITE'
+[CRITICAL DEBUG] Dialog null? False
+[CRITICAL DEBUG] ==========================================
+[CRITICAL DEBUG] Entering 200 OK case - calling HandleSuccessResponse
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] HandleSuccessResponse called
+[HANDLE SUCCESS DEBUG] CSeq Header: '2 INVITE'
+[HANDLE SUCCESS DEBUG] CSeq contains INVITE? True
+[HANDLE SUCCESS DEBUG] ==========================================
+[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***
+[ACK DEBUG] ==========================================
+[ACK DEBUG] SendAckMessageWithFactory called
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Dialog information:
+[ACK DEBUG] - Call ID: 'e4cd95c762b5430c9c5ddf74e78e279c'
+[ACK DEBUG] - Local Tag: '6224e408'
+[ACK DEBUG] - Remote Tag: '779d6355473dc845'
+[ACK DEBUG] - Remote Target: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] - Local Sequence Number: 6
+[ACK DEBUG] - Current Target Number: ''
+[ACK DEBUG] Calculated Request-URI: 'sip:101@192.168.1.180:5060'
+[ACK DEBUG] Creating ACK message with username '103'...
+[ACK DEBUG] *** GENERATED ACK MESSAGE ***
+[ACK DEBUG] ==========================================
+ACK sip:101@192.168.1.180:5060;transport=tcp SIP/2.0
+Via: SIP/2.0/TCP 192.168.1.9:5060;branch=z9hG4bK01bb7328ea934b84b656b1e28e31343a
+From: <sip:103@192.168.1.9>;tag=6224e408
+To: <sip:101@192.168.1.180>;tag=779d6355473dc845
+Call-ID: e4cd95c762b5430c9c5ddf74e78e279c
+CSeq: 6 ACK
+User-Agent: Windows-SIP-Phone/2.0
+Max-Forwards: 70
+Content-Length: 0
+
+
+[ACK DEBUG] ==========================================
+[ACK DEBUG] Sending ACK message via SendMessageAsync...
+[ACK DEBUG] *** ACK MESSAGE SENT SUCCESSFULLY ***
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called
+[AUDIO SETUP DEBUG] Message length: 787 characters
+[AUDIO SETUP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] HandleAudioSetup called with message length: 787
+[AUDIO SETUP DEBUG] SDP extraction result: 215 characters
+[AUDIO SETUP DEBUG] SDP extraction result: 215 chars
+[AUDIO SETUP DEBUG] Extracted SDP content:
+[AUDIO SETUP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[AUDIO SETUP DEBUG] ==========================================
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Parsing SDP content:
+[SDP DEBUG] ==========================================
+v=0
+o=UserA 2007327210 1075082090 IN IP4 192.168.1.15
+s=Session SDP
+c=IN IP4 192.168.1.180
+t=0 0
+m=audio 49328 RTP/AVP 8 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=recvonly
+[SDP DEBUG] ==========================================
+[SDP DEBUG] Processing line: 'v=0'
+[SDP DEBUG] Processing line: 'o=UserA 2007327210 1075082090 IN IP4 192.168.1.15'
+[SDP DEBUG] Processing line: 's=Session SDP'
+[SDP DEBUG] Processing line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] Found connection line: 'c=IN IP4 192.168.1.180'
+[SDP DEBUG] *** EXTRACTED REMOTE IP: '192.168.1.180' ***
+[SDP DEBUG] Processing line: 't=0 0'
+[SDP DEBUG] Processing line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] Found media line: 'm=audio 49328 RTP/AVP 8 101'
+[SDP DEBUG] *** EXTRACTED REMOTE RTP PORT: 49328 ***
+[SDP DEBUG] First offered payload type: 8
+[SDP DEBUG] Processing line: 'a=rtpmap:8 PCMA/8000'
+[SDP DEBUG] Processing line: 'a=rtpmap:101 telephone-event/8000'
+[SDP DEBUG] Processing line: 'a=fmtp:101 0-15'
+[SDP DEBUG] Processing line: 'a=recvonly'
+[SDP DEBUG] ==========================================
+[SDP DEBUG] FINAL SDP PARSING RESULTS:
+[SDP DEBUG] - Remote IP: '192.168.1.180'
+[SDP DEBUG] - Remote RTP Port: 49328
+[SDP DEBUG] - Audio Codec: 'PCMA'
+[SDP DEBUG] - Payload Type: 8
+[SDP DEBUG] - Has Audio: True
+[SDP DEBUG] - Has DTMF: True
+[SDP DEBUG] ==========================================
+[AUDIO SETUP DEBUG] SDP parsing result: SUCCESS
+[AUDIO SETUP DEBUG] *** AUDIO SESSION VALIDATION PASSED ***
+[AUDIO SETUP DEBUG] - Remote IP from SDP: '192.168.1.180'
+[AUDIO SETUP DEBUG] - Remote RTP Port from SDP: 49328
+[AUDIO SETUP DEBUG] - Audio Codec from SDP: 'PCMA'
+[AUDIO SETUP DEBUG] - Payload Type from SDP: 8
+[AUDIO SETUP DEBUG] - Audio Manager LocalRtpPort: 51277
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] HandleAudioSetup completed
+[AUDIO SETUP DEBUG] ==========================================
+[CRITICAL DEBUG] HandleSuccessResponse completed
+[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***
+[AUDIO SETUP DEBUG] RESUME DETECTION:
+[AUDIO SETUP DEBUG] - Hold state: False
+[AUDIO SETUP DEBUG] - Resume flag: False
+[AUDIO SETUP DEBUG] - Audio Manager IsRunning: True
+[AUDIO SETUP DEBUG] - Local RTP Port: 51277
+[AUDIO SETUP DEBUG] - Has active RTP socket: True
+[AUDIO SETUP DEBUG] - Was on hold: False
+[AUDIO SETUP DEBUG] - Audio not running: False
+[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: False
+[AUDIO SETUP DEBUG] *** ATTEMPTING FULL START PATH ***
+[AUDIO SETUP DEBUG] Reason: isResumeOperation=False
+[AUDIO SETUP DEBUG] Starting RTP session: 192.168.1.180:49328
+[RTPAUDIO] Starting RTP session to 192.168.1.180:49328 (Codec: PCMA, PayloadType: 8)
+[RTPAUDIO] ?? Existing session detected, stopping gracefully...
+[RTPAUDIO] Stopping RTP session...
+[RTPAUDIO] ?? Stopping incoming RTP listener...
+[RTPAUDIO] Recording stopped: Normal stop
+[RTPAUDIO] ? Audio recording stopped
+[RTPAUDIO] ? Audio output stopped
+[RTPAUDIO] ? RTP socket closed
+[RTPAUDIO] ?? Error receiving RTP packet: De I/O-bewerking is afgebroken vanwege het afsluiten van een thread of vanwege een opdracht van een toepassing.

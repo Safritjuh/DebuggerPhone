@@ -1,0 +1,22 @@
+# Global code owners
+* @Safritjuh
+
+# QA and Testing Standards
+.github/QA_STANDARDS.md @Safritjuh
+.github/workflows/ @Safritjuh
+
+# Core SIP functionality
+SipDigestAuth.cs @Safritjuh
+SdpManager.cs @Safritjuh
+SimpleSipClient.cs @Safritjuh
+
+# Testing
+WindowsSipPhone.Tests/ @Safritjuh
+
+# CI/CD Configuration
+.github/workflows/ci-cd.yml @Safritjuh
+.releaserc.json @Safritjuh
+
+# Documentation
+README.md @Safritjuh
+*.md @Safritjuh

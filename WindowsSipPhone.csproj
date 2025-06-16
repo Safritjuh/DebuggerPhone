@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>  
+  <!-- Explicitly exclude test files from main application build -->
+  <ItemGroup>
+    <Compile Remove="WindowsSipPhone.Tests/**/*.cs" />
+    <None Include="WindowsSipPhone.Tests/**/*.cs" />
+  </ItemGroup>
+  
+  <!-- Exclude alternative XAML files from build to prevent duplicate class definitions -->
+  <ItemGroup>
+    <Page Remove="IncomingCallWindow_Clean.xaml" />
+    <Page Remove="IncomingCallWindow_Fixed.xaml" />
+    <Page Remove="IncomingCallWindow_New.xaml" />
+    <None Include="IncomingCallWindow_Clean.xaml" />
+    <None Include="IncomingCallWindow_Fixed.xaml" />
+    <None Include="IncomingCallWindow_New.xaml" />
+  </ItemGroup>
+  
+  <!-- Audio packages for RTP functionality -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="SIPSorcery" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="backup\**" />
+    <EmbeddedResource Remove="backup\**" />
+    <None Remove="backup\**" />
+    <Compile Remove="Pages\Settings\backup\**" />
+    <EmbeddedResource Remove="Pages\Settings\backup\**" />
+    <None Remove="Pages\Settings\backup\**" />
+  </ItemGroup>
+
+</Project>

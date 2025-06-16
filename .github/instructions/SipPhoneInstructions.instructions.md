@@ -25,37 +25,62 @@ applyTo: '**'
 ### Bug Fixes
 - When starting work on a bug, create a new branch with the BUG name from the bug list
 - Branch naming format: `bug/BUG-XXX` (e.g., `bug/BUG-013`, `bug/BUG-007`)
+- **IMPORTANT**: Always link your branch to the corresponding GitHub issue using `gh issue develop X --checkout`
 - Example workflow:
   ```powershell
-  git checkout -b bug/BUG-013
+  # Create and link branch to GitHub issue
+  gh issue develop 15 --checkout
+  # OR manually create branch
+  git checkout -b bug/BUG-015
+  
   # Make your changes to fix the bug
   git add .
-  git commit -m "Fix BUG-013: Incoming Call Not Properly Accepted"
-  git push origin bug/BUG-013
+  git commit -m "Fix BUG-015: Theme Switcher Not Functional
+
+  Fixes #15"
+  git push origin bug/BUG-015
+  
+  # Create pull request - NEVER merge directly to main
+  gh pr create --title "Fix BUG-015: Theme Switcher Not Functional" --body "Fixes #15"
   ```
-- After fixing, update the bug status in `Documents/BUG_LIST.md` to mark it as FIXED
-- Merge back to main branch when testing is complete
+- After fixing, GitHub issues will be automatically closed when PRs are merged
+- **ALWAYS create a pull request** - let others review and merge
+- **NEVER merge directly to main branch** - always use pull requests for code review
 
 ### New Features and Issues
 - When starting work on a new feature or issue, create a new branch with a short, descriptive name
 - Branch naming format: `feature/short-description` (e.g., `feature/audio-enhancements`, `feature/modern-ui`)
+- **IMPORTANT**: Always link your branch to the corresponding GitHub issue when applicable using `gh issue develop X --checkout`
 - Example workflow:
   ```powershell
+  # Create and link branch to GitHub issue
+  gh issue develop 23 --checkout
+  # OR manually create branch
   git checkout -b feature/audio-enhancements
+  
   # Implement your feature
   git add .
-  git commit -m "Add enhanced audio processing with noise reduction"
+  git commit -m "Add enhanced audio processing with noise reduction
+
+  Implements #23"
   git push origin feature/audio-enhancements
+  
+  # Create pull request - NEVER merge directly to main
+  gh pr create --title "Add Enhanced Audio Processing" --body "Implements #23"
   ```
 - Use clear, descriptive branch names that indicate what the feature does
 - Keep feature branches focused on a single improvement or addition
+- **ALWAYS create a pull request** - let others review and merge
+- **NEVER merge directly to main branch** - always use pull requests for code review
 
 ### General Git Guidelines
 - Always work on separate branches - never commit directly to main
 - **NEVER push to main branch** - if unclear about the workflow, ask for instructions
+- **NEVER merge directly to main** - always create pull requests for code review and approval
 - Use descriptive commit messages that explain what was changed and why
 - Push branches to origin for backup and collaboration
-- Clean up merged branches after successful integration
+- Always include issue references in commit messages using keywords like "Fixes #X", "Closes #X", "Implements #X"
+- Clean up merged branches after successful integration (done by maintainers after PR merge)
    
 
 ## Testing and Debugging Guidelines
@@ -242,3 +267,38 @@ The application provides two separate debug windows that can be used independent
 - NEVER use duplicate headers - only one header per settings page
 - Settings window should NOT have a main content header (ContentTitle)
 - Individual page headers should include emoji icons and descriptive subtitles
+
+### GitHub Issue & Pull Request Workflow
+- **ALWAYS work on GitHub issues** - link branches to issues using `gh issue develop <issue-number> --checkout`
+- **ALWAYS create pull requests** - never merge directly to main branch
+- **GitHub issues are the single source of truth** for bug tracking and project management
+- **Required commit message format** with issue references:
+  ```
+  Fix BUG-XXX: Brief description of the fix
+  
+  - Detailed change 1
+  - Detailed change 2
+  - Closes issue automatically when PR is merged
+  
+  Fixes #<issue-number>
+  ```
+- **Pull request creation** after pushing branch:
+  ```powershell
+  # After committing and pushing your branch
+  gh pr create --title "Fix BUG-XXX: Brief Description" --body "Fixes #<issue-number>
+  ## Summary
+  Brief description of changes
+
+  ## Changes Made
+  - List of specific changes
+  - GitHub issue will be closed automatically when PR is merged
+
+  ## Testing
+  - Build verification
+  - Functional testing results"
+  ```
+- **Issue management**:
+  - Use `gh issue develop <number> --checkout` to start work
+  - Include "Fixes #X" in commit messages for automatic issue closure
+  - GitHub issues are automatically closed when PRs with "Fixes #X" are merged
+  - Let maintainers merge PRs and clean up branches

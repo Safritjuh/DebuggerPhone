@@ -12,7 +12,7 @@
 - ✅ **Audio Resume Logic**: Refactored with multiple resume indicators and socket validation
 - ✅ **Phase 1: Essential Features**: Complete (DTMF, Call History, Audio Devices, System Tray, Keyboard Shortcuts)
 - ✅ **Phase 3: User Experience**: Complete (Modern UI, Advanced Audio, Error Handling & Diagnostics)
-- ⚠️ **Known Issues**: 11 tracked bugs (2 critical, 4 high priority) - see BUG_LIST.md
+- ⚠️ **Known Issues**: 14 open bugs tracked in GitHub Issues (4 critical, 5 high priority)
 - 🔄 **Current Focus**: Audio resume after hold/unhold operations (BUG-001) - debug path works but audio not restored
 - 🎯 **Current Phase**: Ready for Phase 4 (Security & Advanced Features) OR Bug Fixing & Stabilization (Phase 1.5)
 
@@ -456,7 +456,7 @@ Protocol: TCP
 - [ ] BUG-005, BUG-006, BUG-007 - RESOLVED
 
 **Quality Metrics:**
-- [ ] BUG_LIST.md shows 0 critical bugs
+- [ ] GitHub Issues shows 0 critical bugs
 - [ ] Clean build maintained (0 errors, 0 warnings)
 - [ ] All existing features continue to work reliably
 
@@ -601,7 +601,7 @@ Protocol: TCP
 - [ ] System tray behaves correctly in all scenarios
 - [ ] DTMF and call transfer implemented and tested
 
-**Overall Success**: **BUG_LIST.md shows 0 critical and 0 high priority bugs**
+**Overall Success**: **GitHub Issues shows 0 critical and 0 high priority bugs**
 
 ### **💭 My Strong Recommendation**
 

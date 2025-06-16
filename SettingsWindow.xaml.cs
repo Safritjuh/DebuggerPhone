@@ -11,7 +11,7 @@ namespace WindowsSipPhone
         private SipPhoneService? _sipService;
         private SipMessagesWindow? _messagesWindow = null;
         private KeyboardShortcutService? _keyboardService;        private MainWindow? _mainWindow;        // Removed _themeComboBox field - theme switching functionality removed per BUG-015
-        private System.Windows.Controls.CheckBox? _enableLoggingCheckBox;
+        private System.Windows.Controls.Button? _enableLoggingButton;
         private System.Windows.Controls.ComboBox? _ringtoneComboBox;        private IRingtoneService? _ringtoneService;
 
         public SettingsWindow(SipPhoneService? sipService = null, KeyboardShortcutService? keyboardService = null, MainWindow? mainWindow = null, IRingtoneService? ringtoneService = null){
@@ -30,9 +30,11 @@ namespace WindowsSipPhone
             {
                 _sipSettingsPage.SipService = _sipService;
             }
-            
-            // Show SIP Settings by default
+              // Show SIP Settings by default
             ShowSipSettings();
+            
+            // Initialize logging button state (will be called again when debug tools are shown)
+            // This ensures the button state is correct when the debug tools section is accessed
         }
 
         private void NavigationButton_Click(object sender, RoutedEventArgs e)
@@ -461,13 +463,35 @@ namespace WindowsSipPhone
                 FontSize = 12,
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(127, 140, 141)),
                 Margin = new Thickness(0, 0, 0, 15)
-            };            _enableLoggingCheckBox = new System.Windows.Controls.CheckBox
+            };            _enableLoggingButton = new System.Windows.Controls.Button
             {
-                Content = "Enable detailed logging",
-                Margin = new Thickness(0, 0, 0, 10)
+                Content = "Enable Detailed Logging",
+                Margin = new Thickness(0, 0, 0, 10),
+                Padding = new Thickness(10, 5, 10, 5),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 152, 219)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0),
+                FontWeight = FontWeights.Medium,
+                Cursor = System.Windows.Input.Cursors.Hand
             };
-            _enableLoggingCheckBox.Checked += EnableLoggingCheck_Checked;
-            _enableLoggingCheckBox.Unchecked += EnableLoggingCheck_Unchecked;
+            _enableLoggingButton.Click += EnableLoggingButton_Click;
+            
+            // Initialize button state based on current logging window visibility
+            if (_mainWindow != null)
+            {
+                bool isLoggingVisible = _mainWindow.IsLoggingWindowVisible;
+                _enableLoggingButton.Content = isLoggingVisible ? "Disable Detailed Logging" : "Enable Detailed Logging";
+                
+                // Set initial button color based on state
+                if (isLoggingVisible)
+                {
+                    _enableLoggingButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Red for "disable"
+                }
+                else
+                {
+                    _enableLoggingButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 152, 219)); // Blue for "enable"
+                }
+            }
             
             var logLevelGrid = new System.Windows.Controls.Grid();            logLevelGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(100) });
             logLevelGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -498,7 +522,7 @@ namespace WindowsSipPhone
             
             loggingSectionContent.Children.Add(loggingTitle);
             loggingSectionContent.Children.Add(loggingDescription);
-            loggingSectionContent.Children.Add(_enableLoggingCheckBox);            loggingSectionContent.Children.Add(logLevelGrid);
+            loggingSectionContent.Children.Add(_enableLoggingButton);            loggingSectionContent.Children.Add(logLevelGrid);
             loggingSection.Child = loggingSectionContent;
             stackPanel.Children.Add(loggingSection);
             
@@ -591,44 +615,57 @@ namespace WindowsSipPhone
         }        // InitializeThemeSelection method removed per BUG-015
         // Theme functionality has been removed as it was non-functional
 
-        private void EnableLoggingCheck_Checked(object sender, RoutedEventArgs e)
+        private void EnableLoggingButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Use MainWindow to show the logging window
-                _mainWindow?.ShowLoggingWindow();
+                if (_mainWindow != null)
+                {
+                    if (_mainWindow.IsLoggingWindowVisible)
+                    {
+                        // Hide the logging window
+                        _mainWindow.HideLoggingWindow();
+                    }
+                    else
+                    {
+                        // Show the logging window
+                        _mainWindow.ShowLoggingWindow();
+                    }
+                    
+                    // Update button appearance after toggle
+                    UpdateLoggingButtonState();
+                }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error opening logging window: {ex.Message}", 
+                System.Windows.MessageBox.Show($"Error toggling logging window: {ex.Message}", 
                               "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void EnableLoggingCheck_Unchecked(object sender, RoutedEventArgs e)
+        private void UpdateLoggingButtonState()
         {
-            try
+            if (_enableLoggingButton != null && _mainWindow != null)
             {
-                // Use MainWindow to hide the logging window
-                _mainWindow?.HideLoggingWindow();            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[SETTINGS] Error closing logging window: {ex.Message}");
-            }
-        }
-
-        private void UpdateLoggingCheckboxState()
-        {
-            if (_enableLoggingCheckBox != null && _mainWindow != null)
-            {
-                _enableLoggingCheckBox.IsChecked = _mainWindow.IsLoggingWindowVisible;
+                bool isLoggingVisible = _mainWindow.IsLoggingWindowVisible;
+                _enableLoggingButton.Content = isLoggingVisible ? "Disable Detailed Logging" : "Enable Detailed Logging";
+                
+                // Update button color based on state
+                if (isLoggingVisible)
+                {
+                    _enableLoggingButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Red for "disable"
+                }
+                else
+                {
+                    _enableLoggingButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 152, 219)); // Blue for "enable"
+                }
             }
         }
 
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
-            UpdateLoggingCheckboxState();
+            UpdateLoggingButtonState();
         }        private void TestRingtone_Click(object sender, RoutedEventArgs e)
         {
             try

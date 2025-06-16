@@ -23,7 +23,7 @@ applyTo: '**'
 
 ## Git Branch Workflow
 ### Bug Fixes
-- When starting work on a bug, create a new branch with the BUG name from the bug list
+- When starting work on a bug, create a new branch linked to the corresponding GitHub issue
 - Branch naming format: `bug/BUG-XXX` (e.g., `bug/BUG-013`, `bug/BUG-007`)
 - **IMPORTANT**: Always link your branch to the corresponding GitHub issue using `gh issue develop X --checkout`
 - Example workflow:
@@ -237,6 +237,7 @@ The application provides two separate debug windows that can be used independent
 
 ## Documentation Organization
 - All improvement documents, technical summaries, implementation reports, and project guides should be placed in the `Documents/` folder
+- **Bug tracking and issue management**: Use GitHub Issues exclusively (no local tracking files)
 - This includes files like:
   - Implementation summaries and reports (e.g., `ACK_FIX_IMPLEMENTATION_REPORT.md`)
   - Audio enhancement documentation (e.g., `AUDIO_ENHANCEMENTS.md`, `VOICE_CLIPPING_FIX.md`)
@@ -244,6 +245,7 @@ The application provides two separate debug windows that can be used independent
   - Testing guides and status reports (e.g., `TESTING_GUIDE.md`, `TESTING-STATUS-REPORT.md`)
   - Project roadmaps and task lists (e.g., `PROJECT_ROADMAP.md`, `TASK_LIST.md`)
   - Quick reference materials (e.g., `QUICK_START_GUIDE.md`, `QUICK_REFERENCE_GUIDE.md`)
+  - Migration and workflow documentation (e.g., `GITHUB_ISSUES_MIGRATION.md`)
 - Keep only the main `README.md` in the project root
 - When creating new improvement documentation, always place it in the `Documents/` folder
 
@@ -268,37 +270,78 @@ The application provides two separate debug windows that can be used independent
 - Settings window should NOT have a main content header (ContentTitle)
 - Individual page headers should include emoji icons and descriptive subtitles
 
-### GitHub Issue & Pull Request Workflow
-- **ALWAYS work on GitHub issues** - link branches to issues using `gh issue develop <issue-number> --checkout`
-- **ALWAYS create pull requests** - never merge directly to main branch
-- **GitHub issues are the single source of truth** for bug tracking and project management
-- **Required commit message format** with issue references:
-  ```
-  Fix BUG-XXX: Brief description of the fix
-  
-  - Detailed change 1
-  - Detailed change 2
-  - Closes issue automatically when PR is merged
-  
-  Fixes #<issue-number>
-  ```
-- **Pull request creation** after pushing branch:
-  ```powershell
-  # After committing and pushing your branch
-  gh pr create --title "Fix BUG-XXX: Brief Description" --body "Fixes #<issue-number>
-  ## Summary
-  Brief description of changes
+## Project Management & Issue Tracking
 
-  ## Changes Made
-  - List of specific changes
-  - GitHub issue will be closed automatically when PR is merged
+### 🐛 **GitHub Issues - Single Source of Truth**
+- **ALL bugs and features** are tracked exclusively in GitHub Issues
+- **NO local bug tracking files** - GitHub Issues is the only system used
+- **Automatic workflow** - Issues close when PRs with "Fixes #X" are merged
+- **Professional tracking** with proper labels, priorities, and project management
 
-  ## Testing
-  - Build verification
-  - Functional testing results"
-  ```
-- **Issue management**:
-  - Use `gh issue develop <number> --checkout` to start work
-  - Include "Fixes #X" in commit messages for automatic issue closure
-  - GitHub issues are automatically closed when PRs with "Fixes #X" are merged
-  - Let maintainers merge PRs and clean up branches
+### 📊 **Issue Labels & Organization**
+- **Priority Labels**: `priority:critical`, `priority:high`, `priority:medium`, `priority:low`  
+- **Category Labels**: `ui`, `sip`, `audio`, `network`, `rtp`, `configuration`, `registration`
+- **Type Labels**: `bug`, `enhancement`, `feature`, `documentation`
+
+### 🔍 **Finding Issues to Work On**
+```powershell
+# List all open issues
+gh issue list --state open
+
+# List issues by priority
+gh issue list --label "priority:critical" --state open
+gh issue list --label "priority:high" --state open
+
+# List issues by category  
+gh issue list --label "sip" --state open
+gh issue list --label "audio" --state open
+```
+
+### 🚀 **GitHub Issues Best Practices**
+
+#### **Creating New Issues**
+```powershell
+# Create a bug report
+gh issue create --title "BUG-XXX: Descriptive Title" --label "bug,priority:medium,category" --body "Description with reproduction steps"
+
+# Create a feature request
+gh issue create --title "FEATURE: New Feature Name" --label "enhancement,priority:low" --body "Feature description and requirements"
+```
+
+#### **Working with Issues**
+```powershell
+# Start working on an issue (creates and switches to branch)
+gh issue develop 15 --checkout
+
+# View issue details
+gh issue view 15
+
+# Add comments to issues
+gh issue comment 15 --body "Progress update or findings"
+
+# Close issue manually if needed
+gh issue close 15 --comment "Completed manually or duplicate"
+```
+
+#### **Issue Lifecycle**
+1. **Created**: New issue opened with proper labels
+2. **In Progress**: Developer creates branch with `gh issue develop X --checkout`
+3. **Under Review**: Pull request created with `Fixes #X` in description
+4. **Closed**: Automatically closed when PR is merged to main
+
+#### **Commit Message Standards**
+```
+Fix BUG-015: Theme Switcher Not Functional
+
+- Updated ThemeSwitcher component to properly handle theme changes
+- Fixed state management issue in MainWindow
+- Added proper event handlers for theme selection
+
+Fixes #15
+```
+
+#### **Pull Request Standards**
+- **Title**: Match the issue title format
+- **Description**: Always include `Fixes #X` to auto-close the issue
+- **Labels**: Apply same labels as the original issue
+- **Review**: Request review before merging (never merge directly to main)

@@ -21,6 +21,42 @@ applyTo: '**'
 - Windows 10 or later is the target OS, so no need to worry about older Windows versions.
    
 
+## Git Branch Workflow
+### Bug Fixes
+- When starting work on a bug, create a new branch with the BUG name from the bug list
+- Branch naming format: `bug/BUG-XXX` (e.g., `bug/BUG-013`, `bug/BUG-007`)
+- Example workflow:
+  ```powershell
+  git checkout -b bug/BUG-013
+  # Make your changes to fix the bug
+  git add .
+  git commit -m "Fix BUG-013: Incoming Call Not Properly Accepted"
+  git push origin bug/BUG-013
+  ```
+- After fixing, update the bug status in `Documents/BUG_LIST.md` to mark it as FIXED
+- Merge back to main branch when testing is complete
+
+### New Features and Issues
+- When starting work on a new feature or issue, create a new branch with a short, descriptive name
+- Branch naming format: `feature/short-description` (e.g., `feature/audio-enhancements`, `feature/modern-ui`)
+- Example workflow:
+  ```powershell
+  git checkout -b feature/audio-enhancements
+  # Implement your feature
+  git add .
+  git commit -m "Add enhanced audio processing with noise reduction"
+  git push origin feature/audio-enhancements
+  ```
+- Use clear, descriptive branch names that indicate what the feature does
+- Keep feature branches focused on a single improvement or addition
+
+### General Git Guidelines
+- Always work on separate branches - never commit directly to main
+- Use descriptive commit messages that explain what was changed and why
+- Push branches to origin for backup and collaboration
+- Clean up merged branches after successful integration
+   
+
 ## Testing and Debugging Guidelines
 - After changing the sip stack, always try to register with the credentials:
   - Username: 103

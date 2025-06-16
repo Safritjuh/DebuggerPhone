@@ -1623,10 +1623,9 @@ namespace WindowsSipPhone
             {
                 StatusChanged?.Invoke(this, $"❌ Error sending decline response: {ex.Message}");
             }
-        }
-          private static string ExtractCallerInfo(string fromHeader)
+        }        private static string ExtractCallerInfo(string fromHeader)
         {
-            // Extract display name or number from From header according to RFC 3261
+            // Extract caller information from From header while preserving both name and URI
             // Format: From: "Display Name" <sip:user@domain>;tag=12345
             // or: From: <sip:user@domain>;tag=12345
             // or: From: sip:user@domain;tag=12345
@@ -1635,37 +1634,27 @@ namespace WindowsSipPhone
             {
                 string result = fromHeader.Replace("From:", "").Trim();
                 
-                // Case 1: "Display Name" <sip:user@domain>
-                if (result.Contains('<') && result.Contains('>'))
+                // Remove tag parameters but keep name and URI structure
+                var tagIndex = result.IndexOf(";tag=");
+                if (tagIndex > 0)
                 {
-                    var nameEnd = result.IndexOf('<');
-                    if (nameEnd > 0)
-                    {
-                        var displayName = result.Substring(0, nameEnd).Trim().Trim('"');
-                        if (!string.IsNullOrEmpty(displayName))
-                        {
-                            return displayName;
-                        }
-                    }
-                    
-                    // Extract URI if no display name
-                    var start = result.IndexOf('<') + 1;
-                    var end = result.IndexOf('>');
-                    if (end > start)
-                    {
-                        var uri = result.Substring(start, end - start);
-                        return ExtractNumberFromSipUri(uri);
-                    }
+                    result = result.Substring(0, tagIndex).Trim();
                 }
                 
-                // Case 2: sip:user@domain
+                // Case 1: "Display Name" <sip:user@domain> - return as-is for proper parsing
+                if (result.Contains('<') && result.Contains('>'))
+                {
+                    return result;
+                }
+                
+                // Case 2: sip:user@domain - return as-is
                 if (result.StartsWith("sip:"))
                 {
-                    return ExtractNumberFromSipUri(result);
+                    return result;
                 }
                 
                 // Case 3: Just a number or unknown format
-                return result.Split(';')[0].Trim(); // Remove tag parameters
+                return result.Split(';')[0].Trim(); // Remove any remaining parameters
             }
             catch
             {

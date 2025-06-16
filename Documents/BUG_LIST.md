@@ -5,7 +5,7 @@ This document tracks all known bugs, issues, and defects in the SIP Phone applic
 
 **Last Updated**: June 16, 2025  
 **Total Bugs**: 20  
-**Critical**: 4 | **High**: 5 | **Medium**: 5 | **Low**: 5 | **Fixed**: 1
+**Critical**: 4 | **High**: 5 | **Medium**: 4 | **Low**: 5 | **Fixed**: 2
 
 ---
 
@@ -237,24 +237,24 @@ Project had CS0019 errors and CA1416 warnings that prevented clean builds.
 ---
 
 ### **BUG-019**: Duplicate Name Display in Incoming Call Window
-**Priority**: MEDIUM | **Status**: NEW | **Discovered**: June 16, 2025
+**Priority**: MEDIUM | **Status**: ✅ FIXED | **Discovered**: June 16, 2025 | **Fixed**: June 16, 2025
 
 **Description**:
-In the incoming call window, the caller's name is displayed twice instead of following the proper format.
+In the incoming call window, the caller's name was displayed twice instead of following the proper format.
 
-**Current Behavior**:
-- Line 1: Shows caller name
-- Line 2: Shows caller name again
+**Root Cause**:
+The `ExtractCallerInfo()` method in `SimpleSipClient.cs` was returning only the display name when available, losing the SIP URI information needed to extract the phone number separately.
 
-**Required Behavior**:
-- Line 1: Show caller name, or if name not available, show the number
-- Line 2: Always show the number
+**Resolution**:
+- Modified `ExtractCallerInfo()` to preserve the complete caller information structure
+- Now returns full format: `"Display Name" <sip:user@domain>` instead of just "Display Name"
+- This allows `IncomingCallWindow.ParseCallerInfo()` to properly extract both name and number
+- Fixed display format: Line 1 shows name (or number if no name), Line 2 always shows number
 
 **Files Involved**:
-- `IncomingCallWindow.xaml` (caller info display)
-- `IncomingCallWindow.xaml.cs` (data binding logic)
+- `SimpleSipClient.cs` (ExtractCallerInfo method)
 
-**Impact**: Confusing UI that doesn't provide complete caller information
+**Impact**: ✅ **RESOLVED** - Incoming call window now displays caller name and number correctly
 
 ---
 

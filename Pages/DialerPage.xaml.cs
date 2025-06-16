@@ -167,10 +167,11 @@ namespace WindowsSipPhone.Pages
                     EndCall();
                 }
             });
-        }private void StartCall(string number)
+        }        private void StartCall(string number)
         {
             _isCallActive = true;
-            _activeCallNumber = number;
+            // Extract clean display name for UI instead of full SIP header
+            _activeCallNumber = ExtractDisplayName(number);
             // Do NOT start timer or set start time here - wait for call to be answered
             OnPropertyChanged(nameof(IsCallActive));
             OnPropertyChanged(nameof(CallStatusText));
@@ -898,11 +899,78 @@ namespace WindowsSipPhone.Pages
 
         #region INotifyPropertyChanged
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        public event PropertyChangedEventHandler? PropertyChanged;        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Extracts clean display name from caller info for UI display
+        /// Converts "Alice" <sip:101@192.168.1.180> to just "Alice"
+        /// or sip:101@192.168.1.180 to just "101"
+        /// </summary>
+        private string ExtractDisplayName(string callerInfo)
+        {
+            if (string.IsNullOrWhiteSpace(callerInfo))
+                return "";
+
+            try
+            {
+                // Case 1: "Display Name" <sip:user@domain>
+                if (callerInfo.Contains('<') && callerInfo.Contains('>'))
+                {
+                    var nameEnd = callerInfo.IndexOf('<');
+                    if (nameEnd > 0)
+                    {
+                        var displayName = callerInfo.Substring(0, nameEnd).Trim().Trim('"');
+                        if (!string.IsNullOrEmpty(displayName))
+                        {
+                            return displayName;
+                        }
+                    }
+                    
+                    // Extract number from URI if no display name
+                    var start = callerInfo.IndexOf('<') + 1;
+                    var end = callerInfo.IndexOf('>');
+                    if (end > start)
+                    {
+                        var uri = callerInfo.Substring(start, end - start);
+                        return ExtractNumberFromUri(uri);
+                    }
+                }
+                
+                // Case 2: sip:user@domain
+                if (callerInfo.StartsWith("sip:"))
+                {
+                    return ExtractNumberFromUri(callerInfo);
+                }
+                
+                // Case 3: Just a number or plain text
+                return callerInfo.Trim();
+            }
+            catch
+            {
+                // Fallback: return as-is
+                return callerInfo.Trim();
+            }
+        }
+
+        /// <summary>
+        /// Extracts user part from SIP URI
+        /// </summary>
+        private string ExtractNumberFromUri(string sipUri)
+        {
+            if (sipUri.StartsWith("sip:"))
+            {
+                var withoutScheme = sipUri.Substring(4);
+                var atIndex = withoutScheme.IndexOf('@');
+                if (atIndex > 0)
+                {
+                    return withoutScheme.Substring(0, atIndex);
+                }
+                return withoutScheme;
+            }
+            return sipUri;
         }
 
         #endregion

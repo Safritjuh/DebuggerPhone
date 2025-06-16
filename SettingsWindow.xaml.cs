@@ -10,7 +10,7 @@ namespace WindowsSipPhone
         private AudioSettingsPage? _audioSettingsPage;
         private SipPhoneService? _sipService;
         private SipMessagesWindow? _messagesWindow = null;
-        private KeyboardShortcutService? _keyboardService;        private MainWindow? _mainWindow;        private System.Windows.Controls.ComboBox? _themeComboBox;
+        private KeyboardShortcutService? _keyboardService;        private MainWindow? _mainWindow;        // Removed _themeComboBox field - theme switching functionality removed per BUG-015
         private System.Windows.Controls.CheckBox? _enableLoggingCheckBox;
         private System.Windows.Controls.ComboBox? _ringtoneComboBox;        private IRingtoneService? _ringtoneService;
 
@@ -124,10 +124,9 @@ namespace WindowsSipPhone
                 FontSize = 20,
                 FontWeight = FontWeights.Bold,
                 Foreground = System.Windows.Media.Brushes.White
-            };
-            var headerSubtitle = new System.Windows.Controls.TextBlock
+            };            var headerSubtitle = new System.Windows.Controls.TextBlock
             {
-                Text = "Configure themes, shortcuts, and application preferences",
+                Text = "Configure shortcuts and application preferences",
                 FontSize = 12,
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(235, 222, 240)),
                 Margin = new Thickness(0, 3, 0, 0)
@@ -147,70 +146,8 @@ namespace WindowsSipPhone
             System.Windows.Controls.Grid.SetRow(scrollViewer, 1);
             
             var stackPanel = new System.Windows.Controls.StackPanel();
-            
-            // Theme Settings Section
-            var themeSection = new System.Windows.Controls.Border
-            {
-                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 249, 250)),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(15),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            
-            var themeSectionContent = new System.Windows.Controls.StackPanel();
-            
-            var themeTitle = new System.Windows.Controls.TextBlock
-            {
-                Text = "🎨 Theme Settings",
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(44, 62, 80)),
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            
-            var themeDescription = new System.Windows.Controls.TextBlock
-            {
-                Text = "Customize the application appearance and visual theme",
-                FontSize = 12,
-                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(127, 140, 141)),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            
-            var themeGrid = new System.Windows.Controls.Grid();            themeGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(120) });
-            themeGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            
-            var themeLabel = new System.Windows.Controls.TextBlock
-            {
-                Text = "Theme:",
-                VerticalAlignment = VerticalAlignment.Center,
-                FontWeight = FontWeights.Medium
-            };
-            System.Windows.Controls.Grid.SetColumn(themeLabel, 0);              var themeCombo = new System.Windows.Controls.ComboBox
-            {
-                Height = 35,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            themeCombo.Items.Add("Light Theme");
-            themeCombo.Items.Add("Dark Theme");
-            themeCombo.Items.Add("System Default");
-            
-            // Store reference for later use
-            _themeComboBox = themeCombo;
-            
-            // Initialize with current theme
-            InitializeThemeSelection();
-            
-            themeCombo.SelectionChanged += ThemeCombo_SelectionChanged;
-            System.Windows.Controls.Grid.SetColumn(themeCombo, 1);
-            
-            themeGrid.Children.Add(themeLabel);
-            themeGrid.Children.Add(themeCombo);
-            
-            themeSectionContent.Children.Add(themeTitle);
-            themeSectionContent.Children.Add(themeDescription);
-            themeSectionContent.Children.Add(themeGrid);
-            themeSection.Child = themeSectionContent;
-            stackPanel.Children.Add(themeSection);
+              // Theme Settings Section - REMOVED per BUG-015
+            // Theme switching functionality has been removed as it was not functional
             
             // Keyboard Shortcuts Section
             var shortcutsSection = new System.Windows.Controls.Border
@@ -569,50 +506,8 @@ namespace WindowsSipPhone
             grid.Children.Add(scrollViewer);
             userControl.Content = grid;
             return userControl;
-        }        private void ThemeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (sender is System.Windows.Controls.ComboBox comboBox && comboBox.SelectedItem != null)
-                {
-                    string selectedTheme = comboBox.SelectedItem.ToString() ?? "Light Theme";
-                    
-                    // Apply theme changes using ThemeManager
-                    ApplyTheme(selectedTheme);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error applying theme: {ex.Message}", "Error", 
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                Console.WriteLine($"[SETTINGS] Theme change error: {ex.Message}");
-            }
-        }
-
-        private void ApplyTheme(string theme)
-        {
-            Console.WriteLine($"[SETTINGS] Applying theme: {theme}");
-            
-            try
-            {
-                // Map UI string to ThemeManager enum and apply theme
-                var themeType = theme switch
-                {
-                    "Light Theme" => WindowsSipPhone.Themes.ThemeManager.ThemeType.Light,
-                    "Dark Theme" => WindowsSipPhone.Themes.ThemeManager.ThemeType.Dark,
-                    "System Default" => WindowsSipPhone.Themes.ThemeManager.ThemeType.Auto,
-                    _ => WindowsSipPhone.Themes.ThemeManager.ThemeType.Light
-                };
-
-                WindowsSipPhone.Themes.ThemeManager.Instance.SetTheme(themeType);
-                Console.WriteLine($"[SETTINGS] Successfully applied theme: {themeType}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[SETTINGS] Failed to apply theme: {ex.Message}");
-                throw;
-            }
-        }
+        }        // Theme-related methods removed per BUG-015
+        // Theme switching functionality was non-functional and has been removed
 
         private void ConfigureShortcuts_Click(object sender, RoutedEventArgs e)
         {
@@ -693,33 +588,8 @@ namespace WindowsSipPhone
         {
             // Close without saving (for non-modal window)
             Close();
-        }
-
-        private void InitializeThemeSelection()
-        {
-            if (_themeComboBox == null) return;
-            
-            try
-            {
-                var currentTheme = WindowsSipPhone.Themes.ThemeManager.Instance.CurrentTheme;
-                
-                // Map ThemeManager enum to ComboBox index
-                int selectedIndex = currentTheme switch
-                {
-                    WindowsSipPhone.Themes.ThemeManager.ThemeType.Light => 0, // "Light Theme"
-                    WindowsSipPhone.Themes.ThemeManager.ThemeType.Dark => 1,  // "Dark Theme"
-                    WindowsSipPhone.Themes.ThemeManager.ThemeType.Auto => 2,  // "System Default"
-                    _ => 0
-                };
-                
-                _themeComboBox.SelectedIndex = selectedIndex;
-                Console.WriteLine($"[SETTINGS] Initialized theme selection to: {currentTheme} (index {selectedIndex})");            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[SETTINGS] Failed to initialize theme selection: {ex.Message}");
-                _themeComboBox.SelectedIndex = 0; // Default to Light Theme
-            }
-        }
+        }        // InitializeThemeSelection method removed per BUG-015
+        // Theme functionality has been removed as it was non-functional
 
         private void EnableLoggingCheck_Checked(object sender, RoutedEventArgs e)
         {

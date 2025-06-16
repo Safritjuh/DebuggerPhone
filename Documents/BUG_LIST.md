@@ -4,8 +4,8 @@
 This document tracks all known bugs, issues, and defects in the SIP Phone application for systematic resolution.
 
 **Last Updated**: June 16, 2025  
-**Total Bugs**: 20  
-**Critical**: 4 | **High**: 5 | **Medium**: 5 | **Low**: 5 | **Fixed**: 1
+**Total Bugs**: 21  
+**Critical**: 4 | **High**: 5 | **Medium**: 4 | **Low**: 4 | **Fixed**: 4
 
 ---
 
@@ -335,16 +335,23 @@ Debug text "DEBUG: _RegistrationCompletion.SetResult(true) completed" appears in
 **Impact**: Unprofessional appearance, confuses users
 **Fix**: Remove debug text from UI display
 
-### **BUG-015**: Theme Switcher Not Functional  
-**Priority**: LOW | **Status**: NEW | **Discovered**: June 14, 2025
+### **BUG-015**: Theme Switcher Not Functional
+**Priority**: LOW | **Status**: ✅ FIXED | **Discovered**: June 14, 2025 | **Fixed**: June 16, 2025
 
 **Description**:
 Theme dropdown changes from Light to Dark but visual appearance doesn't change.
 
-**Symptoms**:
-- Theme selector shows different values
-- UI appearance remains unchanged
-- Dark/Light theme not applied
+**Resolution**:
+- Removed non-functional theme switching functionality from App Settings page
+- Cleaned up theme-related code including ThemeCombo_SelectionChanged, ApplyTheme, and InitializeThemeSelection methods
+- Removed _themeComboBox field and associated UI elements
+- Updated header subtitle to reflect the change (removed "themes" reference)
+- Application now has a cleaner settings interface without broken functionality
+
+**Files Modified**:
+- `SettingsWindow.xaml.cs` (removed theme switching UI and methods)
+
+**Impact**: ✅ **RESOLVED** - Non-functional theme switching has been removed, providing cleaner user experience
 
 ### **BUG-016**: Call Duration Not Tracked in History
 **Priority**: LOW | **Status**: NEW | **Discovered**: June 14, 2025

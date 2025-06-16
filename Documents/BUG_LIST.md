@@ -4,8 +4,8 @@
 This document tracks all known bugs, issues, and defects in the SIP Phone application for systematic resolution.
 
 **Last Updated**: June 16, 2025  
-**Total Bugs**: 17  
-**Critical**: 3 | **High**: 5 | **Medium**: 3 | **Low**: 5 | **Fixed**: 2
+**Total Bugs**: 18  
+**Critical**: 4 | **High**: 5 | **Medium**: 3 | **Low**: 5 | **Fixed**: 1
 
 ---
 
@@ -57,6 +57,38 @@ The application shows "registered" status even after registration has been lost 
 - Application doesn't detect/handle registration failures
 
 **Impact**: User believes they can receive calls when actually unreachable
+
+---
+
+### **BUG-018**: Application Hangs When Declining Incoming Calls
+**Priority**: CRITICAL | **Status**: NEW | **Discovered**: June 16, 2025
+
+**Description**:
+When user clicks "Decline" button on incoming call window, the application hangs completely due to DialogResult exception.
+
+**Console Output**:
+```
+[INCOMING CALL DEBUG] Decline clicked, stopping ringtone
+[RINGTONE DEBUG] Stopped ringtone playback
+[INCOMING CALL DEBUG] Window closing, stopping ringtone
+[RINGTONE DEBUG] Stopped ringtone playback
+Unhandled UI exception: DialogResult can be set only after Window is created and shown as dialog.
+```
+
+**Stack Trace**:
+```
+at System.Windows.Window.set_DialogResult(Nullable`1 value)
+at WindowsSipPhone.IncomingCallWindow.OnClosing(CancelEventArgs e) in E:\GitHub-test\Sip-Phone\IncomingCallWindow.xaml.cs:line 192
+at System.Windows.Window.WmClose()
+at System.Windows.Window.WindowFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+```
+
+**Root Cause**: IncomingCallWindow is trying to set DialogResult in OnClosing event, but window was not opened as a modal dialog.
+
+**Files Involved**:
+- `IncomingCallWindow.xaml.cs` (line 192)
+
+**Impact**: Application becomes unresponsive, requiring force quit when declining calls
 
 ---
 

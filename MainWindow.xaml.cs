@@ -505,9 +505,8 @@ public partial class MainWindow : System.Windows.Window
             HeaderStatusText.Text = status;
             StatusBarText.Text = status;
             UpdateUI();
-            
-            // Update status bar icon
-            if (status.Contains("Registered"))
+              // Update status bar icon
+            if (status.Contains("Registration successful") || status.Contains("Registered"))
             {
                 StatusBarIcon.Text = "🟢";
             }

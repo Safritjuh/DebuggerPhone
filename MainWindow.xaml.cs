@@ -497,31 +497,33 @@ public partial class MainWindow : System.Windows.Window
     #endregion
     
     #region Event Handlers
-    
+
     private void SipService_StatusChanged(object? sender, string status)
     {
         Dispatcher.Invoke(() =>
         {
             HeaderStatusText.Text = status;
             StatusBarText.Text = status;
-            UpdateUI();
-              // Update status bar icon
-            if (status.Contains("Registration successful") || status.Contains("Registered"))
-            {
-                StatusBarIcon.Text = "🟢";
-            }
-            else if (status.Contains("Registering") || status.Contains("Connecting"))
+            
+            // Handle transitional states first, before calling UpdateUI
+            if (status.Contains("Registering") || status.Contains("Connecting"))
             {
                 StatusBarIcon.Text = "🟡";
             }
+            else if (status.Contains("Registration failed") || status.Contains("Failed") || status.Contains("❌"))
+            {
+                StatusBarIcon.Text = "🔴";
+            }
             else
             {
-                StatusBarIcon.Text = "🔴";            }
+                // For all other states, let UpdateUI handle the final state
+                UpdateUI();
+            }
             
             // Update tray icon
             UpdateTrayIcon(status);
         });
-    }    
+    }
     
     private void SipService_MessageReceived(object? sender, string message)
     {
@@ -635,14 +637,17 @@ public partial class MainWindow : System.Windows.Window
     #endregion
     
     #region Helper Methods
-    
-    private void UpdateUI()
+      private void UpdateUI()
     {
         // Update header status
         HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
         
         // Update status bar
-        StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";    }
+        StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
+        
+        // Update status bar icon based on registration state
+        StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
+    }
     
     private void InitializeKeyboardShortcuts()
     {

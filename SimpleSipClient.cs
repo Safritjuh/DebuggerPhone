@@ -935,11 +935,43 @@ namespace WindowsSipPhone
             Console.WriteLine($"[HANDLE SUCCESS DEBUG] HandleSuccessResponse called");
             Console.WriteLine($"[HANDLE SUCCESS DEBUG] CSeq Header: '{cseqHeader}'");
             Console.WriteLine($"[HANDLE SUCCESS DEBUG] CSeq contains INVITE? {cseqHeader.ToUpper().Contains("INVITE")}");
+            Console.WriteLine($"[HANDLE SUCCESS DEBUG] Dialog is null? {dialog == null}");
             Console.WriteLine($"[HANDLE SUCCESS DEBUG] ==========================================");
             
             if (cseqHeader.ToUpper().Contains("INVITE"))
             {
                 Console.WriteLine($"[HANDLE SUCCESS DEBUG] *** ENTERING INVITE SUCCESS HANDLER ***");
+                
+                // CRITICAL: Check if we have a dialog - this is required for ACK
+                if (dialog == null)
+                {
+                    Console.WriteLine($"[ACK CRITICAL ERROR] *** NO DIALOG FOUND FOR 200 OK TO INVITE ***");
+                    StatusChanged?.Invoke(this, "❌ CRITICAL: Cannot send ACK - no dialog found!");
+                    
+                    // Try to find dialog by Call-ID as fallback
+                    var callId = ExtractHeader(message, "Call-ID:");
+                    Console.WriteLine($"[ACK CRITICAL ERROR] Attempting to find dialog by Call-ID: '{callId}'");
+                    
+                    if (!string.IsNullOrEmpty(callId))
+                    {
+                        dialog = _dialogManager.FindDialogByCallId(callId);
+                        Console.WriteLine($"[ACK CRITICAL ERROR] Dialog found by Call-ID? {dialog != null}");
+                        
+                        if (dialog == null)
+                        {
+                            Console.WriteLine($"[ACK CRITICAL ERROR] *** STILL NO DIALOG - ACK CANNOT BE SENT ***");
+                            StatusChanged?.Invoke(this, "❌ CRITICAL: No dialog found by Call-ID either - ACK will not be sent!");
+                            return; // Cannot send ACK without dialog
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[ACK CRITICAL ERROR] *** NO CALL-ID FOUND IN MESSAGE ***");
+                        StatusChanged?.Invoke(this, "❌ CRITICAL: No Call-ID found in 200 OK message!");
+                        return;
+                    }
+                }
+                
                 StatusChanged?.Invoke(this, "✅ Call answered - sending ACK");
                 CallStateChanged?.Invoke(this, "Call Connected");
                 
@@ -1022,12 +1054,17 @@ namespace WindowsSipPhone
             {
                 Console.WriteLine($"[ACK DEBUG] ==========================================");
                 Console.WriteLine($"[ACK DEBUG] SendAckMessageWithFactory called");
+                Console.WriteLine($"[ACK DEBUG] Dialog provided? {dialog != null}");
                 Console.WriteLine($"[ACK DEBUG] ==========================================");
                 
                 if (dialog == null) 
                 {
-                    StatusChanged?.Invoke(this, "❌ Cannot send ACK: Dialog is null");
                     Console.WriteLine($"[ACK DEBUG] ERROR: Dialog is null!");
+                    StatusChanged?.Invoke(this, "❌ Cannot send ACK: Dialog is null");
+                    
+                    // Try to create minimal ACK from 200 OK response headers
+                    Console.WriteLine($"[ACK DEBUG] Attempting to create ACK from 200 OK headers...");
+                    await CreateAckFromResponse(inviteResponse);
                     return;
                 }
                 
@@ -1077,7 +1114,94 @@ namespace WindowsSipPhone
                 Console.WriteLine($"[ACK DEBUG] Stack trace: {ex.StackTrace}");
                 StatusChanged?.Invoke(this, $"❌ Failed to send ACK: {ex.Message}");
             }
-        }        private void HandleAudioSetup(string message)
+        }
+
+        private async Task CreateAckFromResponse(string response200Ok)
+        {
+            try
+            {
+                Console.WriteLine($"[ACK FALLBACK] *** CREATING ACK FROM 200 OK RESPONSE ***");
+                
+                // Extract required headers from 200 OK
+                var callId = ExtractHeader(response200Ok, "Call-ID:");
+                var fromHeader = ExtractHeader(response200Ok, "From:");
+                var toHeader = ExtractHeader(response200Ok, "To:");
+                var cseqHeader = ExtractHeader(response200Ok, "CSeq:");
+                var contactHeader = ExtractHeader(response200Ok, "Contact:");
+                
+                Console.WriteLine($"[ACK FALLBACK] Extracted headers:");
+                Console.WriteLine($"[ACK FALLBACK] - Call-ID: '{callId}'");
+                Console.WriteLine($"[ACK FALLBACK] - From: '{fromHeader}'");
+                Console.WriteLine($"[ACK FALLBACK] - To: '{toHeader}'");
+                Console.WriteLine($"[ACK FALLBACK] - CSeq: '{cseqHeader}'");
+                Console.WriteLine($"[ACK FALLBACK] - Contact: '{contactHeader}'");
+                
+                if (string.IsNullOrEmpty(callId) || string.IsNullOrEmpty(cseqHeader))
+                {
+                    Console.WriteLine($"[ACK FALLBACK] *** MISSING REQUIRED HEADERS - CANNOT CREATE ACK ***");
+                    StatusChanged?.Invoke(this, "❌ Cannot create ACK: Missing required headers in 200 OK");
+                    return;
+                }
+                
+                // Extract sequence number from CSeq
+                var cseqParts = cseqHeader.Trim().Split(' ');
+                if (cseqParts.Length < 2)
+                {
+                    Console.WriteLine($"[ACK FALLBACK] *** INVALID CSEQ FORMAT ***");
+                    StatusChanged?.Invoke(this, "❌ Cannot create ACK: Invalid CSeq format");
+                    return;
+                }
+                
+                var sequenceNumber = uint.Parse(cseqParts[0]);
+                
+                // Extract tags
+                var fromTag = ExtractTag(fromHeader);
+                var toTag = ExtractTag(toHeader);
+                
+                // Use Contact URI from 200 OK as Request-URI, fallback to target number
+                var requestUri = !string.IsNullOrEmpty(contactHeader) 
+                    ? ExtractSipUriFromContactHeader(contactHeader)
+                    : $"sip:{_currentTargetNumber}@{_serverHost}:{_serverPort}";
+                
+                if (string.IsNullOrEmpty(requestUri))
+                {
+                    requestUri = $"sip:{_currentTargetNumber}@{_serverHost}:{_serverPort}";
+                }
+                
+                Console.WriteLine($"[ACK FALLBACK] Final ACK parameters:");
+                Console.WriteLine($"[ACK FALLBACK] - Request-URI: '{requestUri}'");
+                Console.WriteLine($"[ACK FALLBACK] - From Tag: '{fromTag}'");
+                Console.WriteLine($"[ACK FALLBACK] - To Tag: '{toTag}'");
+                Console.WriteLine($"[ACK FALLBACK] - Sequence: {sequenceNumber}");
+                
+                // Create ACK using message factory
+                var ackMessage = _messageFactory.CreateAckRequest(
+                    callId,
+                    fromTag,
+                    toTag,
+                    requestUri,
+                    sequenceNumber,
+                    _username ?? ""
+                );
+                
+                Console.WriteLine($"[ACK FALLBACK] *** GENERATED FALLBACK ACK MESSAGE ***");
+                Console.WriteLine($"[ACK FALLBACK] ==========================================");
+                Console.WriteLine(ackMessage);
+                Console.WriteLine($"[ACK FALLBACK] ==========================================");
+                
+                StatusChanged?.Invoke(this, "📤 Sending fallback ACK message");
+                await SendMessageAsync(ackMessage);
+                
+                Console.WriteLine($"[ACK FALLBACK] *** FALLBACK ACK SENT SUCCESSFULLY ***");
+                StatusChanged?.Invoke(this, "✅ Fallback ACK sent - call established");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ACK FALLBACK] *** FALLBACK ACK FAILED ***");
+                Console.WriteLine($"[ACK FALLBACK] Error: {ex.Message}");
+                StatusChanged?.Invoke(this, $"❌ Fallback ACK failed: {ex.Message}");
+            }
+        }private void HandleAudioSetup(string message)
         {
             Console.WriteLine($"[AUDIO SETUP DEBUG] ==========================================");
             Console.WriteLine($"[AUDIO SETUP DEBUG] HandleAudioSetup called");

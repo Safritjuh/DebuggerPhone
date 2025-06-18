@@ -1067,6 +1067,22 @@ public partial class MainWindow : System.Windows.Window
                 MaximizeRestoreButton.ToolTip = "Maximize";
             }
         }
+        
+        // Adjust window chrome for maximized state
+        var chrome = WindowChrome.GetWindowChrome(this);
+        if (chrome != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                // Remove resize border when maximized to prevent extending beyond screen
+                chrome.ResizeBorderThickness = new Thickness(0);
+            }
+            else
+            {
+                // Restore resize border for normal state
+                chrome.ResizeBorderThickness = new Thickness(4);
+            }
+        }
     }
     
     #endregion

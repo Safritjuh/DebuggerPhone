@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.IO;
+using System;
 
 namespace WindowsSipPhone.Models
 {
@@ -15,6 +16,33 @@ namespace WindowsSipPhone.Models
     public bool RememberCredentials { get; set; } = false;
     public bool AutoRegisterOnStartup { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.Now;
+    
+    // SIP Profile System
+    public string SelectedProfileName { get; set; } = "Generic";
+    public List<SipProfile> CustomProfiles { get; set; } = new();
+    
+    /// <summary>
+    /// Gets the currently selected SIP profile
+    /// </summary>
+    public SipProfile GetSelectedProfile()
+    {
+        // First check custom profiles
+        var customProfile = CustomProfiles.FirstOrDefault(p => p.Name.Equals(SelectedProfileName, StringComparison.OrdinalIgnoreCase));
+        if (customProfile != null)
+        {
+            return customProfile;
+        }
+        
+        // Then check predefined profiles
+        var predefinedProfile = SipProfile.GetPredefinedProfile(SelectedProfileName);
+        if (predefinedProfile != null)
+        {
+            return predefinedProfile;
+        }
+        
+        // Fallback to default
+        return SipProfile.GetDefaultProfile();
+    }
     
     /// <summary>
     /// Load configuration from file, return default if not found

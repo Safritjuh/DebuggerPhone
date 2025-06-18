@@ -24,11 +24,16 @@ namespace WindowsSipPhone.Pages
         private DateTime _lastUpdated = DateTime.Now;
         private bool _isRegistered = false;
         private SipPhoneService? _sipService;
+        
+        // Profile system properties
+        private List<SipProfile> _availableProfiles = new();
+        private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
 
         public SipSettingsPage()
         {
             InitializeComponent();
             DataContext = this;
+            InitializeProfiles();
             InitializeCommands();
             LoadSettings();
         }
@@ -189,6 +194,28 @@ namespace WindowsSipPhone.Pages
                 };
             }
         }
+        
+        // Profile System Properties
+        public List<SipProfile> AvailableProfiles
+        {
+            get => _availableProfiles;
+            set
+            {
+                _availableProfiles = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public SipProfile SelectedProfile
+        {
+            get => _selectedProfile;
+            set
+            {
+                _selectedProfile = value;
+                OnPropertyChanged();
+                OnProfileChanged();
+            }
+        }
 
         #endregion
 
@@ -235,7 +262,7 @@ namespace WindowsSipPhone.Pages
             try
             {
                 RegistrationStatus = "Registering...";
-                StatusDetails = $"Connecting to {ServerHost}:{ServerPort}";
+                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile.Name}'";
                 LastUpdated = DateTime.Now;
 
                 var password = PasswordBox.Password;
@@ -258,7 +285,8 @@ namespace WindowsSipPhone.Pages
                     return;
                 }
 
-                await _sipService.RegisterAsync(Username, password, ServerHost, port, UserAgent, expires);
+                // Use profile-based registration
+                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, SelectedProfile, expires);
             }
             catch (Exception ex)
             {
@@ -302,7 +330,8 @@ namespace WindowsSipPhone.Pages
                     ServerPort = ServerPort,
                     Transport = SelectedTransport,
                     RememberCredentials = true, // Could be a checkbox in UI
-                    AutoRegisterOnStartup = false
+                    AutoRegisterOnStartup = false,
+                    SelectedProfileName = SelectedProfile.Name
                 };
                 
                 config.Save();
@@ -392,7 +421,11 @@ namespace WindowsSipPhone.Pages
                 ServerPort = config.ServerPort;
                 SelectedTransport = config.Transport;
                 
-                StatusDetails = "Settings loaded from configuration";
+                // Load selected profile
+                var selectedProfile = config.GetSelectedProfile();
+                SelectedProfile = selectedProfile;
+                
+                StatusDetails = $"Settings loaded from configuration (Profile: {selectedProfile.Name})";
                 LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
@@ -406,6 +439,35 @@ namespace WindowsSipPhone.Pages
                 ServerPort = "5060";
                 SelectedTransport = "TCP";
             }        }
+
+        #endregion
+        
+        #region Profile Management
+        
+        private void InitializeProfiles()
+        {
+            // Load predefined profiles
+            AvailableProfiles = SipProfile.GetPredefinedProfiles();
+            
+            // Load selected profile from configuration
+            var config = SipConfiguration.Load();
+            var selectedProfile = config.GetSelectedProfile();
+            SelectedProfile = selectedProfile;
+        }
+        
+        private void OnProfileChanged()
+        {
+            if (_selectedProfile != null)
+            {
+                // Update UI fields based on selected profile
+                RegistrationExpires = _selectedProfile.RegistrationExpiry.ToString();
+                UserAgent = _selectedProfile.UserAgentString;
+                SelectedTransport = _selectedProfile.Transport;
+                
+                StatusDetails = $"Profile '{_selectedProfile.Name}' selected - {_selectedProfile.Description}";
+                LastUpdated = DateTime.Now;
+            }
+        }
 
         #endregion
 

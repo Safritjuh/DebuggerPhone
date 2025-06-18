@@ -87,6 +87,24 @@
                         <TextBlock Text="📋 Registration Settings" FontSize="18" FontWeight="Bold" 
                                   Foreground="#2C3E50" Margin="0,0,0,20"/>
                         
+                        <!-- SIP Profile Selection -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="📞 SIP Profile" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <ComboBox Grid.Row="1" Name="ProfileComboBox" 
+                                     ItemsSource="{Binding AvailableProfiles}"
+                                     SelectedItem="{Binding SelectedProfile}"
+                                     DisplayMemberPath="Name"
+                                     Style="{StaticResource SettingsComboBoxStyle}"/>
+                            <TextBlock Grid.Row="2" Text="{Binding SelectedProfile.Description}" 
+                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        </Grid>
+                        
                         <!-- Username -->
                         <Grid Margin="0,0,0,15">
                             <Grid.RowDefinitions>

@@ -8,17 +8,80 @@
         mc:Ignorable="d"
         Title="Windows SIP Phone - RFC 3261 Compliant" Height="700" Width="1000" 
         WindowStartupLocation="CenterScreen"
-        MinHeight="600" MinWidth="800">
+        MinHeight="600" MinWidth="800"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{DynamicResource TitleBarBackgroundBrush}">
+    
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="32" 
+                      CornerRadius="0" 
+                      GlassFrameThickness="0" 
+                      NonClientFrameEdges="None" 
+                      ResizeBorderThickness="4" 
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
     
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
+        <!-- Custom Title Bar -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource TitleBarBackgroundBrush}"
+                WindowChrome.IsHitTestVisibleInChrome="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Title and Icon Area -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Margin="12,0,0,0"
+                            Background="Transparent">
+                    <TextBlock Text="📞" 
+                               FontSize="14" 
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <TextBlock Text="Windows SIP Phone" 
+                               FontSize="12" 
+                               FontWeight="Normal"
+                               Foreground="{DynamicResource TitleBarTextBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Window Control Buttons -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="MinimizeButton" 
+                            Content="&#xE921;" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="MinimizeButton_Click"
+                            ToolTip="Minimize"/>
+                    <Button x:Name="MaximizeRestoreButton" 
+                            Content="&#xE922;" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="MaximizeRestoreButton_Click"
+                            ToolTip="Maximize"/>
+                    <Button x:Name="CloseButton" 
+                            Content="&#xE8BB;" 
+                            Style="{StaticResource TitleBarCloseButtonStyle}"
+                            Click="CloseButton_Click"
+                            ToolTip="Close"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
         <!-- Header with Registration Status -->
-        <Border Grid.Row="0" Background="#2196F3" Padding="10">
+        <Border Grid.Row="1" Background="#2196F3" Padding="10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -57,20 +120,29 @@
             </Grid>        </Border>
         
         <!-- Main Content Area -->
-        <pages:DialerPage x:Name="DialerPageControl" Grid.Row="1"/>
+        <pages:DialerPage x:Name="DialerPageControl" Grid.Row="2"/>
         
         <!-- Status Bar -->
-        <StatusBar Grid.Row="2" Background="#F5F5F5">
+        <StatusBar Grid.Row="3" Background="{DynamicResource SurfaceBrush}">
             <StatusBarItem>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="StatusBarIcon" Text="⚪" Margin="0,0,5,0"/>
-                    <TextBlock x:Name="StatusBarText" Text="Ready - Configure SIP settings to begin"/>
+                    <TextBlock x:Name="StatusBarIcon" 
+                               Text="⚪" 
+                               Margin="0,0,5,0"
+                               Foreground="{DynamicResource TextBrush}"/>
+                    <TextBlock x:Name="StatusBarText" 
+                               Text="Ready - Configure SIP settings to begin"
+                               Foreground="{DynamicResource TextBrush}"/>
                 </StackPanel>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🕒" Margin="0,0,5,0"/>
-                    <TextBlock x:Name="TimeText" Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{}{0:HH:mm:ss}'}"/>
+                    <TextBlock Text="🕒" 
+                               Margin="0,0,5,0"
+                               Foreground="{DynamicResource TextBrush}"/>
+                    <TextBlock x:Name="TimeText" 
+                               Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{}{0:HH:mm:ss}'}"
+                               Foreground="{DynamicResource TextBrush}"/>
                 </StackPanel>
             </StatusBarItem>
         </StatusBar>

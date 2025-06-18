@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using WindowsSipPhone.Models;
 using WindowsSipPhone.Utils;
 using WindowsSipPhone.Services;
@@ -708,6 +709,37 @@ public partial class MainWindow : System.Windows.Window
             ShowToastNotification("SIP Phone", "Application minimized to system tray", ToolTipIcon.Info);
         }
         
+        // Update maximize/restore button icon based on window state
+        if (MaximizeRestoreButton != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                MaximizeRestoreButton.Content = "\uE923"; // Restore icon
+                MaximizeRestoreButton.ToolTip = "Restore Down";
+            }
+            else
+            {
+                MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
+                MaximizeRestoreButton.ToolTip = "Maximize";
+            }
+        }
+        
+        // Adjust window chrome for maximized state
+        var chrome = WindowChrome.GetWindowChrome(this);
+        if (chrome != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                // Remove resize border when maximized to prevent extending beyond screen
+                chrome.ResizeBorderThickness = new Thickness(0);
+            }
+            else
+            {
+                // Restore resize border for normal state
+                chrome.ResizeBorderThickness = new Thickness(4);
+            }
+        }
+        
         base.OnStateChanged(e);
     }
     
@@ -1018,6 +1050,36 @@ public partial class MainWindow : System.Windows.Window
     }
     
     public bool IsLoggingWindowVisible => _loggingWindow != null && _loggingWindow.IsVisible;
+    
+    #endregion
+    
+    #region Title Bar Controls
+    
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+    
+    private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+            MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
+            MaximizeRestoreButton.ToolTip = "Maximize";
+        }
+        else
+        {
+            WindowState = WindowState.Maximized;
+            MaximizeRestoreButton.Content = "\uE923"; // Restore icon
+            MaximizeRestoreButton.ToolTip = "Restore Down";
+        }
+    }
+    
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
     
     #endregion
     

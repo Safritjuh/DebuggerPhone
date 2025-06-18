@@ -452,6 +452,9 @@ namespace WindowsSipPhone.Pages
         
         private void InitializeProfiles()
         {
+            // Create default INI files if they don't exist
+            SipProfile.CreateDefaultProfilesIfNeeded();
+            
             // Load predefined profiles
             AvailableProfiles = SipProfile.GetPredefinedProfiles();
             
@@ -526,13 +529,23 @@ namespace WindowsSipPhone.Pages
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Title = "Export SIP Profile",
-                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}_Profile.json"
+                    Filter = "INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}.ini"
                 };
                 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    WindowsSipPhone.Utils.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                    var extension = Path.GetExtension(saveDialog.FileName).ToLower();
+                    if (extension == ".ini")
+                    {
+                        WindowsSipPhone.Utils.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        WindowsSipPhone.Utils.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                    }
+                    
                     StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
                     LastUpdated = DateTime.Now;
                 }
@@ -551,13 +564,24 @@ namespace WindowsSipPhone.Pages
                 var openDialog = new Microsoft.Win32.OpenFileDialog
                 {
                     Title = "Import SIP Profile", 
-                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    Filter = "Profile files (*.ini;*.json)|*.ini;*.json|INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
                     Multiselect = false
                 };
                 
                 if (openDialog.ShowDialog() == true)
                 {
-                    var importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfile(openDialog.FileName);
+                    SipProfile importedProfile;
+                    var extension = Path.GetExtension(openDialog.FileName).ToLower();
+                    
+                    if (extension == ".ini")
+                    {
+                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfileFromIni(openDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfile(openDialog.FileName);
+                    }
                     
                     // Add to available profiles if not already present
                     var existingProfile = AvailableProfiles.FirstOrDefault(p => p.Name == importedProfile.Name);
@@ -573,6 +597,7 @@ namespace WindowsSipPhone.Pages
                     
                     StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
                     LastUpdated = DateTime.Now;
+                }
                 }
             }
             catch (Exception ex)

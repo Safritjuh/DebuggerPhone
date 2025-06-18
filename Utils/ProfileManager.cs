@@ -12,7 +12,78 @@ namespace WindowsSipPhone.Utils
     public static class ProfileManager
     {
         /// <summary>
-        /// Export a profile to JSON file
+        /// Export a profile to INI file
+        /// </summary>
+        public static void ExportProfileToIni(SipProfile profile, string filePath)
+        {
+            try
+            {
+                SipProfile.SaveProfileToIniFile(profile, filePath);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to export profile to INI: {ex.Message}", ex);
+            }
+        }
+        
+        /// <summary>
+        /// Import a profile from INI file
+        /// </summary>
+        public static SipProfile ImportProfileFromIni(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    throw new FileNotFoundException($"Profile file not found: {filePath}");
+                
+                var data = IniFileHandler.ReadIniFile(filePath);
+                
+                if (!data.ContainsKey("Profile"))
+                    throw new InvalidDataException("Invalid INI file format - missing Profile section");
+                
+                var profile = new SipProfile
+                {
+                    Name = IniFileHandler.GetValue(data, "Profile", "Name", ""),
+                    Description = IniFileHandler.GetValue(data, "Profile", "Description", ""),
+                    IsCustom = true, // Mark as custom since it's imported
+                    
+                    // Connection settings
+                    RegistrationExpiry = IniFileHandler.GetIntValue(data, "Connection", "RegistrationExpiry", 3600),
+                    RequireKeepAlive = IniFileHandler.GetBoolValue(data, "Connection", "RequireKeepAlive", false),
+                    KeepAliveInterval = IniFileHandler.GetIntValue(data, "Connection", "KeepAliveInterval", 30),
+                    Transport = IniFileHandler.GetValue(data, "Connection", "Transport", "TCP"),
+                    DefaultPort = IniFileHandler.GetIntValue(data, "Connection", "DefaultPort", 5060),
+                    
+                    // Protocol settings
+                    UserAgentString = IniFileHandler.GetValue(data, "Protocol", "UserAgentString", "Windows-SIP-Phone/2.0"),
+                    UseShortHeaders = IniFileHandler.GetBoolValue(data, "Protocol", "UseShortHeaders", false),
+                    SendPreciseTimers = IniFileHandler.GetBoolValue(data, "Protocol", "SendPreciseTimers", true),
+                    
+                    // Media settings
+                    PreferredCodecs = IniFileHandler.GetListValue(data, "Media", "PreferredCodecs", new List<string> { "PCMU", "PCMA" }),
+                    RequireSTUN = IniFileHandler.GetBoolValue(data, "Media", "RequireSTUN", false),
+                    STUNServer = IniFileHandler.GetValue(data, "Media", "STUNServer", ""),
+                    
+                    // Custom headers
+                    CustomHeaders = IniFileHandler.GetDictionaryValue(data, "CustomHeaders", "Header_")
+                };
+                
+                if (string.IsNullOrWhiteSpace(profile.Name))
+                    throw new InvalidDataException("Profile name is required");
+                
+                // Validate the imported profile
+                ValidateProfile(profile);
+                
+                return profile;
+            }
+            catch (Exception ex) when (!(ex is FileNotFoundException || ex is InvalidDataException))
+            {
+                throw new InvalidOperationException($"Failed to import profile from INI: {ex.Message}", ex);
+            }
+        }
+        
+        /// <summary>
+        /// Export a profile to JSON file (legacy support)
         /// </summary>
         public static void ExportProfile(SipProfile profile, string filePath)
         {
@@ -32,7 +103,7 @@ namespace WindowsSipPhone.Utils
         }
         
         /// <summary>
-        /// Import a profile from JSON file
+        /// Import a profile from JSON file (legacy support)
         /// </summary>
         public static SipProfile ImportProfile(string filePath)
         {
@@ -62,7 +133,25 @@ namespace WindowsSipPhone.Utils
         }
         
         /// <summary>
-        /// Export all profiles to a directory
+        /// Export all profiles to a directory as INI files
+        /// </summary>
+        public static void ExportAllProfilesToIni(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+            
+            var profiles = SipProfile.GetPredefinedProfiles();
+            
+            foreach (var profile in profiles)
+            {
+                var fileName = $"{profile.Name.Replace(" ", "_")}.ini";
+                var filePath = Path.Combine(directoryPath, fileName);
+                ExportProfileToIni(profile, filePath);
+            }
+        }
+        
+        /// <summary>
+        /// Export all profiles to a directory (legacy JSON support)
         /// </summary>
         public static void ExportAllProfiles(string directoryPath)
         {

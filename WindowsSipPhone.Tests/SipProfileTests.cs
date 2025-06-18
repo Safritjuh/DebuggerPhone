@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Linq;
 using WindowsSipPhone.Models;
+using WindowsSipPhone.Utils;
 
 namespace WindowsSipPhone.Tests
 {
@@ -16,6 +18,8 @@ namespace WindowsSipPhone.Tests
             TestPredefinedProfiles();
             TestProfileConfiguration();
             TestProfileSelection();
+            TestIniFileHandling();
+            TestProfileImportExport();
             
             Console.WriteLine("✅ All SIP Profile tests completed successfully!");
         }
@@ -95,6 +99,117 @@ namespace WindowsSipPhone.Tests
             {
                 var firstHeader = avayaProfile.CustomHeaders.First();
                 Console.WriteLine($"     - {firstHeader.Key}: {firstHeader.Value}");
+            }
+        }
+        
+        private static void TestIniFileHandling()
+        {
+            Console.WriteLine("\n📄 Testing INI File Handling...");
+            
+            var tempFile = Path.GetTempFileName() + ".ini";
+            
+            try
+            {
+                // Create test profile
+                var testProfile = new SipProfile
+                {
+                    Name = "Test Profile",
+                    Description = "Test profile for INI handling",
+                    IsCustom = true,
+                    RegistrationExpiry = 1234,
+                    RequireKeepAlive = true,
+                    KeepAliveInterval = 45,
+                    Transport = "UDP",
+                    UserAgentString = "Test-Agent/1.0",
+                    PreferredCodecs = new System.Collections.Generic.List<string> { "G722", "PCMU" },
+                    CustomHeaders = new System.Collections.Generic.Dictionary<string, string>
+                    {
+                        { "X-Test-Header", "TestValue" },
+                        { "X-Another-Header", "Another Value" }
+                    }
+                };
+                
+                // Save to INI file
+                SipProfile.SaveProfileToIniFile(testProfile, tempFile);
+                Console.WriteLine($"   ✓ Profile saved to INI file: {tempFile}");
+                
+                // Verify INI file content
+                var iniContent = File.ReadAllText(tempFile);
+                if (!iniContent.Contains("[Profile]") || !iniContent.Contains("Name=Test Profile"))
+                    throw new Exception("INI file format is incorrect");
+                
+                Console.WriteLine("   ✓ INI file format verified");
+                
+                // Load from INI file
+                var loadedProfile = ProfileManager.ImportProfileFromIni(tempFile);
+                
+                // Verify data
+                if (loadedProfile.Name != testProfile.Name)
+                    throw new Exception($"Name mismatch: expected '{testProfile.Name}', got '{loadedProfile.Name}'");
+                
+                if (loadedProfile.RegistrationExpiry != testProfile.RegistrationExpiry)
+                    throw new Exception($"RegistrationExpiry mismatch: expected {testProfile.RegistrationExpiry}, got {loadedProfile.RegistrationExpiry}");
+                
+                if (loadedProfile.RequireKeepAlive != testProfile.RequireKeepAlive)
+                    throw new Exception($"RequireKeepAlive mismatch: expected {testProfile.RequireKeepAlive}, got {loadedProfile.RequireKeepAlive}");
+                
+                if (loadedProfile.PreferredCodecs.Count != testProfile.PreferredCodecs.Count)
+                    throw new Exception($"Codec count mismatch: expected {testProfile.PreferredCodecs.Count}, got {loadedProfile.PreferredCodecs.Count}");
+                
+                if (loadedProfile.CustomHeaders.Count != testProfile.CustomHeaders.Count)
+                    throw new Exception($"Custom headers count mismatch: expected {testProfile.CustomHeaders.Count}, got {loadedProfile.CustomHeaders.Count}");
+                
+                Console.WriteLine("   ✓ Profile loaded and verified from INI file");
+                Console.WriteLine($"     - Name: {loadedProfile.Name}");
+                Console.WriteLine($"     - Expiry: {loadedProfile.RegistrationExpiry}s");
+                Console.WriteLine($"     - Keep-alive: {loadedProfile.RequireKeepAlive}");
+                Console.WriteLine($"     - Codecs: {string.Join(", ", loadedProfile.PreferredCodecs)}");
+                Console.WriteLine($"     - Custom headers: {loadedProfile.CustomHeaders.Count}");
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+            }
+        }
+        
+        private static void TestProfileImportExport()
+        {
+            Console.WriteLine("\n🔄 Testing Profile Import/Export...");
+            
+            var tempDir = Path.Combine(Path.GetTempPath(), "SipProfileTest");
+            Directory.CreateDirectory(tempDir);
+            
+            try
+            {
+                // Export all profiles to INI files
+                ProfileManager.ExportAllProfilesToIni(tempDir);
+                Console.WriteLine($"   ✓ Exported all profiles to: {tempDir}");
+                
+                // Verify files were created
+                var iniFiles = Directory.GetFiles(tempDir, "*.ini");
+                if (iniFiles.Length == 0)
+                    throw new Exception("No INI files were created during export");
+                
+                Console.WriteLine($"   ✓ Created {iniFiles.Length} INI files");
+                
+                foreach (var file in iniFiles)
+                {
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"     - {fileName}");
+                    
+                    // Test importing each file
+                    var imported = ProfileManager.ImportProfileFromIni(file);
+                    if (string.IsNullOrEmpty(imported.Name))
+                        throw new Exception($"Failed to import profile from {fileName}");
+                    
+                    Console.WriteLine($"       ✓ Imported: {imported.Name}");
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, true);
             }
         }
     }

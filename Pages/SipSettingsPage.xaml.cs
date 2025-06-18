@@ -5,6 +5,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using WindowsSipPhone.Commands;
 using WindowsSipPhone.Models;
+using System.Linq;
+using System.Text;
 
 namespace WindowsSipPhone.Pages
 {
@@ -347,18 +349,18 @@ namespace WindowsSipPhone.Pages
 
         private void ResetSettings()
         {
+            // Reset to Generic profile (default)
+            SelectedProfile = SipProfile.GetDefaultProfile();
+            
+            // Reset basic settings
             Username = "103";
             ServerHost = "192.168.1.180";
             ServerPort = "5060";
-            SelectedTransport = "TCP";
-            RegistrationExpires = "300";
-            UserAgent = "Windows-SIP-Phone/2.0";
-            TimerT1 = "500";
-            TimerT2 = "4000";
-            TimerT4 = "5000";
             PasswordBox.Password = "";
             
-            StatusDetails = "Settings reset to defaults";
+            // Profile-specific settings will be set by OnProfileChanged
+            
+            StatusDetails = "Settings reset to defaults with Generic profile";
             LastUpdated = DateTime.Now;
         }
 
@@ -466,6 +468,44 @@ namespace WindowsSipPhone.Pages
                 
                 StatusDetails = $"Profile '{_selectedProfile.Name}' selected - {_selectedProfile.Description}";
                 LastUpdated = DateTime.Now;
+                
+                // Trigger property changed for profile-dependent display values
+                OnPropertyChanged(nameof(ProfileDetails));
+            }
+        }
+        
+        /// <summary>
+        /// Gets detailed information about the selected profile
+        /// </summary>
+        public string ProfileDetails
+        {
+            get
+            {
+                if (_selectedProfile == null) return "";
+                
+                var details = new StringBuilder();
+                details.AppendLine($"📋 Profile: {_selectedProfile.Name}");
+                details.AppendLine($"📝 Description: {_selectedProfile.Description}");
+                details.AppendLine($"⏱️ Registration Expiry: {_selectedProfile.RegistrationExpiry}s");
+                details.AppendLine($"🚀 Transport: {_selectedProfile.Transport}");
+                details.AppendLine($"🤖 User Agent: {_selectedProfile.UserAgentString}");
+                
+                if (_selectedProfile.RequireKeepAlive)
+                {
+                    details.AppendLine($"💓 Keep-Alive: Every {_selectedProfile.KeepAliveInterval}s");
+                }
+                
+                if (_selectedProfile.PreferredCodecs.Any())
+                {
+                    details.AppendLine($"🎵 Preferred Codecs: {string.Join(", ", _selectedProfile.PreferredCodecs)}");
+                }
+                
+                if (_selectedProfile.CustomHeaders.Any())
+                {
+                    details.AppendLine($"📎 Custom Headers: {_selectedProfile.CustomHeaders.Count}");
+                }
+                
+                return details.ToString().Trim();
             }
         }
 

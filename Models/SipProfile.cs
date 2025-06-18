@@ -62,24 +62,28 @@ namespace WindowsSipPhone.Models
                 new SipProfile
                 {
                     Name = "Avaya IP Office",
-                    Description = "Optimized for Avaya IP Office systems with longer registration intervals",
+                    Description = "Optimized for Avaya IP Office systems with longer registration intervals and specific headers",
                     IsCustom = false,
                     RegistrationExpiry = 3600,
                     RequireKeepAlive = false,
                     Transport = "TCP",
                     UserAgentString = "Windows-SIP-Phone/2.0 (Avaya)",
                     UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "PCMU", "PCMA" },
+                    PreferredCodecs = new List<string> { "PCMU", "PCMA", "G729" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060
+                    DefaultPort = 5060,
+                    CustomHeaders = new Dictionary<string, string>
+                    {
+                        { "X-Avaya-Client-Type", "SoftPhone" }
+                    }
                 },
                 
                 // Cloud Generic (shorter registration, keep-alive)
                 new SipProfile
                 {
                     Name = "Cloud Generic",
-                    Description = "Optimized for cloud SIP providers with keep-alive and shorter registration",
+                    Description = "Optimized for cloud SIP providers with keep-alive and shorter registration intervals",
                     IsCustom = false,
                     RegistrationExpiry = 300,
                     RequireKeepAlive = true,
@@ -90,31 +94,39 @@ namespace WindowsSipPhone.Models
                     PreferredCodecs = new List<string> { "G722", "PCMU", "PCMA" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060
+                    DefaultPort = 5060,
+                    CustomHeaders = new Dictionary<string, string>
+                    {
+                        { "X-Cloud-Client", "Windows-SIP-Phone" }
+                    }
                 },
                 
                 // FreeSWITCH optimized
                 new SipProfile
                 {
                     Name = "FreeSWITCH",
-                    Description = "Optimized for FreeSWITCH platforms with flexible timers",
+                    Description = "Optimized for FreeSWITCH platforms with flexible timers and advanced codec support",
                     IsCustom = false,
                     RegistrationExpiry = 1800,
                     RequireKeepAlive = false,
                     Transport = "TCP",
                     UserAgentString = "Windows-SIP-Phone/2.0 (FreeSWITCH)",
                     UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "G722", "PCMU", "PCMA" },
+                    PreferredCodecs = new List<string> { "G722", "PCMU", "PCMA", "GSM" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060
+                    DefaultPort = 5060,
+                    CustomHeaders = new Dictionary<string, string>
+                    {
+                        { "X-FS-Support", "update_display,send_info" }
+                    }
                 },
                 
                 // Cisco optimized
                 new SipProfile
                 {
                     Name = "Cisco",
-                    Description = "Optimized for Cisco systems with platform-specific settings",
+                    Description = "Optimized for Cisco systems with G.729 codec preference and specific user agent",
                     IsCustom = false,
                     RegistrationExpiry = 3600,
                     RequireKeepAlive = false,
@@ -124,7 +136,11 @@ namespace WindowsSipPhone.Models
                     PreferredCodecs = new List<string> { "G729", "PCMU", "PCMA" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060
+                    DefaultPort = 5060,
+                    CustomHeaders = new Dictionary<string, string>
+                    {
+                        { "X-Cisco-Protocol", "SIP/2.0" }
+                    }
                 }
             };
         }

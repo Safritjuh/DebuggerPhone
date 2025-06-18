@@ -202,6 +202,16 @@
                         <TextBlock Text="🔧 Advanced SIP Settings" FontSize="18" FontWeight="Bold" 
                                   Foreground="#2C3E50" Margin="0,0,0,20"/>
                         
+                        <!-- Profile Details -->
+                        <Border Background="#D5DBDB" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="📋 Profile Details" FontSize="14" FontWeight="Bold" 
+                                          Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding ProfileDetails}" FontSize="11" 
+                                          Foreground="#2C3E50" TextWrapping="Wrap" FontFamily="Consolas"/>
+                            </StackPanel>
+                        </Border>
+                        
                         <!-- Transport Protocol -->
                         <Grid Margin="0,0,0,15">
                             <Grid.RowDefinitions>

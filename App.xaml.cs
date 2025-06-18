@@ -41,6 +41,17 @@ public partial class App : System.Windows.Application
             themeManager.SetTheme(ThemeManager.ThemeType.Light);
 #if DEBUG
             Console.WriteLine($"[THEME DEBUG] Theme manager initialized with theme: {themeManager.CurrentTheme}");
+            
+            // Test SIP Profile system in debug builds
+            Console.WriteLine("\n[PROFILE DEBUG] Testing SIP Profile system...");
+            try
+            {
+                WindowsSipPhone.Tests.SipProfileTests.RunTests();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PROFILE DEBUG] Profile tests failed: {ex.Message}");
+            }
 #endif
               // Add global exception handlers
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;

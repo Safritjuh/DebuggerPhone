@@ -189,7 +189,18 @@ namespace WindowsSipPhone
             if (!_callAccepted && DialogResult != true && DialogResult != false)
             {
                 CallAnswered?.Invoke(this, false);
-                DialogResult = false;
+                
+                // Only set DialogResult if this window was opened as a modal dialog
+                try
+                {
+                    DialogResult = false;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Window was opened with Show() (non-modal), so DialogResult cannot be set
+                    // This is expected behavior and not an error
+                    Console.WriteLine($"[INCOMING CALL DEBUG] DialogResult not set - window opened as non-modal");
+                }
             }
             
             base.OnClosing(e);

@@ -25,6 +25,7 @@ applyTo: '**'
 ### Bug Fixes
 - When starting work on a bug, create a new branch linked to the corresponding GitHub issue
 - Branch naming format: `bug/BUG-XXX` (e.g., `bug/BUG-013`, `bug/BUG-007`)
+- **NUMBERING**: Check existing issues to use the next available BUG-XXX number (see "Creating New Issues" section)
 - **IMPORTANT**: Always link your branch to the corresponding GitHub issue using `gh issue develop X --checkout`
 - Example workflow:
   ```powershell
@@ -50,6 +51,8 @@ applyTo: '**'
 ### New Features and Issues
 - When starting work on a new feature or issue, create a new branch with a short, descriptive name
 - Branch naming format: `feature/short-description` (e.g., `feature/audio-enhancements`, `feature/modern-ui`)
+- For improvements, you can also use: `feature/IMP-XXX` format (e.g., `feature/IMP-001`)
+- **NUMBERING**: For IMP issues, check existing issues to use the next available IMP-XXX number (see "Creating New Issues" section)
 - **IMPORTANT**: Always link your branch to the corresponding GitHub issue when applicable using `gh issue develop X --checkout`
 - Example workflow:
   ```powershell
@@ -300,13 +303,30 @@ gh issue list --label "audio" --state open
 ### 🚀 **GitHub Issues Best Practices**
 
 #### **Creating New Issues**
+
+**IMPORTANT**: Before creating a new BUG or IMP issue, always check the highest existing issue number (both open and closed) to ensure proper sequential numbering.
+
 ```powershell
-# Create a bug report
+# First, check all existing issues to find the highest number
+gh issue list --state all --limit 100 | head -20  # Check recent issues
+gh issue list --state all --search "BUG-" --limit 50  # Check all BUG issues
+gh issue list --state all --search "IMP-" --limit 50  # Check all IMP issues
+
+# Create a bug report (use next available BUG-XXX number)
 gh issue create --title "BUG-XXX: Descriptive Title" --label "bug,priority:medium,category" --body "Description with reproduction steps"
 
-# Create a feature request
+# Create an improvement/feature request (use next available IMP-XXX number)  
+gh issue create --title "IMP-XXX: Feature Name" --label "enhancement,priority:low" --body "Feature description and requirements"
+
+# Alternative: Create a general feature request
 gh issue create --title "FEATURE: New Feature Name" --label "enhancement,priority:low" --body "Feature description and requirements"
 ```
+
+**Numbering Guidelines:**
+- **BUG-XXX**: For bug reports, use sequential numbering (e.g., BUG-001, BUG-002, etc.)
+- **IMP-XXX**: For improvements/enhancements, use sequential numbering (e.g., IMP-001, IMP-002, etc.)
+- **Check both open AND closed issues** to avoid number conflicts
+- Always use 3-digit padding (001, 002, etc.) for consistency
 
 #### **Working with Issues**
 ```powershell

@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using WindowsSipPhone.Models;
 using WindowsSipPhone.Utils;
 using WindowsSipPhone.Services;

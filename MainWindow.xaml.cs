@@ -504,8 +504,8 @@ public partial class MainWindow : System.Windows.Window
         {
             HeaderStatusText.Text = status;
             StatusBarText.Text = status;
-            UpdateUI();
-              // Update status bar icon
+            
+            // Update status bar icon
             if (status.Contains("Registration successful") || status.Contains("Registered"))
             {
                 StatusBarIcon.Text = "🟢";
@@ -516,7 +516,8 @@ public partial class MainWindow : System.Windows.Window
             }
             else
             {
-                StatusBarIcon.Text = "🔴";            }
+                StatusBarIcon.Text = "🔴";
+            }
             
             // Update tray icon
             UpdateTrayIcon(status);
@@ -642,7 +643,11 @@ public partial class MainWindow : System.Windows.Window
         HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
         
         // Update status bar
-        StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";    }
+        StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
+        
+        // Update status bar icon to reflect current registration state
+        StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
+    }
     
     private void InitializeKeyboardShortcuts()
     {

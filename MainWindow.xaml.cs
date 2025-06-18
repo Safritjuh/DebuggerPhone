@@ -168,6 +168,7 @@ public partial class MainWindow : System.Windows.Window
                 }
                 else
                 {
+                    // When call ends, restore normal status display
                     StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
                     StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
                 }
@@ -505,15 +506,23 @@ public partial class MainWindow : System.Windows.Window
             HeaderStatusText.Text = status;
             StatusBarText.Text = status;
             
-            // Update status bar icon
-            if (status.Contains("Registration successful") || status.Contains("Registered"))
+            // Update status bar icon based on status message content
+            // Check for successful registration states
+            if (status.Contains("Registration successful") || 
+                status.Contains("✅ Registration successful") ||
+                (status.Contains("Registered") && !status.Contains("Not Registered")))
             {
                 StatusBarIcon.Text = "🟢";
             }
-            else if (status.Contains("Registering") || status.Contains("Connecting"))
+            // Check for in-progress states
+            else if (status.Contains("Registering") || 
+                     status.Contains("Connecting") || 
+                     status.Contains("attempting registration") ||
+                     status.Contains("🔍 DEBUG: SIP client connected"))
             {
                 StatusBarIcon.Text = "🟡";
             }
+            // Default to red for failures, disconnected states, or unknown states
             else
             {
                 StatusBarIcon.Text = "🔴";
@@ -646,6 +655,7 @@ public partial class MainWindow : System.Windows.Window
         StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
         
         // Update status bar icon to reflect current registration state
+        // This is used during initialization and periodic updates
         StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
     }
     

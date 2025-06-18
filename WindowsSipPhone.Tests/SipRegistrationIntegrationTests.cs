@@ -77,7 +77,6 @@ namespace WindowsSipPhone.Tests.Integration
         public async Task SipRegistration_WithInvalidCredentials_ShouldFail()
         {
             // Arrange
-            var authenticationFailed = false;
             var registrationMessages = new List<string>();
             
             using var sipClient = new TestSipClient(SIP_SERVER_HOST, SIP_SERVER_PORT, "invalid_user", "invalid_password");
@@ -87,11 +86,6 @@ namespace WindowsSipPhone.Tests.Integration
             {
                 registrationMessages.Add(message);
                 _output.WriteLine($"SIP Status: {message}");
-                
-                if (message.Contains("Authentication failed") || message.Contains("401") || message.Contains("❌") || message.Contains("failed"))
-                {
-                    authenticationFailed = true;
-                }
             };
 
             // Act

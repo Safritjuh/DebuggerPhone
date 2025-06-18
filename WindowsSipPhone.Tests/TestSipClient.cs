@@ -80,13 +80,19 @@ namespace WindowsSipPhone.Tests
                 
                 // Create initial REGISTER message
                 var registerMessage = CreateRegisterMessage(expires);
+                StatusChanged?.Invoke(this, $"📤 Sending REGISTER message (CSeq: {_sequenceNumber - 1})");
                 
                 // Send REGISTER message
                 await SendMessageAsync(registerMessage);
-                StatusChanged?.Invoke(this, "📤 REGISTER message sent");
+                StatusChanged?.Invoke(this, "✅ REGISTER message sent successfully");
                 
-                // Wait for authentication challenge and response
-                await Task.Delay(2000);
+                // Wait longer for authentication challenge and response
+                // Some SIP servers may be slower to respond
+                StatusChanged?.Invoke(this, "⏳ Waiting for server response...");
+                await Task.Delay(5000);
+                
+                var finalStatus = _isRegistered ? "✅ Registration completed" : "⚠️ Registration pending/failed";
+                StatusChanged?.Invoke(this, finalStatus);
                 
                 return _isRegistered;
             }
@@ -107,28 +113,50 @@ namespace WindowsSipPhone.Tests
 
         private async Task ListenForMessagesAsync()
         {
-            if (_stream == null) return;
+            if (_stream == null) 
+            {
+                StatusChanged?.Invoke(this, "❌ Cannot listen - stream is null");
+                return;
+            }
             
             var buffer = new byte[4096];
             
             try
             {
+                StatusChanged?.Invoke(this, "🔄 Started listening for SIP messages...");
+                
                 while (_isConnected && _stream.CanRead)
                 {
                     var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead > 0)
                     {
                         var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        StatusChanged?.Invoke(this, $"📨 Received {bytesRead} bytes");
+                        
+                        // Fire MessageReceived event BEFORE processing
                         MessageReceived?.Invoke(this, message);
                         
-                        // Process the message
+                        // Process the message for internal state management
                         await ProcessIncomingMessage(message);
+                    }
+                    else if (bytesRead == 0)
+                    {
+                        StatusChanged?.Invoke(this, "⚠️ Server closed connection");
+                        break;
                     }
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                StatusChanged?.Invoke(this, "ℹ️ Connection closed gracefully");
+            }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke(this, $"Listening stopped: {ex.Message}");
+                StatusChanged?.Invoke(this, $"❌ Listening stopped: {ex.Message}");
+            }
+            finally
+            {
+                StatusChanged?.Invoke(this, "ℹ️ Message listening terminated");
             }
         }
 

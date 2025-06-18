@@ -1021,5 +1021,55 @@ public partial class MainWindow : System.Windows.Window
     
     #endregion
     
+    #region Title Bar Controls
+    
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+    
+    private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+            MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
+            MaximizeRestoreButton.ToolTip = "Maximize";
+        }
+        else
+        {
+            WindowState = WindowState.Maximized;
+            MaximizeRestoreButton.Content = "\uE923"; // Restore icon
+            MaximizeRestoreButton.ToolTip = "Restore Down";
+        }
+    }
+    
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+    
+    protected override void OnStateChanged(EventArgs e)
+    {
+        base.OnStateChanged(e);
+        
+        // Update maximize/restore button icon based on window state
+        if (MaximizeRestoreButton != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                MaximizeRestoreButton.Content = "\uE923"; // Restore icon
+                MaximizeRestoreButton.ToolTip = "Restore Down";
+            }
+            else
+            {
+                MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
+                MaximizeRestoreButton.ToolTip = "Maximize";
+            }
+        }
+    }
+    
+    #endregion
+    
     #endregion
 }

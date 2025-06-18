@@ -708,6 +708,37 @@ public partial class MainWindow : System.Windows.Window
             ShowToastNotification("SIP Phone", "Application minimized to system tray", ToolTipIcon.Info);
         }
         
+        // Update maximize/restore button icon based on window state
+        if (MaximizeRestoreButton != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                MaximizeRestoreButton.Content = "\uE923"; // Restore icon
+                MaximizeRestoreButton.ToolTip = "Restore Down";
+            }
+            else
+            {
+                MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
+                MaximizeRestoreButton.ToolTip = "Maximize";
+            }
+        }
+        
+        // Adjust window chrome for maximized state
+        var chrome = WindowChrome.GetWindowChrome(this);
+        if (chrome != null)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                // Remove resize border when maximized to prevent extending beyond screen
+                chrome.ResizeBorderThickness = new Thickness(0);
+            }
+            else
+            {
+                // Restore resize border for normal state
+                chrome.ResizeBorderThickness = new Thickness(4);
+            }
+        }
+        
         base.OnStateChanged(e);
     }
     
@@ -1047,42 +1078,6 @@ public partial class MainWindow : System.Windows.Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
-    }
-    
-    protected override void OnStateChanged(EventArgs e)
-    {
-        base.OnStateChanged(e);
-        
-        // Update maximize/restore button icon based on window state
-        if (MaximizeRestoreButton != null)
-        {
-            if (WindowState == WindowState.Maximized)
-            {
-                MaximizeRestoreButton.Content = "\uE923"; // Restore icon
-                MaximizeRestoreButton.ToolTip = "Restore Down";
-            }
-            else
-            {
-                MaximizeRestoreButton.Content = "\uE922"; // Maximize icon
-                MaximizeRestoreButton.ToolTip = "Maximize";
-            }
-        }
-        
-        // Adjust window chrome for maximized state
-        var chrome = WindowChrome.GetWindowChrome(this);
-        if (chrome != null)
-        {
-            if (WindowState == WindowState.Maximized)
-            {
-                // Remove resize border when maximized to prevent extending beyond screen
-                chrome.ResizeBorderThickness = new Thickness(0);
-            }
-            else
-            {
-                // Restore resize border for normal state
-                chrome.ResizeBorderThickness = new Thickness(4);
-            }
-        }
     }
     
     #endregion

@@ -1886,24 +1886,89 @@ namespace WindowsSipPhone
             {
                 StatusChanged?.Invoke(this, $"❌ Authenticated register failed: {ex.Message}");
             }
-        }
-
-        private async Task SendAuthenticatedInvite(Dictionary<string, string> authParams, string originalChallengeMessage)
+        }        private async Task SendAuthenticatedInvite(Dictionary<string, string> authParams, string originalChallengeMessage)
         {
             try
             {
-                // Extract target number from the original challenge message
-                var targetNumber = ExtractTargetNumberFromChallenge(originalChallengeMessage);
-                var inviteMessage = CreateAuthenticatedInviteMessage(targetNumber, authParams);
-                StatusChanged?.Invoke(this, "📤 Sending authenticated INVITE...");
-                MessageReceived?.Invoke(this, $"OUTGOING (Authenticated INVITE):\n{inviteMessage}");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] SendAuthenticatedInvite called");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] Active Call ID: '{_activeCallId}'");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] Current Target Number: '{_currentTargetNumber}'");
+                
+                // CRITICAL FIX: Use existing dialog and preserve Call-ID consistency
+                if (string.IsNullOrEmpty(_activeCallId) || string.IsNullOrEmpty(_currentTargetNumber))
+                {
+                    // Fallback to legacy method if no dialog context available
+                    var targetNumber = ExtractTargetNumberFromChallenge(originalChallengeMessage);
+                    var inviteMessage = CreateAuthenticatedInviteMessage(targetNumber, authParams);
+                    StatusChanged?.Invoke(this, "📤 Sending authenticated INVITE (legacy)...");
+                    MessageReceived?.Invoke(this, $"OUTGOING (Authenticated INVITE):\n{inviteMessage}");                    var legacyMessageBytes = Encoding.UTF8.GetBytes(inviteMessage);
+                    await _stream!.WriteAsync(legacyMessageBytes);
+                    return;
+                }
+                
+                // Find the existing dialog for this call
+                var dialog = _dialogManager.FindDialogByCallId(_activeCallId);
+                if (dialog == null)   
+                {
+                    Console.WriteLine($"[AUTH CHALLENGE DEBUG] ❌ No dialog found for Call-ID: {_activeCallId}");
+                    StatusChanged?.Invoke(this, "❌ Cannot send authenticated INVITE - dialog not found");
+                    return;
+                }
+                
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] ✅ Found dialog - LocalTag: '{dialog.LocalTag}', Call-ID: '{dialog.CallId}'");
+                
+                // Create authenticated INVITE preserving the dialog's Call-ID and tags
+                var localIp = GetLocalIPAddress();
+                var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
+                
+                // Prepare RTP socket for SDP offer
+                var rtpPort = 5004; // Default fallback port
+                if (_audioManager != null && _audioManager.PrepareRtpSocket())
+                {
+                    rtpPort = _audioManager.LocalRtpPort;
+                }
+                
+                // Create SDP offer
+                var sdpContent = SdpManager.CreateSdpOffer(localIp, rtpPort);
+                var contentLength = SdpManager.GetSdpLength(sdpContent);
+                
+                // Create authorization header for INVITE
+                var inviteUri = $"sip:{_currentTargetNumber}@{_serverHost}:{_serverPort}";
+                var authHeader = CreateAuthorizationHeader(_username, _password, "INVITE", inviteUri, authParams);
+                
+                // Build authenticated INVITE using existing dialog information
+                var authenticatedInvite = $"INVITE {inviteUri} SIP/2.0\r\n" +
+                   $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
+                   $"From: <sip:{_username}@{localIp}>;tag={dialog.LocalTag}\r\n" +
+                   $"To: <sip:{_currentTargetNumber}@{_serverHost}>\r\n" +
+                   $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
+                   $"Call-ID: {dialog.CallId}\r\n" +
+                   $"CSeq: {dialog.LocalSequenceNumber + 1} INVITE\r\n" +
+                   $"Authorization: {authHeader}\r\n" +
+                   $"User-Agent: {_userAgent}\r\n" +
+                   $"Max-Forwards: 70\r\n"+
+                   $"Content-Type: application/sdp\r\n" +
+                   $"Content-Length: {contentLength}\r\n" +
+                   $"\r\n" +
+                   $"{sdpContent}";
+                
+                StatusChanged?.Invoke(this, "📤 Sending authenticated INVITE (with dialog)...");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] *** AUTHENTICATED INVITE WITH PRESERVED CALL-ID ***");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] Call-ID: {dialog.CallId}");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] From Tag: {dialog.LocalTag}");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] ==========================================");
+                
+                MessageReceived?.Invoke(this, $"OUTGOING (Authenticated INVITE):\n{authenticatedInvite}");
 
-                var messageBytes = Encoding.UTF8.GetBytes(inviteMessage);
+                var messageBytes = Encoding.UTF8.GetBytes(authenticatedInvite);
                 await _stream!.WriteAsync(messageBytes);
+                
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] *** AUTHENTICATED INVITE SENT WITH DIALOG PRESERVATION ***");
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke(this, $"❌ Authenticated INVITE failed: {ex.Message}");
+                Console.WriteLine($"[AUTH CHALLENGE DEBUG] Exception: {ex.Message}");
             }
         }
 

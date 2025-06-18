@@ -227,6 +227,8 @@ namespace WindowsSipPhone.Pages
         public ICommand UnregisterCommand { get; private set; } = null!;
         public ICommand SaveSettingsCommand { get; private set; } = null!;
         public ICommand ResetSettingsCommand { get; private set; } = null!;
+        public ICommand ExportProfileCommand { get; private set; } = null!;
+        public ICommand ImportProfileCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -234,6 +236,8 @@ namespace WindowsSipPhone.Pages
             UnregisterCommand = new RelayCommand(UnregisterSip, CanUnregister);
             SaveSettingsCommand = new RelayCommand(SaveSettings);
             ResetSettingsCommand = new RelayCommand(ResetSettings);
+            ExportProfileCommand = new RelayCommand(ExportProfile);
+            ImportProfileCommand = new RelayCommand(ImportProfile);
         }
 
         #endregion
@@ -505,7 +509,76 @@ namespace WindowsSipPhone.Pages
                     details.AppendLine($"📎 Custom Headers: {_selectedProfile.CustomHeaders.Count}");
                 }
                 
+                // Add compatibility information
+                details.AppendLine();
+                details.AppendLine("🔧 Compatibility:");
+                var compatInfo = WindowsSipPhone.Utils.ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
+                details.AppendLine(compatInfo);
+                
                 return details.ToString().Trim();
+            }
+        }
+        
+        private void ExportProfile()
+        {
+            try
+            {
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export SIP Profile",
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}_Profile.json"
+                };
+                
+                if (saveDialog.ShowDialog() == true)
+                {
+                    WindowsSipPhone.Utils.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                    StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
+                    LastUpdated = DateTime.Now;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"❌ Export failed: {ex.Message}";
+                LastUpdated = DateTime.Now;
+            }
+        }
+        
+        private void ImportProfile()
+        {
+            try
+            {
+                var openDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Import SIP Profile", 
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    Multiselect = false
+                };
+                
+                if (openDialog.ShowDialog() == true)
+                {
+                    var importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfile(openDialog.FileName);
+                    
+                    // Add to available profiles if not already present
+                    var existingProfile = AvailableProfiles.FirstOrDefault(p => p.Name == importedProfile.Name);
+                    if (existingProfile == null)
+                    {
+                        var newList = AvailableProfiles.ToList();
+                        newList.Add(importedProfile);
+                        AvailableProfiles = newList;
+                    }
+                    
+                    // Select the imported profile
+                    SelectedProfile = importedProfile;
+                    
+                    StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
+                    LastUpdated = DateTime.Now;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"❌ Import failed: {ex.Message}";
+                LastUpdated = DateTime.Now;
             }
         }
 

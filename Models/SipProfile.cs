@@ -350,38 +350,6 @@ namespace WindowsSipPhone.Models
             return GetPredefinedProfile("Generic") ?? new SipProfile();
         }
         
-        /// <summary>
-        /// Create default INI profile files if they don't exist
-        /// </summary>
-        public static void CreateDefaultProfilesIfNeeded()
-        {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var profilesDirectory = Path.Combine(baseDirectory, "Profiles");
-            
-            // Try current directory as fallback
-            if (!Directory.Exists(profilesDirectory))
-            {
-                profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Profiles");
-            }
-            
-            if (!Directory.Exists(profilesDirectory))
-            {
-                Directory.CreateDirectory(profilesDirectory);
-            }
-            
-            var hardcodedProfiles = GetHardcodedProfiles();
-            
-            foreach (var profile in hardcodedProfiles)
-            {
-                var fileName = profile.Name.Replace(" ", "_") + ".ini";
-                var filePath = Path.Combine(profilesDirectory, fileName);
-                
-                if (!File.Exists(filePath))
-                {
-                    SaveProfileToIniFile(profile, filePath);
-                }
-            }
-        }
         public SipProfile Clone()
         {
             return new SipProfile

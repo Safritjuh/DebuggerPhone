@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using WindowsSipPhone.Models;
 
 namespace WindowsSipPhone.SipCore
 {    /// <summary>
@@ -12,13 +13,15 @@ namespace WindowsSipPhone.SipCore
         private readonly int _localPort;
         private readonly string _userAgent;
         private readonly string _username;
+        private readonly SipProfile _profile;
         
-        public SipMessageFactory(string localIp, string username, int localPort = 5060, string userAgent = "Windows-SIP-Phone/1.0")
+        public SipMessageFactory(string localIp, string username, int localPort = 5060, string userAgent = "Windows-SIP-Phone/1.0", SipProfile? profile = null)
         {
             _localIp = localIp;
             _localPort = localPort;
             _userAgent = userAgent;
             _username = username;
+            _profile = profile ?? SipProfile.GetDefaultProfile();
         }
         
         /// <summary>
@@ -31,21 +34,32 @@ namespace WindowsSipPhone.SipCore
             var fromTag = GenerateTag();
             var branch = GenerateBranch();
             
+            // Use profile settings for transport and user agent
+            var transport = _profile.Transport.ToUpper();
+            var userAgent = _profile.UserAgentString;
+            var profileExpires = expires == 300 ? _profile.RegistrationExpiry : expires; // Use profile default if using default
+            
             var message = new StringBuilder();
             message.AppendLine($"REGISTER sip:{serverHost}:{serverPort} SIP/2.0");
-            message.AppendLine($"Via: SIP/2.0/TCP {_localIp}:{_localPort};branch={branch}");
+            message.AppendLine($"Via: SIP/2.0/{transport} {_localIp}:{_localPort};branch={branch}");
             message.AppendLine($"From: <sip:{username}@{serverHost}>;tag={fromTag}");
             message.AppendLine($"To: <sip:{username}@{serverHost}>");
             message.AppendLine($"Call-ID: {callId}");
             message.AppendLine($"CSeq: {sequenceNumber} REGISTER");
             message.AppendLine($"Contact: <sip:{username}@{_localIp}:{_localPort}>");
-            message.AppendLine($"User-Agent: {_userAgent}");
+            message.AppendLine($"User-Agent: {userAgent}");
             message.AppendLine($"Max-Forwards: 70");
-            message.AppendLine($"Expires: {expires}");
+            message.AppendLine($"Expires: {profileExpires}");
             
             if (!string.IsNullOrEmpty(authorization))
             {
                 message.AppendLine($"Authorization: {authorization}");
+            }
+            
+            // Add custom headers from profile
+            foreach (var header in _profile.CustomHeaders)
+            {
+                message.AppendLine($"{header.Key}: {header.Value}");
             }
             
             message.AppendLine("Content-Length: 0");
@@ -62,16 +76,27 @@ namespace WindowsSipPhone.SipCore
         {
             var branch = GenerateBranch();
             var contentLength = string.IsNullOrEmpty(sdpContent) ? 0 : Encoding.UTF8.GetByteCount(sdpContent);
-              var message = new StringBuilder();
+            
+            // Use profile settings for transport and user agent
+            var transport = _profile.Transport.ToUpper();
+            var userAgent = _profile.UserAgentString;
+            
+            var message = new StringBuilder();
             message.AppendLine($"INVITE sip:{targetNumber}@{serverHost}:{serverPort} SIP/2.0");
-            message.AppendLine($"Via: SIP/2.0/TCP {_localIp}:{_localPort};branch={branch}");
+            message.AppendLine($"Via: SIP/2.0/{transport} {_localIp}:{_localPort};branch={branch}");
             message.AppendLine($"From: <sip:{username}@{_localIp}>;tag={fromTag}");
             message.AppendLine($"To: <sip:{targetNumber}@{serverHost}>");
             message.AppendLine($"Call-ID: {callId}");
             message.AppendLine($"CSeq: {sequenceNumber} INVITE");
             message.AppendLine($"Contact: <sip:{username}@{_localIp}:{_localPort}>");
-            message.AppendLine($"User-Agent: {_userAgent}");
+            message.AppendLine($"User-Agent: {userAgent}");
             message.AppendLine($"Max-Forwards: 70");
+            
+            // Add custom headers from profile
+            foreach (var header in _profile.CustomHeaders)
+            {
+                message.AppendLine($"{header.Key}: {header.Value}");
+            }
             
             if (!string.IsNullOrEmpty(sdpContent))
             {

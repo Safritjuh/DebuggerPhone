@@ -87,6 +87,24 @@
                         <TextBlock Text="📋 Registration Settings" FontSize="18" FontWeight="Bold" 
                                   Foreground="#2C3E50" Margin="0,0,0,20"/>
                         
+                        <!-- SIP Profile Selection -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="📞 SIP Profile" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <ComboBox Grid.Row="1" Name="ProfileComboBox" 
+                                     ItemsSource="{Binding AvailableProfiles}"
+                                     SelectedItem="{Binding SelectedProfile}"
+                                     DisplayMemberPath="Name"
+                                     Style="{StaticResource SettingsComboBoxStyle}"/>
+                            <TextBlock Grid.Row="2" Text="{Binding SelectedProfile.Description}" 
+                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        </Grid>
+                        
                         <!-- Username -->
                         <Grid Margin="0,0,0,15">
                             <Grid.RowDefinitions>
@@ -184,6 +202,16 @@
                         <TextBlock Text="🔧 Advanced SIP Settings" FontSize="18" FontWeight="Bold" 
                                   Foreground="#2C3E50" Margin="0,0,0,20"/>
                         
+                        <!-- Profile Details -->
+                        <Border Background="#D5DBDB" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="📋 Profile Details" FontSize="14" FontWeight="Bold" 
+                                          Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding ProfileDetails}" FontSize="11" 
+                                          Foreground="#2C3E50" TextWrapping="Wrap" FontFamily="Consolas"/>
+                            </StackPanel>
+                        </Border>
+                        
                         <!-- Transport Protocol -->
                         <Grid Margin="0,0,0,15">
                             <Grid.RowDefinitions>
@@ -252,6 +280,23 @@
                                    Command="{Binding ResetSettingsCommand}"
                                    Style="{StaticResource ActionButtonStyle}"
                                    Background="#95A5A6" Margin="5,0,0,0"/>
+                        </Grid>
+                        
+                        <!-- Profile Management Buttons -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button Grid.Column="0" Content="📤 Export Profile" 
+                                   Command="{Binding ExportProfileCommand}"
+                                   Style="{StaticResource ActionButtonStyle}"
+                                   Background="#8E44AD" Margin="0,0,5,0"/>
+                            <Button Grid.Column="1" Content="📥 Import Profile" 
+                                   Command="{Binding ImportProfileCommand}"
+                                   Style="{StaticResource ActionButtonStyle}"
+                                   Background="#E67E22" Margin="5,0,0,0"/>
                         </Grid>                    </StackPanel>                </Border>
             </Grid>
         </ScrollViewer>

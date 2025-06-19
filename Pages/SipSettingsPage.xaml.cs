@@ -5,6 +5,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using WindowsSipPhone.Commands;
 using WindowsSipPhone.Models;
+using System.Linq;
+using System.Text;
 
 namespace WindowsSipPhone.Pages
 {
@@ -24,11 +26,16 @@ namespace WindowsSipPhone.Pages
         private DateTime _lastUpdated = DateTime.Now;
         private bool _isRegistered = false;
         private SipPhoneService? _sipService;
+        
+        // Profile system properties
+        private List<SipProfile> _availableProfiles = new();
+        private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
 
         public SipSettingsPage()
         {
             InitializeComponent();
             DataContext = this;
+            InitializeProfiles();
             InitializeCommands();
             LoadSettings();
         }
@@ -189,6 +196,28 @@ namespace WindowsSipPhone.Pages
                 };
             }
         }
+        
+        // Profile System Properties
+        public List<SipProfile> AvailableProfiles
+        {
+            get => _availableProfiles;
+            set
+            {
+                _availableProfiles = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public SipProfile SelectedProfile
+        {
+            get => _selectedProfile;
+            set
+            {
+                _selectedProfile = value;
+                OnPropertyChanged();
+                OnProfileChanged();
+            }
+        }
 
         #endregion
 
@@ -198,6 +227,8 @@ namespace WindowsSipPhone.Pages
         public ICommand UnregisterCommand { get; private set; } = null!;
         public ICommand SaveSettingsCommand { get; private set; } = null!;
         public ICommand ResetSettingsCommand { get; private set; } = null!;
+        public ICommand ExportProfileCommand { get; private set; } = null!;
+        public ICommand ImportProfileCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -205,6 +236,8 @@ namespace WindowsSipPhone.Pages
             UnregisterCommand = new RelayCommand(UnregisterSip, CanUnregister);
             SaveSettingsCommand = new RelayCommand(SaveSettings);
             ResetSettingsCommand = new RelayCommand(ResetSettings);
+            ExportProfileCommand = new RelayCommand(ExportProfile);
+            ImportProfileCommand = new RelayCommand(ImportProfile);
         }
 
         #endregion
@@ -235,7 +268,7 @@ namespace WindowsSipPhone.Pages
             try
             {
                 RegistrationStatus = "Registering...";
-                StatusDetails = $"Connecting to {ServerHost}:{ServerPort}";
+                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile.Name}'";
                 LastUpdated = DateTime.Now;
 
                 var password = PasswordBox.Password;
@@ -258,7 +291,8 @@ namespace WindowsSipPhone.Pages
                     return;
                 }
 
-                await _sipService.RegisterAsync(Username, password, ServerHost, port, UserAgent, expires);
+                // Use profile-based registration
+                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, SelectedProfile, expires);
             }
             catch (Exception ex)
             {
@@ -302,7 +336,8 @@ namespace WindowsSipPhone.Pages
                     ServerPort = ServerPort,
                     Transport = SelectedTransport,
                     RememberCredentials = true, // Could be a checkbox in UI
-                    AutoRegisterOnStartup = false
+                    AutoRegisterOnStartup = false,
+                    SelectedProfileName = SelectedProfile.Name
                 };
                 
                 config.Save();
@@ -318,18 +353,18 @@ namespace WindowsSipPhone.Pages
 
         private void ResetSettings()
         {
+            // Reset to Generic profile (default)
+            SelectedProfile = SipProfile.GetDefaultProfile();
+            
+            // Reset basic settings
             Username = "103";
             ServerHost = "192.168.1.180";
             ServerPort = "5060";
-            SelectedTransport = "TCP";
-            RegistrationExpires = "300";
-            UserAgent = "Windows-SIP-Phone/2.0";
-            TimerT1 = "500";
-            TimerT2 = "4000";
-            TimerT4 = "5000";
             PasswordBox.Password = "";
             
-            StatusDetails = "Settings reset to defaults";
+            // Profile-specific settings will be set by OnProfileChanged
+            
+            StatusDetails = "Settings reset to defaults with Generic profile";
             LastUpdated = DateTime.Now;
         }
 
@@ -392,7 +427,11 @@ namespace WindowsSipPhone.Pages
                 ServerPort = config.ServerPort;
                 SelectedTransport = config.Transport;
                 
-                StatusDetails = "Settings loaded from configuration";
+                // Load selected profile
+                var selectedProfile = config.GetSelectedProfile();
+                SelectedProfile = selectedProfile;
+                
+                StatusDetails = $"Settings loaded from configuration (Profile: {selectedProfile.Name})";
                 LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
@@ -406,6 +445,167 @@ namespace WindowsSipPhone.Pages
                 ServerPort = "5060";
                 SelectedTransport = "TCP";
             }        }
+
+        #endregion
+        
+        #region Profile Management
+        
+        private void InitializeProfiles()
+        {
+            // Create default INI files if they don't exist
+            SipProfile.CreateDefaultProfilesIfNeeded();
+            
+            // Load predefined profiles
+            AvailableProfiles = SipProfile.GetPredefinedProfiles();
+            
+            // Load selected profile from configuration
+            var config = SipConfiguration.Load();
+            var selectedProfile = config.GetSelectedProfile();
+            SelectedProfile = selectedProfile;
+        }
+        
+        private void OnProfileChanged()
+        {
+            if (_selectedProfile != null)
+            {
+                // Update UI fields based on selected profile
+                RegistrationExpires = _selectedProfile.RegistrationExpiry.ToString();
+                UserAgent = _selectedProfile.UserAgentString;
+                SelectedTransport = _selectedProfile.Transport;
+                
+                StatusDetails = $"Profile '{_selectedProfile.Name}' selected - {_selectedProfile.Description}";
+                LastUpdated = DateTime.Now;
+                
+                // Trigger property changed for profile-dependent display values
+                OnPropertyChanged(nameof(ProfileDetails));
+            }
+        }
+        
+        /// <summary>
+        /// Gets detailed information about the selected profile
+        /// </summary>
+        public string ProfileDetails
+        {
+            get
+            {
+                if (_selectedProfile == null) return "";
+                
+                var details = new StringBuilder();
+                details.AppendLine($"📋 Profile: {_selectedProfile.Name}");
+                details.AppendLine($"📝 Description: {_selectedProfile.Description}");
+                details.AppendLine($"⏱️ Registration Expiry: {_selectedProfile.RegistrationExpiry}s");
+                details.AppendLine($"🚀 Transport: {_selectedProfile.Transport}");
+                details.AppendLine($"🤖 User Agent: {_selectedProfile.UserAgentString}");
+                
+                if (_selectedProfile.RequireKeepAlive)
+                {
+                    details.AppendLine($"💓 Keep-Alive: Every {_selectedProfile.KeepAliveInterval}s");
+                }
+                
+                if (_selectedProfile.PreferredCodecs.Any())
+                {
+                    details.AppendLine($"🎵 Preferred Codecs: {string.Join(", ", _selectedProfile.PreferredCodecs)}");
+                }
+                
+                if (_selectedProfile.CustomHeaders.Any())
+                {
+                    details.AppendLine($"📎 Custom Headers: {_selectedProfile.CustomHeaders.Count}");
+                }
+                
+                // Add compatibility information
+                details.AppendLine();
+                details.AppendLine("🔧 Compatibility:");
+                var compatInfo = WindowsSipPhone.Utils.ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
+                details.AppendLine(compatInfo);
+                
+                return details.ToString().Trim();
+            }
+        }
+        
+        private void ExportProfile()
+        {
+            try
+            {
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export SIP Profile",
+                    Filter = "INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}.ini"
+                };
+                
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var extension = Path.GetExtension(saveDialog.FileName).ToLower();
+                    if (extension == ".ini")
+                    {
+                        WindowsSipPhone.Utils.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        WindowsSipPhone.Utils.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                    }
+                    
+                    StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
+                    LastUpdated = DateTime.Now;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"❌ Export failed: {ex.Message}";
+                LastUpdated = DateTime.Now;
+            }
+        }
+        
+        private void ImportProfile()
+        {
+            try
+            {
+                var openDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Import SIP Profile", 
+                    Filter = "Profile files (*.ini;*.json)|*.ini;*.json|INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    Multiselect = false
+                };
+                
+                if (openDialog.ShowDialog() == true)
+                {
+                    SipProfile importedProfile;
+                    var extension = Path.GetExtension(openDialog.FileName).ToLower();
+                    
+                    if (extension == ".ini")
+                    {
+                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfileFromIni(openDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfile(openDialog.FileName);
+                    }
+                    
+                    // Add to available profiles if not already present
+                    var existingProfile = AvailableProfiles.FirstOrDefault(p => p.Name == importedProfile.Name);
+                    if (existingProfile == null)
+                    {
+                        var newList = AvailableProfiles.ToList();
+                        newList.Add(importedProfile);
+                        AvailableProfiles = newList;
+                    }
+                    
+                    // Select the imported profile
+                    SelectedProfile = importedProfile;
+                    
+                    StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
+                    LastUpdated = DateTime.Now;
+                }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"❌ Import failed: {ex.Message}";
+                LastUpdated = DateTime.Now;
+            }
+        }
 
         #endregion
 

@@ -31,10 +31,23 @@
     <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
     <SolidColorBrush x:Key="InfoBrush" Color="#3B82F6"/>
     
+    <!-- Accent Colors -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#0078D7"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#106EBE"/>
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#F5F5F5"/>
+    
     <!-- Input Colors -->
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="InputBorderBrush" Color="#D1D5DB"/>
     <SolidColorBrush x:Key="InputFocusBrush" Color="#0078D7"/>
+    
+    <!-- Title Bar Colors -->
+    <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#F8F9FA"/>
+    <SolidColorBrush x:Key="TitleBarTextBrush" Color="#202020"/>
+    <SolidColorBrush x:Key="TitleBarButtonHoverBrush" Color="#E1E5E9"/>
+    <SolidColorBrush x:Key="TitleBarButtonPressedBrush" Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="TitleBarCloseButtonHoverBrush" Color="#E81123"/>
+    <SolidColorBrush x:Key="TitleBarCloseButtonPressedBrush" Color="#F1707A"/>
     
     <!-- Button Styles -->
     <Style x:Key="ModernButtonStyle" TargetType="Button">
@@ -343,5 +356,57 @@
 
     <!-- Error Background Brush -->
     <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#FFF5F5F5" Opacity="0.8"/>
+
+    <!-- Title Bar Button Styles -->
+    <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="46"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TitleBarTextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource TitleBarButtonHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource TitleBarButtonPressedBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TitleBarCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource TitleBarCloseButtonHoverBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource TitleBarCloseButtonPressedBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
 </ResourceDictionary>

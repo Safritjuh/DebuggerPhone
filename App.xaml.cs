@@ -41,12 +41,11 @@ public partial class App : System.Windows.Application
             themeManager.SetTheme(ThemeManager.ThemeType.Light);
 #if DEBUG
             Console.WriteLine($"[THEME DEBUG] Theme manager initialized with theme: {themeManager.CurrentTheme}");
-            
             // Test SIP Profile system in debug builds
             Console.WriteLine("\n[PROFILE DEBUG] Testing SIP Profile system...");
             try
             {
-                WindowsSipPhone.Tests.SipProfileTests.RunTests();
+                // WindowsSipPhone.Tests.SipProfileTests.RunTests(); // Removed: Tests namespace does not exist
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -31,10 +32,15 @@ namespace WindowsSipPhone.Pages
         private List<SipProfile> _availableProfiles = new();
         private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
 
+        // Reference to PasswordBox control
+        private PasswordBox PasswordBoxRef;
+
         public SipSettingsPage()
         {
             InitializeComponent();
             DataContext = this;
+            // Assign PasswordBoxRef after InitializeComponent
+            PasswordBoxRef = (PasswordBox)this.FindName("PasswordBox");
             InitializeProfiles();
             InitializeCommands();
             LoadSettings();
@@ -271,7 +277,7 @@ namespace WindowsSipPhone.Pages
                 StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile.Name}'";
                 LastUpdated = DateTime.Now;
 
-                var password = PasswordBox.Password;
+                var password = PasswordBoxRef.Password;
                 if (string.IsNullOrWhiteSpace(password))
                 {
                     StatusDetails = "Password is required";
@@ -360,7 +366,7 @@ namespace WindowsSipPhone.Pages
             Username = "103";
             ServerHost = "192.168.1.180";
             ServerPort = "5060";
-            PasswordBox.Password = "";
+            PasswordBoxRef.Password = "";
             
             // Profile-specific settings will be set by OnProfileChanged
             
@@ -597,7 +603,6 @@ namespace WindowsSipPhone.Pages
                     
                     StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
                     LastUpdated = DateTime.Now;
-                }
                 }
             }
             catch (Exception ex)

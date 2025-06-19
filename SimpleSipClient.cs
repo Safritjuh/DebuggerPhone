@@ -92,6 +92,39 @@ namespace WindowsSipPhone
             
             // Initialize audio manager for RTP streaming
             _audioManager = new RtpAudioManager();
+        }
+        
+        public SimpleSipClient(string serverHost, int serverPort, string username, string password, WindowsSipPhone.Models.SipProfile profile)
+        {            
+            _serverHost = serverHost;
+            _serverPort = serverPort;
+            _username = username;
+            _password = password;
+            _userAgent = profile.UserAgentString;
+            _callId = Guid.NewGuid().ToString().Replace("-", "");
+            _fromTag = Guid.NewGuid().ToString().Replace("-", "")[..8];            // Initialize JSIP-style components
+            _localIp = GetLocalIPAddress();
+            _messageFactory = new SipMessageFactory(_localIp, _username, profile.DefaultPort, profile.UserAgentString, profile);
+            _dialogManager = new DialogManager();
+            _registrationManager = new RegistrationManager(_messageFactory, SendMessageAsync);
+            
+            // Wire up events
+            _dialogManager.DialogStateChanged += OnDialogStateChanged;
+            _registrationManager.RegistrationStatusChanged += OnRegistrationStatusChanged;
+            _registrationManager.AuthenticationRequired += OnAuthenticationRequired;            _localIp = GetLocalIPAddress();
+            
+            // Initialize bidirectional SIP transport - use profile port if different
+            var transportPort = profile.DefaultPort != 5060 ? profile.DefaultPort : _serverPort;
+            _sipTransport = new SipTransport(_localIp, transportPort);
+            _sipTransport.StatusChanged += (sender, status) => StatusChanged?.Invoke(this, status);
+            _sipTransport.MessageReceived += (sender, message) => {
+                MessageReceived?.Invoke(this, $"INCOMING (Transport):\n{message}");
+                _ = Task.Run(async () => await ProcessIncomingMessage(message));
+            };
+            _sipTransport.TransportError += (sender, error) => StatusChanged?.Invoke(this, $"Transport Error: {error}");
+            
+            // Initialize audio manager for RTP streaming
+            _audioManager = new RtpAudioManager();
         }        public async Task<bool> ConnectAsync()
         {
             try

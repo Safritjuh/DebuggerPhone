@@ -39,13 +39,22 @@ public class SipPhoneService : IDisposable
     }
       public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
     {
+        // Use default profile for backward compatibility
+        var defaultProfile = WindowsSipPhone.Models.SipProfile.GetDefaultProfile();
+        await RegisterWithProfileAsync(username, password, server, port, defaultProfile, expires);
+    }
+    
+    public async Task RegisterWithProfileAsync(string username, string password, string server, int port, WindowsSipPhone.Models.SipProfile profile, int? expiresOverride = null)
+    {
         _username = username;
         _serverAddress = server;
         _port = port;
         
+        var effectiveExpires = expiresOverride ?? profile.RegistrationExpiry;
+        
         StatusChanged?.Invoke(this, "Connecting to SIP server...");
-        MessageReceived?.Invoke(this, $"Attempting registration to {server}:{port} with user {username}");
-        StatusChanged?.Invoke(this, $"🔍 DEBUG: Registration expires set to: {expires} seconds");
+        MessageReceived?.Invoke(this, $"Attempting registration to {server}:{port} with user {username} using profile '{profile.Name}'");
+        StatusChanged?.Invoke(this, $"🔍 DEBUG: Registration expires set to: {effectiveExpires} seconds (Profile: {profile.Name})");
         
         try
         {
@@ -55,8 +64,8 @@ public class SipPhoneService : IDisposable
                 _sipClient.Disconnect();
                 _sipClient = null;
             }
-              // Create new SIP client
-            _sipClient = new SimpleSipClient(server, port, username, password, userAgent);
+              // Create new SIP client with profile
+            _sipClient = new SimpleSipClient(server, port, username, password, profile);
               // Wire up events
             _sipClient.StatusChanged += (s, status) => StatusChanged?.Invoke(this, status);
             _sipClient.MessageReceived += (s, message) => MessageReceived?.Invoke(this, message);
@@ -67,8 +76,8 @@ public class SipPhoneService : IDisposable
             {
                 StatusChanged?.Invoke(this, "🔍 DEBUG: SIP client connected, attempting registration...");
                 
-                // Register with server using provided expires value
-                var registered = await _sipClient.RegisterAsync(expires);
+                // Register with server using effective expires value
+                var registered = await _sipClient.RegisterAsync(effectiveExpires);
                 StatusChanged?.Invoke(this, $"🔍 DEBUG: SIP client RegisterAsync returned: {registered}");
                 StatusChanged?.Invoke(this, $"🔍 DEBUG: SIP client IsRegistered: {_sipClient.IsRegistered}");
                 

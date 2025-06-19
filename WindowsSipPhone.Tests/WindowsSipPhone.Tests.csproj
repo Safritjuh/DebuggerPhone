@@ -30,6 +30,9 @@
     <Compile Include="../SdpManager.cs" />
     <Compile Include="../SipTransport.cs" />
     <Compile Include="../Models/SipConfiguration.cs" />
+    <Compile Include="../Models/SipProfile.cs" />
+    <Compile Include="../Utils/IniFileHandler.cs" />
+    <Compile Include="../Utils/ProfileManager.cs" />
   </ItemGroup>
 
 </Project>

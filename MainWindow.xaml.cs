@@ -1066,7 +1066,42 @@ namespace WindowsSipPhone
 
         #endregion
 
-        #region Title Bar Controls
+        #region Window Control Events        /// <summary>
+        /// Handles mouse down events on the title bar to enable window dragging
+        /// </summary>
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Only handle left button down for dragging
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                // Handle double-click to maximize/restore
+                if (e.ClickCount == 2)
+                {
+                    // Toggle between maximized and normal state
+                    if (WindowState == WindowState.Maximized)
+                    {
+                        WindowState = WindowState.Normal;
+                    }
+                    else
+                    {
+                        WindowState = WindowState.Maximized;
+                    }
+                }
+                else if (e.ClickCount == 1)
+                {
+                    // Handle single click for dragging
+                    try
+                    {
+                        this.DragMove();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // DragMove can throw if called when the window is not in a state where it can be moved
+                        // This can happen if the window is maximized, so we ignore this exception
+                    }
+                }
+            }
+        }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {

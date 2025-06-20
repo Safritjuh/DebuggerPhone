@@ -50,5 +50,4 @@
     <EmbeddedResource Remove="Pages\Settings\backup\**" />
     <None Remove="Pages\Settings\backup\**" />
   </ItemGroup>
-
 </Project>

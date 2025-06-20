@@ -38,12 +38,12 @@ namespace WindowsSipPhone.Database
             {
                 using var connection = new SqliteConnection(_connectionString);
                 connection.Open();
-                
-                var command = connection.CreateCommand();
+                  var command = connection.CreateCommand();
                 command.CommandText = @"
                     CREATE TABLE IF NOT EXISTS CallHistory (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Number TEXT NOT NULL,
+                        CallerName TEXT,
                         CallType TEXT NOT NULL,
                         DateTime TEXT NOT NULL,
                         Duration INTEGER DEFAULT 0,
@@ -54,8 +54,31 @@ namespace WindowsSipPhone.Database
                     CREATE INDEX IF NOT EXISTS idx_call_datetime ON CallHistory(DateTime DESC);
                     CREATE INDEX IF NOT EXISTS idx_call_number ON CallHistory(Number);
                     CREATE INDEX IF NOT EXISTS idx_call_type ON CallHistory(CallType);";
+                  command.ExecuteNonQuery();
                 
-                command.ExecuteNonQuery();
+                // Add CallerName column if it doesn't exist (migration for existing databases)
+                command.CommandText = @"
+                    PRAGMA table_info(CallHistory);";
+                var hasCallerName = false;
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.GetString(1) == "CallerName")
+                        {
+                            hasCallerName = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!hasCallerName)
+                {
+                    command.CommandText = @"ALTER TABLE CallHistory ADD COLUMN CallerName TEXT;";
+                    command.ExecuteNonQuery();
+                    Console.WriteLine($"[CallHistory] ✅ Added CallerName column to existing database");
+                }
+                
                 Console.WriteLine($"[CallHistory] ✅ Database initialized: {_databasePath}");
             }
             catch (Exception ex)
@@ -74,12 +97,12 @@ namespace WindowsSipPhone.Database
                 using var connection = new SqliteConnection(_connectionString);
                 connection.Open();
                 
-                var command = connection.CreateCommand();
-                command.CommandText = @"
-                    INSERT INTO CallHistory (Number, CallType, DateTime, Duration, Status)
-                    VALUES (@number, @callType, @dateTime, @duration, @status)";
+                var command = connection.CreateCommand();                command.CommandText = @"
+                    INSERT INTO CallHistory (Number, CallerName, CallType, DateTime, Duration, Status)
+                    VALUES (@number, @callerName, @callType, @dateTime, @duration, @status)";
                 
                 command.Parameters.AddWithValue("@number", call.Number ?? "");
+                command.Parameters.AddWithValue("@callerName", call.CallerName ?? "");
                 command.Parameters.AddWithValue("@callType", call.CallType.ToString());
                 command.Parameters.AddWithValue("@dateTime", call.DateTime.ToString("O"));
                 command.Parameters.AddWithValue("@duration", (int)call.Duration.TotalSeconds);
@@ -107,15 +130,15 @@ namespace WindowsSipPhone.Database
                 using var connection = new SqliteConnection(_connectionString);
                 connection.Open();
                 
-                var command = connection.CreateCommand();
-                command.CommandText = @"
+                var command = connection.CreateCommand();                command.CommandText = @"
                     UPDATE CallHistory 
-                    SET Duration = @duration, Status = @status
+                    SET Duration = @duration, Status = @status, CallerName = @callerName
                     WHERE Number = @number 
                       AND CallType = @callType 
                       AND DateTime = @dateTime";
                 
                 command.Parameters.AddWithValue("@number", call.Number ?? "");
+                command.Parameters.AddWithValue("@callerName", call.CallerName ?? "");
                 command.Parameters.AddWithValue("@callType", call.CallType.ToString());
                 command.Parameters.AddWithValue("@dateTime", call.DateTime.ToString("O"));
                 command.Parameters.AddWithValue("@duration", (int)call.Duration.TotalSeconds);
@@ -139,9 +162,8 @@ namespace WindowsSipPhone.Database
                 using var connection = new SqliteConnection(_connectionString);
                 connection.Open();
                 
-                var command = connection.CreateCommand();
-                command.CommandText = @"
-                    SELECT Number, CallType, DateTime, Duration, Status
+                var command = connection.CreateCommand();                command.CommandText = @"
+                    SELECT Number, CallerName, CallType, DateTime, Duration, Status
                     FROM CallHistory
                     ORDER BY DateTime DESC
                     LIMIT @limit";
@@ -154,6 +176,7 @@ namespace WindowsSipPhone.Database
                     var call = new CallHistoryEntry
                     {
                         Number = reader.GetString(reader.GetOrdinal("Number")),
+                        CallerName = reader.IsDBNull(reader.GetOrdinal("CallerName")) ? "" : reader.GetString(reader.GetOrdinal("CallerName")),
                         CallType = Enum.Parse<CallType>(reader.GetString(reader.GetOrdinal("CallType"))),
                         DateTime = DateTime.Parse(reader.GetString(reader.GetOrdinal("DateTime"))),
                         Status = Enum.Parse<CallStatus>(reader.GetString(reader.GetOrdinal("Status")))
@@ -291,5 +314,85 @@ namespace WindowsSipPhone.Database
         }
 
         public string GetDatabasePath() => _databasePath;
+    }
+
+    public class CallHistoryEntry
+    {
+        private string _displayName = string.Empty;
+        public string CallerName { get; set; } = string.Empty;
+        public string Number { get; set; } = string.Empty;
+        public CallType CallType { get; set; }
+        public DateTime DateTime { get; set; }
+        public TimeSpan Duration { get; set; }
+        public CallStatus Status { get; set; }
+
+        public CallHistoryEntry() {
+            _displayName = string.Empty;
+            CallerName = string.Empty;
+            Number = string.Empty;
+        }
+
+        public CallHistoryEntry(string displayName, string number)
+        {
+            _displayName = displayName;
+            CallerName = ExtractCallerName(displayName, number);
+            Number = ExtractNumber(number);
+        }
+
+        // Mapping from UI model to DB model
+        public static CallHistoryEntry FromUiModel(WindowsSipPhone.Pages.CallHistoryEntry uiEntry)
+        {
+            return new CallHistoryEntry
+            {
+                CallerName = uiEntry.CallerName ?? string.Empty,
+                Number = uiEntry.Number,
+                CallType = (CallType)uiEntry.CallType,
+                DateTime = uiEntry.DateTime,
+                Duration = uiEntry.Duration,
+                Status = (CallStatus)uiEntry.Status
+            };
+        }
+
+        // Mapping from DB model to UI model
+        public WindowsSipPhone.Pages.CallHistoryEntry ToUiModel()
+        {
+            return new WindowsSipPhone.Pages.CallHistoryEntry
+            {
+                CallerName = this.CallerName,
+                Number = this.Number,
+                CallType = (WindowsSipPhone.Pages.CallType)this.CallType,
+                DateTime = this.DateTime,
+                Duration = this.Duration,
+                Status = (WindowsSipPhone.Pages.CallStatus)this.Status
+            };
+        }
+
+        public static string ExtractCallerName(string displayName, string number)
+        {
+            // Prefer displayName if it's not a number and not empty
+            if (!string.IsNullOrWhiteSpace(displayName) && displayName != number)
+                return displayName;
+            return string.Empty;
+        }
+        public static string ExtractNumber(string number)
+        {
+            // Always return the number as-is
+            return number;
+        }
+    }
+
+    public enum CallType
+    {
+        Incoming,
+        Outgoing,
+        Missed
+    }
+
+    public enum CallStatus
+    {
+        Completed,
+        Busy,
+        NoAnswer,
+        Failed
     }
 }

@@ -15,11 +15,11 @@ namespace WindowsSipPhone.Pages
     public partial class DialerPage : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {        private string _dialedNumber = "";
         private CallHistoryEntry? _selectedCall;
-        private string _currentFilter = "All";
-        private SipPhoneService? _sipService;
+        private string _currentFilter = "All";        private SipPhoneService? _sipService;
         private bool _isCallActive = false;
         private string _activeCallNumber = "";
         private string _incomingCallNumber = ""; // Store incoming call number until accepted
+        private bool _isIncomingCall = false; // Track if current call is incoming or outgoing
         private DateTime? _callStartTime;
         private System.Windows.Threading.DispatcherTimer? _callTimer;
         private bool _isMuted = false;
@@ -83,14 +83,13 @@ namespace WindowsSipPhone.Pages
           private void OnCallStateChanged(object? sender, string callState)
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (callState.StartsWith("Outgoing call to") || callState.StartsWith("Dialing"))
+            {                if (callState.StartsWith("Outgoing call to") || callState.StartsWith("Dialing"))
                 {
                     var number = callState.Contains("Dialing") ? 
                         callState.Replace("Dialing ", "") : 
                         callState.Replace("Outgoing call to ", "");
-                    StartCall(number);
-                }                else if (callState.StartsWith("Incoming call:"))
+                    StartCall(number, false); // false = outgoing call
+                }else if (callState.StartsWith("Incoming call:"))
                 {
                     // Store incoming call info for when it's accepted
                     var callerInfo = callState.Replace("Incoming call: ", "");
@@ -109,7 +108,8 @@ namespace WindowsSipPhone.Pages
                         // Create call history entry for the accepted incoming call
                         var incomingCall = new CallHistoryEntry
                         {
-                            Number = _incomingCallNumber,
+                            Number = CallHistoryEntry.ExtractNumberPart(_incomingCallNumber),
+                            CallerName = CallHistoryEntry.ExtractDisplayName(_incomingCallNumber),
                             CallType = CallType.Incoming,
                             DateTime = DateTime.Now,
                             Duration = TimeSpan.Zero,
@@ -123,10 +123,10 @@ namespace WindowsSipPhone.Pages
                             ApplyCurrentFilter();
                         });
                         
-                        _callHistoryService.AddCall(incomingCall);
+                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(incomingCall));
                         _logger.LogSystemInfo("CALL_HISTORY", $"📞← Incoming call added to history: {_incomingCallNumber}");
                         
-                        StartCall(_incomingCallNumber);
+                        StartCall(_incomingCallNumber, true); // true = incoming call
                         _incomingCallNumber = ""; // Clear after use
                     }
                     
@@ -139,11 +139,11 @@ namespace WindowsSipPhone.Pages
                     if (callState.Contains("Call Declined") && !string.IsNullOrEmpty(_incomingCallNumber))
                     {
                         _logger.LogSystemInfo("CALL", $"📞❌ Missed call from: {_incomingCallNumber}");
-                        
-                        // Add missed call to history
+                          // Add missed call to history
                         var missedCall = new CallHistoryEntry
                         {
-                            Number = _incomingCallNumber,
+                            Number = CallHistoryEntry.ExtractNumberPart(_incomingCallNumber),
+                            CallerName = CallHistoryEntry.ExtractDisplayName(_incomingCallNumber),
                             CallType = CallType.Missed,
                             DateTime = DateTime.Now,
                             Duration = TimeSpan.Zero,
@@ -157,7 +157,7 @@ namespace WindowsSipPhone.Pages
                             ApplyCurrentFilter();
                         });
                         
-                        _callHistoryService.AddCall(missedCall);
+                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(missedCall));
                         
                         _logger.LogSystemInfo("CALL", $"✅ Missed call added to history: {_incomingCallNumber}");
                     }
@@ -167,10 +167,11 @@ namespace WindowsSipPhone.Pages
                     EndCall();
                 }
             });
-        }private void StartCall(string number)
+        }        private void StartCall(string number, bool isIncoming = false)
         {
             _isCallActive = true;
             _activeCallNumber = number;
+            _isIncomingCall = isIncoming;
             // Do NOT start timer or set start time here - wait for call to be answered
             OnPropertyChanged(nameof(IsCallActive));
             OnPropertyChanged(nameof(CallStatusText));
@@ -198,9 +199,9 @@ namespace WindowsSipPhone.Pages
                 actualCallDuration = DateTime.Now - _callStartTime.Value;
                 _logger.LogSystemInfo("CALL", $"📊 Actual call duration: {actualCallDuration.TotalSeconds:F1} seconds");
             }
-            
-            _isCallActive = false;
+              _isCallActive = false;
             _activeCallNumber = "";
+            _isIncomingCall = false; // Reset direction flag
             _callStartTime = null;
             _callTimer?.Stop();
             
@@ -232,7 +233,7 @@ namespace WindowsSipPhone.Pages
                 }
                 
                 // Persist the call completion to database
-                _callHistoryService.UpdateCall(activeCall);
+                _callHistoryService.UpdateCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(activeCall));
                 _logger.LogSystemInfo("CALL", $"✅ Call ended and updated in database: {activeCall.Number} - Duration: {activeCall.DurationText}");
             }
             
@@ -275,17 +276,34 @@ namespace WindowsSipPhone.Pages
             {
                 if (!_isCallActive) return "";
                 
+                // Extract clean display name and number for better UI
+                var displayName = CallHistoryEntry.ExtractDisplayName(_activeCallNumber);
+                var number = CallHistoryEntry.ExtractNumberPart(_activeCallNumber);
+                
+                // Create a clean display format
+                string displayText;
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayText = $"{displayName} ({number})";
+                }
+                else
+                {
+                    displayText = number;
+                }
+                  // Add direction indicator
+                string directionIcon = _isIncomingCall ? "📞←" : "📞→";
+                
                 if (_callStartTime.HasValue)
                 {
                     if (_isCallOnHold)
                     {
-                        return $"On Hold: {_activeCallNumber}";
+                        return $"{directionIcon} On Hold: {displayText}";
                     }
-                    return $"Connected to {_activeCallNumber}";
+                    return $"{directionIcon} Connected to {displayText}";
                 }
                 else
                 {
-                    return $"Calling {_activeCallNumber}...";
+                    return $"{directionIcon} {(_isIncomingCall ? "Answering" : "Calling")} {displayText}...";
                 }
             }
         }
@@ -501,11 +519,11 @@ namespace WindowsSipPhone.Pages
             {
                 Console.WriteLine($"[DEBUG] MakeCall started for: {DialedNumber}");
                 _logger.LogAction("CALL", $"User initiated call to: {DialedNumber}");
-                
-                // Create call entry in history
+                  // Create call entry in history
                 var callEntry = new CallHistoryEntry
                 {
-                    Number = DialedNumber,
+                    Number = CallHistoryEntry.ExtractNumberPart(DialedNumber),
+                    CallerName = CallHistoryEntry.ExtractDisplayName(DialedNumber),
                     CallType = CallType.Outgoing,
                     DateTime = DateTime.Now,
                     Duration = TimeSpan.Zero,
@@ -533,7 +551,7 @@ namespace WindowsSipPhone.Pages
                 });
                 
                 Console.WriteLine($"[DEBUG] About to save to database...");
-                _callHistoryService.AddCall(callEntry); // Save to database
+                _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(callEntry)); // Save to database
                 Console.WriteLine($"[DEBUG] Database save completed");
                 _logger.LogSystemInfo("CALL_HISTORY", $"🔍 Call saved to database: {DialedNumber}");// Make the actual SIP call
                 await _sipService.MakeCallAsync(DialedNumber);
@@ -809,25 +827,24 @@ namespace WindowsSipPhone.Pages
                 CallHistory.Clear();
                 foreach (var call in dbCalls)
                 {
-                    CallHistory.Add(call);
+                    CallHistory.Add(call.ToUiModel());
                 }
                 
                 // If database is empty, add sample data for demonstration
                 if (CallHistory.Count == 0)
                 {
-                    _logger.LogSystemInfo("CALL_HISTORY", "Database empty, adding sample data for demonstration");
-                    var sampleCalls = new[]
+                    _logger.LogSystemInfo("CALL_HISTORY", "Database empty, adding sample data for demonstration");                    var sampleCalls = new[]
                     {
-                        new CallHistoryEntry { Number = "101", CallType = CallType.Incoming, DateTime = DateTime.Now.AddMinutes(-15), Duration = TimeSpan.FromMinutes(3), Status = CallStatus.Completed },
-                        new CallHistoryEntry { Number = "102", CallType = CallType.Outgoing, DateTime = DateTime.Now.AddMinutes(-30), Duration = TimeSpan.FromMinutes(5), Status = CallStatus.Completed },
+                        new CallHistoryEntry { Number = "101", CallerName = "Alice", CallType = CallType.Incoming, DateTime = DateTime.Now.AddMinutes(-15), Duration = TimeSpan.FromMinutes(3), Status = CallStatus.Completed },
+                        new CallHistoryEntry { Number = "102", CallerName = "Bob", CallType = CallType.Outgoing, DateTime = DateTime.Now.AddMinutes(-30), Duration = TimeSpan.FromMinutes(5), Status = CallStatus.Completed },
                         new CallHistoryEntry { Number = "105", CallType = CallType.Missed, DateTime = DateTime.Now.AddHours(-1), Duration = TimeSpan.Zero, Status = CallStatus.Missed },
-                        new CallHistoryEntry { Number = "103", CallType = CallType.Outgoing, DateTime = DateTime.Now.AddHours(-2), Duration = TimeSpan.FromMinutes(8), Status = CallStatus.Completed },
+                        new CallHistoryEntry { Number = "103", CallerName = "Charlie", CallType = CallType.Outgoing, DateTime = DateTime.Now.AddHours(-2), Duration = TimeSpan.FromMinutes(8), Status = CallStatus.Completed },
                     };
 
                     foreach (var call in sampleCalls)
                     {
-                        CallHistory.Add(call);
-                        _callHistoryService.AddCall(call); // Save to database
+                        CallHistory.Add(call); // UI model, no conversion needed
+                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(call)); // Save to database
                     }
                 }
                 
@@ -852,7 +869,7 @@ namespace WindowsSipPhone.Pages
                     CallHistory.Clear();
                     foreach (var call in dbCalls)
                     {
-                        CallHistory.Add(call);
+                        CallHistory.Add(call.ToUiModel());
                     }
                     
                     ApplyCurrentFilter();
@@ -881,11 +898,11 @@ namespace WindowsSipPhone.Pages
                 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    CallHistory.Insert(0, testCall);
+                    CallHistory.Insert(0, testCall); // UI model, no conversion needed
                     ApplyCurrentFilter();
                 });
                 
-                _callHistoryService.AddCall(testCall);
+                _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(testCall));
                 _logger.LogSystemInfo("CALL_HISTORY", $"🧪 Test call added: {testCall.Number}");
             }
             catch (Exception ex)
@@ -913,19 +930,35 @@ namespace WindowsSipPhone.Pages
     public class CallHistoryEntry : INotifyPropertyChanged
     {
         private string _number = "";
+        private string? _callerName; // New property
         private CallType _callType;
         private DateTime _dateTime;
         private TimeSpan _duration;
-        private CallStatus _status;        public string Number
+        private CallStatus _status;
+
+        public string Number
         {
             get => _number;
             set
             {
-                _number = value;
+                _number = ExtractNumberPart(value); // Always store just the number
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(DisplayName));
             }
-        }public CallType CallType
+        }
+
+        public string? CallerName
+        {
+            get => _callerName;
+            set
+            {
+                _callerName = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
+
+        public CallType CallType
         {
             get => _callType;
             set
@@ -966,7 +999,9 @@ namespace WindowsSipPhone.Pages
                 _status = value;
                 OnPropertyChanged();
             }
-        }        public string CallTypeIcon => CallType switch
+        }
+
+        public string CallTypeIcon => CallType switch
         {
             CallType.Incoming => "📞←",    // Phone with left arrow (incoming)
             CallType.Outgoing => "📞→",    // Phone with right arrow (outgoing) - clean arrow  
@@ -982,31 +1017,97 @@ namespace WindowsSipPhone.Pages
             _ => "#7F8C8D"
         };
 
-        public string DisplayName => string.IsNullOrWhiteSpace(Number) ? "Unknown" :
-                                   Number.Contains("@") ? ExtractDisplayName(Number) : Number;
-
-        private string ExtractDisplayName(string sipUri)
+        // DisplayName: show caller name if available, otherwise number
+        public string DisplayName => !string.IsNullOrWhiteSpace(CallerName) ? CallerName : Number;        public static string ExtractDisplayName(string sipUri)
         {
-            // Extract display name from SIP URI like "John Doe <101@server.com>" or just "101@server.com"
+            if (string.IsNullOrWhiteSpace(sipUri))
+                return string.Empty;
+
+            // Handle formats like: "Display Name" <sip:user@domain> or Display Name <sip:user@domain>
             if (sipUri.Contains("<") && sipUri.Contains(">"))
             {
-                var displayPart = sipUri.Substring(0, sipUri.IndexOf("<")).Trim().Trim('"');
-                return string.IsNullOrWhiteSpace(displayPart) ? ExtractNumberPart(sipUri) : displayPart;
+                var displayPart = sipUri.Substring(0, sipUri.IndexOf("<")).Trim();
+                // Remove surrounding quotes if present
+                displayPart = displayPart.Trim('"').Trim();
+                return string.IsNullOrWhiteSpace(displayPart) ? string.Empty : displayPart;
             }
-            return ExtractNumberPart(sipUri);
-        }
-
-        private string ExtractNumberPart(string sipUri)
+            
+            // If it's just a SIP URI like sip:user@domain, no display name
+            if (sipUri.StartsWith("sip:") || sipUri.Contains("@"))
+            {
+                return string.Empty;
+            }
+            
+            // If it's just a plain number, no display name
+            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' ' || c == '(' || c == ')'))
+            {
+                return string.Empty;
+            }
+            
+            // Otherwise, treat the whole thing as a display name (fallback case)
+            return sipUri.Trim();
+        }        public static string ExtractNumberPart(string sipUri)
         {
-            // Extract just the number from SIP URI
+            if (string.IsNullOrWhiteSpace(sipUri))
+                return "Unknown Number";
+
+            // Handle formats like: "Display Name" <sip:user@domain> or <sip:user@domain>
+            if (sipUri.Contains("<") && sipUri.Contains(">"))
+            {
+                var start = sipUri.IndexOf("<") + 1;
+                var end = sipUri.IndexOf(">");
+                if (end > start)
+                {
+                    var uri = sipUri.Substring(start, end - start).Trim();
+                    return ExtractNumberFromSipUri(uri);
+                }
+            }
+            
+            // Handle direct SIP URI like sip:user@domain
+            if (sipUri.StartsWith("sip:"))
+            {
+                return ExtractNumberFromSipUri(sipUri);
+            }
+            
+            // Handle URI with @ but no sip: prefix
             if (sipUri.Contains("@"))
             {
-                var numberPart = sipUri.Contains("<") ? 
-                    sipUri.Substring(sipUri.IndexOf("<") + 1, sipUri.IndexOf("@") - sipUri.IndexOf("<") - 1) :
-                    sipUri.Substring(0, sipUri.IndexOf("@"));
-                return numberPart.Trim();
+                var atIndex = sipUri.IndexOf("@");
+                return sipUri.Substring(0, atIndex).Trim();
             }
-            return sipUri.Trim();
+            
+            // If it looks like a phone number (digits, +, -, spaces, parentheses), return as is
+            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' ' || c == '(' || c == ')'))
+            {
+                return sipUri.Trim();
+            }
+            
+            // If we can't extract a number, return "Unknown Number"
+            return "Unknown Number";
+        }
+
+        private static string ExtractNumberFromSipUri(string sipUri)
+        {
+            // Extract user part from sip:user@domain
+            if (sipUri.StartsWith("sip:"))
+            {
+                var withoutScheme = sipUri.Substring(4);
+                var atIndex = withoutScheme.IndexOf('@');
+                if (atIndex > 0)
+                {
+                    return withoutScheme.Substring(0, atIndex);
+                }
+                return withoutScheme;
+            }
+            
+            // Handle case where it's just user@domain without sip: prefix
+            var atIdx = sipUri.IndexOf('@');
+            if (atIdx > 0)
+            {
+                return sipUri.Substring(0, atIdx);
+            }
+            
+            return sipUri;
         }
 
         public string DurationText => Duration.TotalSeconds < 1 ? "0s" : 

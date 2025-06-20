@@ -1009,11 +1009,14 @@ namespace WindowsSipPhone.Pages
                 var displayPart = sipUri.Substring(0, sipUri.IndexOf("<")).Trim().Trim('"');
                 return string.IsNullOrWhiteSpace(displayPart) ? string.Empty : displayPart;
             }
+            // If it doesn't look like a number (no digits or @), treat it as a display name
+            if (!sipUri.Contains("@") && !sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' '))
+            {
+                return sipUri.Trim();
+            }
             // If it's just a number or simple string without < >, return empty (no display name)
             return string.Empty;
-        }
-
-        public static string ExtractNumberPart(string sipUri)
+        }        public static string ExtractNumberPart(string sipUri)
         {
             // Extract just the number from SIP URI
             if (sipUri.Contains("@"))
@@ -1023,7 +1026,13 @@ namespace WindowsSipPhone.Pages
                     sipUri.Substring(0, sipUri.IndexOf("@"));
                 return numberPart.Trim();
             }
-            return sipUri.Trim();
+            // If it looks like a phone number (all digits, +, -, spaces), return as is
+            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' '))
+            {
+                return sipUri.Trim();
+            }
+            // If it's just a name without number info, return "Unknown Number"
+            return "Unknown Number";
         }
 
         public string DurationText => Duration.TotalSeconds < 1 ? "0s" : 

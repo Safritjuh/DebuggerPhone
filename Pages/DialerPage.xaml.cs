@@ -1003,36 +1003,94 @@ namespace WindowsSipPhone.Pages
         // DisplayName: show caller name if available, otherwise number
         public string DisplayName => !string.IsNullOrWhiteSpace(CallerName) ? CallerName : Number;        public static string ExtractDisplayName(string sipUri)
         {
-            // Extract display name from SIP URI like "John Doe <101@server.com>" or just "101@server.com"
+            if (string.IsNullOrWhiteSpace(sipUri))
+                return string.Empty;
+
+            // Handle formats like: "Display Name" <sip:user@domain> or Display Name <sip:user@domain>
             if (sipUri.Contains("<") && sipUri.Contains(">"))
             {
-                var displayPart = sipUri.Substring(0, sipUri.IndexOf("<")).Trim().Trim('"');
+                var displayPart = sipUri.Substring(0, sipUri.IndexOf("<")).Trim();
+                // Remove surrounding quotes if present
+                displayPart = displayPart.Trim('"').Trim();
                 return string.IsNullOrWhiteSpace(displayPart) ? string.Empty : displayPart;
             }
-            // If it doesn't look like a number (no digits or @), treat it as a display name
-            if (!sipUri.Contains("@") && !sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' '))
+            
+            // If it's just a SIP URI like sip:user@domain, no display name
+            if (sipUri.StartsWith("sip:") || sipUri.Contains("@"))
             {
-                return sipUri.Trim();
+                return string.Empty;
             }
-            // If it's just a number or simple string without < >, return empty (no display name)
-            return string.Empty;
+            
+            // If it's just a plain number, no display name
+            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' ' || c == '(' || c == ')'))
+            {
+                return string.Empty;
+            }
+            
+            // Otherwise, treat the whole thing as a display name (fallback case)
+            return sipUri.Trim();
         }        public static string ExtractNumberPart(string sipUri)
         {
-            // Extract just the number from SIP URI
+            if (string.IsNullOrWhiteSpace(sipUri))
+                return "Unknown Number";
+
+            // Handle formats like: "Display Name" <sip:user@domain> or <sip:user@domain>
+            if (sipUri.Contains("<") && sipUri.Contains(">"))
+            {
+                var start = sipUri.IndexOf("<") + 1;
+                var end = sipUri.IndexOf(">");
+                if (end > start)
+                {
+                    var uri = sipUri.Substring(start, end - start).Trim();
+                    return ExtractNumberFromSipUri(uri);
+                }
+            }
+            
+            // Handle direct SIP URI like sip:user@domain
+            if (sipUri.StartsWith("sip:"))
+            {
+                return ExtractNumberFromSipUri(sipUri);
+            }
+            
+            // Handle URI with @ but no sip: prefix
             if (sipUri.Contains("@"))
             {
-                var numberPart = sipUri.Contains("<") ? 
-                    sipUri.Substring(sipUri.IndexOf("<") + 1, sipUri.IndexOf("@") - sipUri.IndexOf("<") - 1) :
-                    sipUri.Substring(0, sipUri.IndexOf("@"));
-                return numberPart.Trim();
+                var atIndex = sipUri.IndexOf("@");
+                return sipUri.Substring(0, atIndex).Trim();
             }
-            // If it looks like a phone number (all digits, +, -, spaces), return as is
-            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' '))
+            
+            // If it looks like a phone number (digits, +, -, spaces, parentheses), return as is
+            if (sipUri.All(c => char.IsDigit(c) || c == '+' || c == '-' || c == ' ' || c == '(' || c == ')'))
             {
                 return sipUri.Trim();
             }
-            // If it's just a name without number info, return "Unknown Number"
+            
+            // If we can't extract a number, return "Unknown Number"
             return "Unknown Number";
+        }
+
+        private static string ExtractNumberFromSipUri(string sipUri)
+        {
+            // Extract user part from sip:user@domain
+            if (sipUri.StartsWith("sip:"))
+            {
+                var withoutScheme = sipUri.Substring(4);
+                var atIndex = withoutScheme.IndexOf('@');
+                if (atIndex > 0)
+                {
+                    return withoutScheme.Substring(0, atIndex);
+                }
+                return withoutScheme;
+            }
+            
+            // Handle case where it's just user@domain without sip: prefix
+            var atIdx = sipUri.IndexOf('@');
+            if (atIdx > 0)
+            {
+                return sipUri.Substring(0, atIdx);
+            }
+            
+            return sipUri;
         }
 
         public string DurationText => Duration.TotalSeconds < 1 ? "0s" : 

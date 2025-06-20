@@ -15,11 +15,11 @@ namespace WindowsSipPhone.Pages
     public partial class DialerPage : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {        private string _dialedNumber = "";
         private CallHistoryEntry? _selectedCall;
-        private string _currentFilter = "All";
-        private SipPhoneService? _sipService;
+        private string _currentFilter = "All";        private SipPhoneService? _sipService;
         private bool _isCallActive = false;
         private string _activeCallNumber = "";
         private string _incomingCallNumber = ""; // Store incoming call number until accepted
+        private bool _isIncomingCall = false; // Track if current call is incoming or outgoing
         private DateTime? _callStartTime;
         private System.Windows.Threading.DispatcherTimer? _callTimer;
         private bool _isMuted = false;
@@ -83,14 +83,13 @@ namespace WindowsSipPhone.Pages
           private void OnCallStateChanged(object? sender, string callState)
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (callState.StartsWith("Outgoing call to") || callState.StartsWith("Dialing"))
+            {                if (callState.StartsWith("Outgoing call to") || callState.StartsWith("Dialing"))
                 {
                     var number = callState.Contains("Dialing") ? 
                         callState.Replace("Dialing ", "") : 
                         callState.Replace("Outgoing call to ", "");
-                    StartCall(number);
-                }                else if (callState.StartsWith("Incoming call:"))
+                    StartCall(number, false); // false = outgoing call
+                }else if (callState.StartsWith("Incoming call:"))
                 {
                     // Store incoming call info for when it's accepted
                     var callerInfo = callState.Replace("Incoming call: ", "");
@@ -127,7 +126,7 @@ namespace WindowsSipPhone.Pages
                         _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(incomingCall));
                         _logger.LogSystemInfo("CALL_HISTORY", $"📞← Incoming call added to history: {_incomingCallNumber}");
                         
-                        StartCall(_incomingCallNumber);
+                        StartCall(_incomingCallNumber, true); // true = incoming call
                         _incomingCallNumber = ""; // Clear after use
                     }
                     
@@ -168,10 +167,11 @@ namespace WindowsSipPhone.Pages
                     EndCall();
                 }
             });
-        }private void StartCall(string number)
+        }        private void StartCall(string number, bool isIncoming = false)
         {
             _isCallActive = true;
             _activeCallNumber = number;
+            _isIncomingCall = isIncoming;
             // Do NOT start timer or set start time here - wait for call to be answered
             OnPropertyChanged(nameof(IsCallActive));
             OnPropertyChanged(nameof(CallStatusText));
@@ -199,9 +199,9 @@ namespace WindowsSipPhone.Pages
                 actualCallDuration = DateTime.Now - _callStartTime.Value;
                 _logger.LogSystemInfo("CALL", $"📊 Actual call duration: {actualCallDuration.TotalSeconds:F1} seconds");
             }
-            
-            _isCallActive = false;
+              _isCallActive = false;
             _activeCallNumber = "";
+            _isIncomingCall = false; // Reset direction flag
             _callStartTime = null;
             _callTimer?.Stop();
             
@@ -276,17 +276,34 @@ namespace WindowsSipPhone.Pages
             {
                 if (!_isCallActive) return "";
                 
+                // Extract clean display name and number for better UI
+                var displayName = CallHistoryEntry.ExtractDisplayName(_activeCallNumber);
+                var number = CallHistoryEntry.ExtractNumberPart(_activeCallNumber);
+                
+                // Create a clean display format
+                string displayText;
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayText = $"{displayName} ({number})";
+                }
+                else
+                {
+                    displayText = number;
+                }
+                  // Add direction indicator
+                string directionIcon = _isIncomingCall ? "📞←" : "📞→";
+                
                 if (_callStartTime.HasValue)
                 {
                     if (_isCallOnHold)
                     {
-                        return $"On Hold: {_activeCallNumber}";
+                        return $"{directionIcon} On Hold: {displayText}";
                     }
-                    return $"Connected to {_activeCallNumber}";
+                    return $"{directionIcon} Connected to {displayText}";
                 }
                 else
                 {
-                    return $"Calling {_activeCallNumber}...";
+                    return $"{directionIcon} {(_isIncomingCall ? "Answering" : "Calling")} {displayText}...";
                 }
             }
         }

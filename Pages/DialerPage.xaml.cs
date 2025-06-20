@@ -411,11 +411,9 @@ namespace WindowsSipPhone.Pages
         public ICommand HoldCommand { get; private set; } = null!;
         public ICommand AudioCommand { get; private set; } = null!;
         public ICommand FilterCallsCommand { get; private set; } = null!;
-        public ICommand RedialCommand { get; private set; } = null!;
-        public ICommand ClearHistoryCommand { get; private set; } = null!;
+        public ICommand RedialCommand { get; private set; } = null!;        public ICommand ClearHistoryCommand { get; private set; } = null!;
         public ICommand ExportCsvCommand { get; private set; } = null!;
-        public ICommand TestCallCommand { get; private set; } = null!;
-        public ICommand RefreshCommand { get; private set; } = null!;
+        // TestCallCommand and RefreshCommand removed for cleaner UI
 
         private void InitializeCommands()
         {            KeypadCommand = new RelayCommand<string>(HandleKeypadPress); // Unified keypad handler
@@ -425,11 +423,9 @@ namespace WindowsSipPhone.Pages
             HoldCommand = new RelayCommand(() => _ = ToggleHoldAsync());
             AudioCommand = new RelayCommand(ToggleAudio);
             FilterCallsCommand = new RelayCommand<string>(FilterCalls);
-            RedialCommand = new RelayCommand(RedialCall, CanRedial);
-            ClearHistoryCommand = new RelayCommand(ClearCallHistory);
+            RedialCommand = new RelayCommand(RedialCall, CanRedial);            ClearHistoryCommand = new RelayCommand(ClearCallHistory);
             ExportCsvCommand = new RelayCommand(ExportCallHistoryToCsv);
-            TestCallCommand = new RelayCommand(AddTestCall);
-            RefreshCommand = new RelayCommand(RefreshCallHistory);
+            // TestCallCommand and RefreshCommand initialization removed
         }
 
         private async Task MakeCallAsync()
@@ -854,62 +850,10 @@ namespace WindowsSipPhone.Pages
             catch (Exception ex)
             {
                 _logger.LogError("CALL_HISTORY", $"Failed to load call history: {ex.Message}");
-            }
-        }
+            }        }
 
-        public void RefreshCallHistory()
-        {
-            try
-            {
-                // Reload call history from database
-                var dbCalls = _callHistoryService.GetRecentCalls();
-                
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CallHistory.Clear();
-                    foreach (var call in dbCalls)
-                    {
-                        CallHistory.Add(call.ToUiModel());
-                    }
-                    
-                    ApplyCurrentFilter();
-                    _logger.LogSystemInfo("CALL_HISTORY", $"🔄 Call history refreshed - {CallHistory.Count} calls loaded");
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("CALL_HISTORY", $"Failed to refresh call history: {ex.Message}");
-            }
-        }
-        
-        // Test method to add a call without SIP service (for development/testing)
-        public void AddTestCall()
-        {
-            try
-            {
-                var testCall = new CallHistoryEntry
-                {
-                    Number = "TEST-" + DateTime.Now.ToString("HHmmss"),
-                    CallType = CallType.Outgoing,
-                    DateTime = DateTime.Now,
-                    Duration = TimeSpan.FromSeconds(30),
-                    Status = CallStatus.Completed
-                };
-                
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CallHistory.Insert(0, testCall); // UI model, no conversion needed
-                    ApplyCurrentFilter();
-                });
-                
-                _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(testCall));
-                _logger.LogSystemInfo("CALL_HISTORY", $"🧪 Test call added: {testCall.Number}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("CALL_HISTORY", $"Failed to add test call: {ex.Message}");
-            }
-        }
+        // RefreshCallHistory and AddTestCall methods removed for cleaner UI
+        // Call history is automatically updated when calls are made/received
 
         #endregion
 

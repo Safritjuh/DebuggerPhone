@@ -438,3 +438,70 @@ The extraction methods handle these SIP header formats correctly:
 - **SIP Header Processing**: `SimpleSipClient.cs` (ExtractCallerInfo method) 
 - **Database Integration**: `CallHistoryService.cs` (AddCall, UpdateCall methods)
 - **UI Templates**: `Pages/DialerPage.xaml` (Call History ListView)
+
+## Window Interaction Standards (BUG-028 Resolution)
+
+### Main Window Dragging Functionality
+The main window with custom title bar must be fully draggable and interactive:
+
+#### **User Experience Requirements**
+- **Single Click + Drag**: Window moves around the screen smoothly
+- **Double Click**: Toggles between maximized and normal window state  
+- **Visual Feedback**: Standard cursor behavior during drag operations
+- **Edge Cases**: Graceful handling when window is maximized or in special states
+
+#### **Technical Implementation**
+Located in `MainWindow.xaml` and `MainWindow.xaml.cs`:
+
+**XAML Changes**:
+- Added `MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"` to title bar Border
+- Added same event handler to title StackPanel for full title area coverage
+- Maintains existing `WindowChrome.IsHitTestVisibleInChrome="True"` configuration
+
+**Code-Behind Implementation**:
+```csharp
+private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+{
+    if (e.ButtonState == MouseButtonState.Pressed)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Toggle maximize/restore on double-click
+            if (WindowState == WindowState.Maximized)
+                WindowState = WindowState.Normal;
+            else
+                WindowState = WindowState.Maximized;
+        }
+        else if (e.ClickCount == 1)
+        {
+            try
+            {
+                this.DragMove();  // Standard WPF dragging
+            }
+            catch (InvalidOperationException)
+            {
+                // Handle edge cases where dragging is not possible
+            }
+        }
+    }
+}
+```
+
+#### **Key Design Principles**
+- **Standard WPF Patterns**: Uses built-in `DragMove()` method for reliability
+- **Exception Safety**: Handles `InvalidOperationException` for edge cases
+- **User Expectations**: Double-click maximize/restore follows Windows conventions
+- **Event Ordering**: Proper handling of single vs. double clicks
+- **Custom Title Bar**: Works seamlessly with `WindowStyle="None"` configuration
+
+#### **Testing Validation**
+- ✅ Window drags smoothly across multiple monitors
+- ✅ Double-click maximize/restore works correctly
+- ✅ No interference with title bar buttons (minimize, maximize, close)
+- ✅ Exception handling prevents crashes in edge cases
+- ✅ Maintains all existing window functionality
+
+#### **Implementation Files**
+- **XAML Layout**: `MainWindow.xaml` (title bar event binding)
+- **Event Handling**: `MainWindow.xaml.cs` (TitleBar_MouseLeftButtonDown method)
+- **Documentation**: `BUG-028-WINDOW-DRAGGING-FIX.md` (comprehensive fix details)

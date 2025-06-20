@@ -292,4 +292,84 @@ namespace WindowsSipPhone.Database
 
         public string GetDatabasePath() => _databasePath;
     }
+
+    public class CallHistoryEntry
+    {
+        private string _displayName = string.Empty;
+        public string CallerName { get; set; } = string.Empty;
+        public string Number { get; set; } = string.Empty;
+        public CallType CallType { get; set; }
+        public DateTime DateTime { get; set; }
+        public TimeSpan Duration { get; set; }
+        public CallStatus Status { get; set; }
+
+        public CallHistoryEntry() {
+            _displayName = string.Empty;
+            CallerName = string.Empty;
+            Number = string.Empty;
+        }
+
+        public CallHistoryEntry(string displayName, string number)
+        {
+            _displayName = displayName;
+            CallerName = ExtractCallerName(displayName, number);
+            Number = ExtractNumber(number);
+        }
+
+        // Mapping from UI model to DB model
+        public static CallHistoryEntry FromUiModel(WindowsSipPhone.Pages.CallHistoryEntry uiEntry)
+        {
+            return new CallHistoryEntry
+            {
+                CallerName = uiEntry.CallerName ?? string.Empty,
+                Number = uiEntry.Number,
+                CallType = (CallType)uiEntry.CallType,
+                DateTime = uiEntry.DateTime,
+                Duration = uiEntry.Duration,
+                Status = (CallStatus)uiEntry.Status
+            };
+        }
+
+        // Mapping from DB model to UI model
+        public WindowsSipPhone.Pages.CallHistoryEntry ToUiModel()
+        {
+            return new WindowsSipPhone.Pages.CallHistoryEntry
+            {
+                CallerName = this.CallerName,
+                Number = this.Number,
+                CallType = (WindowsSipPhone.Pages.CallType)this.CallType,
+                DateTime = this.DateTime,
+                Duration = this.Duration,
+                Status = (WindowsSipPhone.Pages.CallStatus)this.Status
+            };
+        }
+
+        public static string ExtractCallerName(string displayName, string number)
+        {
+            // Prefer displayName if it's not a number and not empty
+            if (!string.IsNullOrWhiteSpace(displayName) && displayName != number)
+                return displayName;
+            return string.Empty;
+        }
+        public static string ExtractNumber(string number)
+        {
+            // Always return the number as-is
+            return number;
+        }
+    }
+
+    public enum CallType
+    {
+        Incoming,
+        Outgoing,
+        Missed
+    }
+
+    public enum CallStatus
+    {
+        Completed,
+        Busy,
+        NoAnswer,
+        Failed
+    }
 }

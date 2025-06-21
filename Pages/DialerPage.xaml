@@ -198,8 +198,7 @@
                     
                     <!-- Column Headers -->
                     <Border Grid.Row="2" Background="#ECF0F1" BorderBrush="#BDC3C7" 
-                           BorderThickness="1,1,1,0" Margin="0,0,0,0">
-                        <Grid Margin="8,8">
+                           BorderThickness="1,1,1,0" Margin="0,0,0,0">                        <Grid Margin="8,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="120"/>      <!-- Column 1: Name and Number -->
                                 <ColumnDefinition Width="*" MinWidth="100"/>      <!-- Column 2: Date/Time -->
@@ -207,7 +206,7 @@
                             </Grid.ColumnDefinitions>
                             
                             <TextBlock Grid.Column="0" Text="Contact" FontWeight="Bold" 
-                                      FontSize="12" Foreground="#2C3E50"/>
+                                      FontSize="12" Foreground="#2C3E50" Margin="26,0,0,0"/>
                             <TextBlock Grid.Column="1" Text="Date &amp; Time" FontWeight="Bold" 
                                       FontSize="12" Foreground="#2C3E50" Margin="10,0,0,0"/>
                             <TextBlock Grid.Column="2" Text="Duration" FontWeight="Bold" 
@@ -220,7 +219,7 @@
                              SelectedItem="{Binding SelectedCall}" Background="White" 
                              BorderBrush="#BDC3C7" BorderThickness="1,0,1,1" Margin="0,25,0,0"><ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="8,5">
+                                <Grid Margin="8,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" MinWidth="120"/>      <!-- Column 1: Name and Number -->
                                         <ColumnDefinition Width="*" MinWidth="100"/>      <!-- Column 2: Date/Time -->
@@ -241,7 +240,7 @@
                                     </StackPanel>
                                     
                                     <!-- Column 2: Start Date and Time -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
                                         <TextBlock Text="{Binding DateTime, StringFormat='MMM dd, yyyy'}" 
                                                   FontSize="12" Foreground="#2C3E50" FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding DateTime, StringFormat='HH:mm'}" 

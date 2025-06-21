@@ -20,6 +20,7 @@ applyTo: '**'
 - Use direct TCP/UDP transport for SIP - no WebSocket complications
 - Windows 10 or later is the target OS, so no need to worry about older Windows versions.
 - Never ask for confirmation, unless I specificly instruct.
+- Never ask for confirmation, unless I specificly instruct.
    
 
 ## Git Branch Workflow

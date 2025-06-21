@@ -1,9 +1,9 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using WindowsSipPhone.Services;
+using WindowsSipPhone.Services.Logging;
 
-namespace WindowsSipPhone.Utils
+namespace WindowsSipPhone.Core.Utilities
 {
     /// <summary>
     /// Helper class for tracking UI interactions and application events

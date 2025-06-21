@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using WindowsSipPhone.Utils;
+using WindowsSipPhone.Core.Utilities;
 
-namespace WindowsSipPhone.Models
+namespace WindowsSipPhone.Core.Models
 {
     /// <summary>
     /// SIP Profile configuration for platform-specific settings

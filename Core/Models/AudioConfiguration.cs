@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.IO;
 
-namespace WindowsSipPhone.Models
+namespace WindowsSipPhone.Core.Models
 {
     /// <summary>
     /// Configuration model for Audio settings persistence

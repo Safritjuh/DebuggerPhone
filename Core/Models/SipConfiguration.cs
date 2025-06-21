@@ -3,7 +3,7 @@ using System.IO;
 using System;
 using System.Linq;
 
-namespace WindowsSipPhone.Models
+namespace WindowsSipPhone.Core.Models
 {
     /// <summary>
     /// Configuration model for SIP settings persistence

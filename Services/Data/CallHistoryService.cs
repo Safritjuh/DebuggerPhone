@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Data.Sqlite;
-using WindowsSipPhone.Pages;
+using WindowsSipPhone.UI.Pages;
 
-namespace WindowsSipPhone.Database
+namespace WindowsSipPhone.Services.Data
 {
     /// <summary>
     /// Professional call history service using embedded SQLite

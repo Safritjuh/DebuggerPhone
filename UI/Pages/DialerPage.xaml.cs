@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.IO;
-using WindowsSipPhone.Commands;
-using WindowsSipPhone.Database;
-using WindowsSipPhone.Services;
+using WindowsSipPhone.Core.Utilities;
+using WindowsSipPhone.Services.Data;
+using WindowsSipPhone.Services.Logging;
 
-namespace WindowsSipPhone.Pages
+namespace WindowsSipPhone.UI.Pages
 {    
     public partial class DialerPage : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {        private string _dialedNumber = "";

@@ -9,13 +9,12 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>  
-  
-  <!-- Include profile files as content to be copied to output -->
+    <!-- Include profile files as content to be copied to output -->
   <ItemGroup>
-    <Content Include="Profiles\*.ini">
+    <Content Include="Infrastructure\Configuration\Profiles\*.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Profiles\README.md">
+    <Content Include="Infrastructure\Configuration\Profiles\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -25,15 +24,14 @@
     <Compile Remove="WindowsSipPhone.Tests/**/*.cs" />
     <None Include="WindowsSipPhone.Tests/**/*.cs" />
   </ItemGroup>
-  
-  <!-- Exclude alternative XAML files from build to prevent duplicate class definitions -->
+    <!-- Exclude alternative XAML files from build to prevent duplicate class definitions -->
   <ItemGroup>
-    <Page Remove="IncomingCallWindow_Clean.xaml" />
-    <Page Remove="IncomingCallWindow_Fixed.xaml" />
-    <Page Remove="IncomingCallWindow_New.xaml" />
-    <None Include="IncomingCallWindow_Clean.xaml" />
-    <None Include="IncomingCallWindow_Fixed.xaml" />
-    <None Include="IncomingCallWindow_New.xaml" />
+    <Page Remove="UI\Windows\Archive\IncomingCallWindow_Clean.xaml" />
+    <Page Remove="UI\Windows\Archive\IncomingCallWindow_Fixed.xaml" />
+    <Page Remove="UI\Windows\Archive\IncomingCallWindow_New.xaml" />
+    <None Include="UI\Windows\Archive\IncomingCallWindow_Clean.xaml" />
+    <None Include="UI\Windows\Archive\IncomingCallWindow_Fixed.xaml" />
+    <None Include="UI\Windows\Archive\IncomingCallWindow_New.xaml" />
   </ItemGroup>
   
   <!-- Audio packages for RTP functionality -->

@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Media;
 
-namespace WindowsSipPhone.Models
+namespace WindowsSipPhone.Core.Models
 {
     /// <summary>
     /// Represents a single log entry in the application logging system

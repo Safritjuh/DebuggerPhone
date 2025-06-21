@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace WindowsSipPhone.Utils
+namespace WindowsSipPhone.Core.Utilities
 {
     /// <summary>
     /// Simple INI file handler for reading and writing INI files

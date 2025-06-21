@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Core.Models;
 
-namespace WindowsSipPhone.Services
+namespace WindowsSipPhone.Services.Logging
 {
     /// <summary>
     /// Comprehensive application logging service that tracks:

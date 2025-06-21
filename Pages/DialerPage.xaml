@@ -212,21 +212,17 @@
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
                                 <TextBlock Text="📞" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0"/>
                                 <TextBlock Text="Contact" FontWeight="Bold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center"/>
-                            </StackPanel>
-                            
-                            <!-- Column 1 Resizer -->
+                            </StackPanel>                            <!-- Column 1 Resizer -->
                             <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                         Background="Transparent" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
-                                         Cursor="SizeWE"/>
+                                         Background="#E0E0E0" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
+                                         Cursor="SizeWE" ToolTip="Drag to resize Contact column"/>
                             
                             <!-- Column 2: Date & Time Header -->
                             <TextBlock Grid.Column="2" Text="Date &amp; Time" FontWeight="Bold" 
-                                      FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            
-                            <!-- Column 2 Resizer -->
+                                      FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="8,0,0,0"/>                            <!-- Column 2 Resizer -->
                             <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                         Background="Transparent" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
-                                         Cursor="SizeWE"/>
+                                         Background="#E0E0E0" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
+                                         Cursor="SizeWE" ToolTip="Drag to resize Date &amp; Time column"/>
                               <!-- Column 3: Duration Header -->
                             <TextBlock Grid.Column="4" Text="Duration" FontWeight="Bold" 
                                       FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="8,0,0,0"/>

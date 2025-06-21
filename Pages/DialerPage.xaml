@@ -227,10 +227,9 @@
                             <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                          Background="Transparent" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
                                          Cursor="SizeWE"/>
-                            
-                            <!-- Column 3: Duration Header -->
+                              <!-- Column 3: Duration Header -->
                             <TextBlock Grid.Column="4" Text="Duration" FontWeight="Bold" 
-                                      FontSize="12" Foreground="#2C3E50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                      FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="8,0,0,0"/>
                         </Grid>
                     </Border>
                     
@@ -269,12 +268,10 @@
                                         <TextBlock Text="{Binding DateTime, StringFormat='HH:mm'}" 
                                                   FontSize="11" Foreground="#7F8C8D"/>
                                     </StackPanel>
-                                    
-                                    <!-- Column 3: Conversation Duration -->
+                                      <!-- Column 3: Conversation Duration -->
                                     <TextBlock Grid.Column="4" Text="{Binding DurationText}" 
                                               FontSize="12" FontWeight="SemiBold" 
-                                              Foreground="#27AE60" VerticalAlignment="Center" 
-                                              HorizontalAlignment="Center" TextAlignment="Center"/>
+                                              Foreground="#27AE60" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>

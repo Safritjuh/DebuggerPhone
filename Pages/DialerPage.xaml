@@ -195,18 +195,22 @@
                         <Button Content="📞❌ Missed" Style="{StaticResource FilterButtonStyle}"
                                Command="{Binding FilterCallsCommand}" CommandParameter="Missed" Margin="5,0,0,0"/>
                     </StackPanel>
-                    
-                    <!-- Column Headers -->
+                      <!-- Column Headers -->
                     <Border Grid.Row="2" Background="#ECF0F1" BorderBrush="#BDC3C7" 
-                           BorderThickness="1,1,1,0" Margin="0,0,0,0">                        <Grid Margin="8,8">
+                           BorderThickness="1,1,1,0" Margin="0,0,0,0">
+                        <Grid Margin="8,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="120"/>      <!-- Column 1: Name and Number -->
                                 <ColumnDefinition Width="*" MinWidth="100"/>      <!-- Column 2: Date/Time -->
                                 <ColumnDefinition Width="80"/>                    <!-- Column 3: Duration -->
                             </Grid.ColumnDefinitions>
                             
-                            <TextBlock Grid.Column="0" Text="Contact" FontWeight="Bold" 
-                                      FontSize="12" Foreground="#2C3E50" Margin="26,0,0,0"/>
+                            <!-- Column 1: Contact Header (matching data layout) -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="📞" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0"/>
+                                <TextBlock Text="Contact" FontWeight="Bold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            
                             <TextBlock Grid.Column="1" Text="Date &amp; Time" FontWeight="Bold" 
                                       FontSize="12" Foreground="#2C3E50" Margin="10,0,0,0"/>
                             <TextBlock Grid.Column="2" Text="Duration" FontWeight="Bold" 

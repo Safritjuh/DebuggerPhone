@@ -4,7 +4,8 @@ using System.Windows;
 using System;
 using System.Runtime.InteropServices;
 using WindowsSipPhone.Themes;
-using WindowsSipPhone.Utils;
+using WindowsSipPhone.Core.Utilities;
+using WindowsSipPhone.UI.Windows;
 
 namespace WindowsSipPhone;
 

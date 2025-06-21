@@ -94,7 +94,7 @@ namespace WindowsSipPhone
             _audioManager = new RtpAudioManager();
         }
         
-        public SimpleSipClient(string serverHost, int serverPort, string username, string password, WindowsSipPhone.Models.SipProfile profile)
+        public SimpleSipClient(string serverHost, int serverPort, string username, string password, WindowsSipPhone.Core.Models.SipProfile profile)
         {            
             _serverHost = serverHost;
             _serverPort = serverPort;

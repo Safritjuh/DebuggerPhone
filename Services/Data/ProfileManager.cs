@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Core.Models;
+using WindowsSipPhone.Core.Utilities;
 
-namespace WindowsSipPhone.Utils
+namespace WindowsSipPhone.Services.Data
 {
     /// <summary>
     /// Utility class for managing SIP profiles (import/export/validation)

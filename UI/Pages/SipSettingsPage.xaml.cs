@@ -4,12 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using WindowsSipPhone.Commands;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Core.Utilities;
+using WindowsSipPhone.Core.Models;
 using System.Linq;
 using System.Text;
+using WindowsSipPhone.Services.Data;
 
-namespace WindowsSipPhone.Pages
+namespace WindowsSipPhone.UI.Pages
 {
     public partial class SipSettingsPage : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {
@@ -521,7 +522,7 @@ namespace WindowsSipPhone.Pages
                 // Add compatibility information
                 details.AppendLine();
                 details.AppendLine("🔧 Compatibility:");
-                var compatInfo = WindowsSipPhone.Utils.ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
+                var compatInfo = ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
                 details.AppendLine(compatInfo);
                 
                 return details.ToString().Trim();

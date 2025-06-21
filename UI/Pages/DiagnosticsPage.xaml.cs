@@ -11,14 +11,14 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using WindowsSipPhone.Commands;
-using WindowsSipPhone.Utils;
-using WindowsSipPhone.Services;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Core.Utilities;
+using WindowsSipPhone.Services.Logging;
+using WindowsSipPhone.Services.Diagnostics;
+using WindowsSipPhone.Core.Models;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace WindowsSipPhone.Pages
+namespace WindowsSipPhone.UI.Pages
 {
     /// <summary>
     /// Interaction logic for DiagnosticsPage.xaml

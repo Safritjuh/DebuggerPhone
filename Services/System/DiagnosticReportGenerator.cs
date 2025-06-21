@@ -6,7 +6,7 @@ using System.Windows;
 using NAudio.Wave;
 using System.Net.NetworkInformation;
 
-namespace WindowsSipPhone.Utils
+namespace WindowsSipPhone.Services.Diagnostics
 {
     public class DiagnosticReportGenerator
     {

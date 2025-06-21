@@ -40,11 +40,11 @@ public class SipPhoneService : IDisposable
       public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
     {
         // Use default profile for backward compatibility
-        var defaultProfile = WindowsSipPhone.Models.SipProfile.GetDefaultProfile();
+        var defaultProfile = WindowsSipPhone.Core.Models.SipProfile.GetDefaultProfile();
         await RegisterWithProfileAsync(username, password, server, port, defaultProfile, expires);
     }
     
-    public async Task RegisterWithProfileAsync(string username, string password, string server, int port, WindowsSipPhone.Models.SipProfile profile, int? expiresOverride = null)
+    public async Task RegisterWithProfileAsync(string username, string password, string server, int port, WindowsSipPhone.Core.Models.SipProfile profile, int? expiresOverride = null)
     {
         _username = username;
         _serverAddress = server;

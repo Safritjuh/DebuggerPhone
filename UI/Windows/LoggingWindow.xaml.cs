@@ -4,10 +4,10 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using WindowsSipPhone.Services;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Services.Logging;
+using WindowsSipPhone.Core.Models;
 
-namespace WindowsSipPhone
+namespace WindowsSipPhone.UI.Windows
 {
     public partial class LoggingWindow : Window, INotifyPropertyChanged
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
-using WindowsSipPhone.Models;
+using WindowsSipPhone.Core.Models;
 
 namespace WindowsSipPhone.SipCore
 {    /// <summary>

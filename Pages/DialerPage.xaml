@@ -170,10 +170,9 @@
                     </Border>
                       <!-- SIP Protocol Test Section - REMOVED per task requirements -->
                 </Grid>
-            </Border>
-              <!-- Right Panel - Call History -->
+            </Border>            <!-- Right Panel - Call History -->
             <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Margin="10,0,0,0">
-                <Grid Margin="20" Grid.IsSharedSizeScope="True">
+                <Grid Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -197,15 +196,16 @@
                         <Button Content="📞❌ Missed" Style="{StaticResource FilterButtonStyle}"
                                Command="{Binding FilterCallsCommand}" CommandParameter="Missed" Margin="5,0,0,0"/>
                     </StackPanel>
-                    
-                    <!-- Column Headers -->
+                      <!-- Column Headers -->
                     <Border Grid.Row="2" Background="#ECF0F1" BorderBrush="#BDC3C7" 
                            BorderThickness="1,1,1,0" Margin="0,0,0,0">
                         <Grid Margin="0,8,0,8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition SharedSizeGroup="ContactColumn"/>
-                                <ColumnDefinition SharedSizeGroup="DateTimeColumn"/>
-                                <ColumnDefinition SharedSizeGroup="DurationColumn"/>
+                                <ColumnDefinition Width="180" MinWidth="100" MaxWidth="300" x:Name="ContactColumnDef"/>
+                                <ColumnDefinition Width="4"/>
+                                <ColumnDefinition Width="150" MinWidth="120" MaxWidth="250" x:Name="DateTimeColumnDef"/>
+                                <ColumnDefinition Width="4"/>
+                                <ColumnDefinition Width="*" MinWidth="60" x:Name="DurationColumnDef"/>
                             </Grid.ColumnDefinitions>
                             
                             <!-- Column 1: Contact Header -->
@@ -214,12 +214,22 @@
                                 <TextBlock Text="Contact" FontWeight="Bold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center"/>
                             </StackPanel>
                             
+                            <!-- Column 1 Resizer -->
+                            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                         Background="Transparent" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
+                                         Cursor="SizeWE"/>
+                            
                             <!-- Column 2: Date & Time Header -->
-                            <TextBlock Grid.Column="1" Text="Date &amp; Time" FontWeight="Bold" 
+                            <TextBlock Grid.Column="2" Text="Date &amp; Time" FontWeight="Bold" 
                                       FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="8,0,0,0"/>
                             
+                            <!-- Column 2 Resizer -->
+                            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                         Background="Transparent" ShowsPreview="False" ResizeBehavior="PreviousAndNext"
+                                         Cursor="SizeWE"/>
+                            
                             <!-- Column 3: Duration Header -->
-                            <TextBlock Grid.Column="2" Text="Duration" FontWeight="Bold" 
+                            <TextBlock Grid.Column="4" Text="Duration" FontWeight="Bold" 
                                       FontSize="12" Foreground="#2C3E50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
@@ -228,14 +238,15 @@
                     <ListView Grid.Row="3" ItemsSource="{Binding FilteredCallHistory}" 
                              SelectedItem="{Binding SelectedCall}" Background="White" 
                              BorderBrush="#BDC3C7" BorderThickness="1,0,1,1" Margin="0,0,0,0"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListView.ItemTemplate>
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">                        <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,8,0,8">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition SharedSizeGroup="ContactColumn"/>
-                                        <ColumnDefinition SharedSizeGroup="DateTimeColumn"/>
-                                        <ColumnDefinition SharedSizeGroup="DurationColumn"/>
+                                        <ColumnDefinition Width="{Binding Width, Source={x:Reference ContactColumnDef}}"/>
+                                        <ColumnDefinition Width="4"/>
+                                        <ColumnDefinition Width="{Binding Width, Source={x:Reference DateTimeColumnDef}}"/>
+                                        <ColumnDefinition Width="4"/>
+                                        <ColumnDefinition Width="{Binding Width, Source={x:Reference DurationColumnDef}}"/>
                                     </Grid.ColumnDefinitions>
                                     
                                     <!-- Column 1: Call Type Icon + Name/Number -->
@@ -252,7 +263,7 @@
                                     </StackPanel>
                                     
                                     <!-- Column 2: Start Date and Time -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
                                         <TextBlock Text="{Binding DateTime, StringFormat='MMM dd, yyyy'}" 
                                                   FontSize="12" Foreground="#2C3E50" FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding DateTime, StringFormat='HH:mm'}" 
@@ -260,7 +271,7 @@
                                     </StackPanel>
                                     
                                     <!-- Column 3: Conversation Duration -->
-                                    <TextBlock Grid.Column="2" Text="{Binding DurationText}" 
+                                    <TextBlock Grid.Column="4" Text="{Binding DurationText}" 
                                               FontSize="12" FontWeight="SemiBold" 
                                               Foreground="#27AE60" VerticalAlignment="Center" 
                                               HorizontalAlignment="Center" TextAlignment="Center"/>

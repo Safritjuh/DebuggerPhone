@@ -174,8 +174,8 @@ namespace WindowsSipPhone.UI.Windows
                     }
                     else
                     {
-                        // When call ends, restore normal status display
-                        StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
+                        // When call ends, restore registration status display
+                        StatusBarText.Text = _sipService.IsRegistered ? "Registered" : "Not Registered";
                         StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
                     }
                 });
@@ -512,34 +512,79 @@ namespace WindowsSipPhone.UI.Windows
         {
             Dispatcher.Invoke(() =>
             {
+                // Always update header status with detailed messages for user feedback
                 HeaderStatusText.Text = status;
-                StatusBarText.Text = status;
 
-                // Update status bar icon based on status message content
-                // Check for successful registration states
-                if (status.Contains("Registration successful") ||
-                    status.Contains("✅ Registration successful") ||
-                    (status.Contains("Registered") && !status.Contains("Not Registered")))
+                // Only update status bar for registration-related messages
+                if (IsRegistrationRelatedMessage(status))
                 {
-                    StatusBarIcon.Text = "🟢";
-                }
-                // Check for in-progress states
-                else if (status.Contains("Registering") ||
-                         status.Contains("Connecting") ||
-                         status.Contains("attempting registration") ||
-                         status.Contains("🔍 DEBUG: SIP client connected"))
-                {
-                    StatusBarIcon.Text = "🟡";
-                }
-                // Default to red for failures, disconnected states, or unknown states
-                else
-                {
-                    StatusBarIcon.Text = "🔴";
+                    UpdateStatusBarForRegistration(status);
                 }
 
                 // Update tray icon
                 UpdateTrayIcon(status);
             });
+        }
+
+        /// <summary>
+        /// Determines if a status message is related to registration
+        /// </summary>
+        private bool IsRegistrationRelatedMessage(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+                return false;
+
+            // Filter out debug messages
+            if (status.Contains("DEBUG:") || status.Contains("[DEBUG]") || status.StartsWith("🔍"))
+                return false;
+
+            // Check for registration-related keywords
+            return status.Contains("Registration successful") ||
+                   status.Contains("✅ Registration successful") ||
+                   status.Contains("Registration failed") ||
+                   status.Contains("❌ Registration failed") ||
+                   status.Contains("Registering") ||
+                   status.Contains("attempting registration") ||
+                   status.Contains("Unregistered") ||
+                   status.Contains("Disconnected") ||
+                   status.Contains("Not Registered") ||
+                   (status.Contains("Registered") && !status.Contains("Not Registered"));
+        }
+
+        /// <summary>
+        /// Updates status bar with appropriate registration status text
+        /// </summary>
+        private void UpdateStatusBarForRegistration(string status)
+        {
+            // Update status bar icon and text based on registration state
+            if (status.Contains("Registration successful") ||
+                status.Contains("✅ Registration successful") ||
+                (status.Contains("Registered") && !status.Contains("Not Registered")))
+            {
+                StatusBarText.Text = "Registered";
+                StatusBarIcon.Text = "🟢";
+            }
+            else if (status.Contains("Registering") ||
+                     status.Contains("attempting registration"))
+            {
+                StatusBarText.Text = "Registering...";
+                StatusBarIcon.Text = "🟡";
+            }
+            else if (status.Contains("Registration failed") ||
+                     status.Contains("❌ Registration failed") ||
+                     status.Contains("Unregistered") ||
+                     status.Contains("Disconnected") ||
+                     status.Contains("Not Registered"))
+            {
+                StatusBarText.Text = "Not Registered";
+                StatusBarIcon.Text = "🔴";
+            }
+            else
+            {
+                // For any other registration-related message, determine status based on service state
+                StatusBarText.Text = _sipService.IsRegistered ? "Registered" : "Not Registered";
+                StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
+            }
         }
 
         private void SipService_MessageReceived(object? sender, string message)
@@ -663,8 +708,8 @@ namespace WindowsSipPhone.UI.Windows
             // Update header status
             HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
 
-            // Update status bar
-            StatusBarText.Text = _sipService.IsRegistered ? "Ready - SIP Registered" : "Ready - Configure SIP settings to begin";
+            // Update status bar with consistent registration-only text
+            StatusBarText.Text = _sipService.IsRegistered ? "Registered" : "Ready - Configure SIP settings";
 
             // Update status bar icon to reflect current registration state
             // This is used during initialization and periodic updates

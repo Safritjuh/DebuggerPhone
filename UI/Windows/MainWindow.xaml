@@ -131,7 +131,7 @@
                                Margin="0,0,5,0"
                                Foreground="{DynamicResource TextBrush}"/>
                     <TextBlock x:Name="StatusBarText" 
-                               Text="Ready - Configure SIP settings to begin"
+                               Text="Ready - Configure SIP settings"
                                Foreground="{DynamicResource TextBrush}"/>
                 </StackPanel>
             </StatusBarItem>

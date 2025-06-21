@@ -545,12 +545,12 @@ namespace WindowsSipPhone.UI.Pages
                     var extension = Path.GetExtension(saveDialog.FileName).ToLower();
                     if (extension == ".ini")
                     {
-                        WindowsSipPhone.Utils.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
+                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
                     }
                     else
                     {
                         // Fallback to JSON for backward compatibility
-                        WindowsSipPhone.Utils.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
                     }
                     
                     StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
@@ -582,12 +582,12 @@ namespace WindowsSipPhone.UI.Pages
                     
                     if (extension == ".ini")
                     {
-                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfileFromIni(openDialog.FileName);
+                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfileFromIni(openDialog.FileName);
                     }
                     else
                     {
                         // Fallback to JSON for backward compatibility
-                        importedProfile = WindowsSipPhone.Utils.ProfileManager.ImportProfile(openDialog.FileName);
+                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfile(openDialog.FileName);
                     }
                     
                     // Add to available profiles if not already present

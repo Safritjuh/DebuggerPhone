@@ -1,4 +1,4 @@
-<Window x:Class="WindowsSipPhone.SipMessageDetailsWindow"
+<Window x:Class="WindowsSipPhone.UI.Dialogs.SipMessageDetailsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SIP Message Details" 

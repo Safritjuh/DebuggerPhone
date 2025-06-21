@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WindowsSipPhone.Controls
+namespace WindowsSipPhone.UI.Controls
 {
     public partial class AudioQualityControl : System.Windows.Controls.UserControl
     {

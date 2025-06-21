@@ -1,4 +1,4 @@
-<UserControl x:Class="WindowsSipPhone.Controls.AudioQualityControl"
+<UserControl x:Class="WindowsSipPhone.UI.Controls.AudioQualityControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     

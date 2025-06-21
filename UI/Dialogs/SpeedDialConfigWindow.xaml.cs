@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WindowsSipPhone
+namespace WindowsSipPhone.UI.Dialogs
 {
     /// <summary>
     /// Interaction logic for SpeedDialConfigWindow.xaml

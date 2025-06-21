@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace WindowsSipPhone.Converters
+namespace WindowsSipPhone.UI.Converters
 {
     /// <summary>
     /// Converts a string to Visibility. Returns Visible if string is not null/empty, Collapsed otherwise.

@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace WindowsSipPhone;
+namespace WindowsSipPhone.UI.Dialogs;
 
 public partial class SipAccountDialog : Window
 {

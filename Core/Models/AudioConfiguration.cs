@@ -89,17 +89,17 @@ namespace WindowsSipPhone.Core.Models
         /// <summary>
         /// Convert to AudioSettings object for UI compatibility
         /// </summary>
-        public Pages.AudioSettings ToAudioSettings()
+        public WindowsSipPhone.UI.Pages.AudioSettings ToAudioSettings()
         {
-            return new Pages.AudioSettings
+            return new WindowsSipPhone.UI.Pages.AudioSettings
             {
-                InputDevice = new Pages.AudioDevice
+                InputDevice = new WindowsSipPhone.UI.Pages.AudioDevice
                 {
                     Id = InputDeviceId,
                     Name = InputDeviceName,
                     IsDefault = InputDeviceId == -1
                 },
-                OutputDevice = new Pages.AudioDevice
+                OutputDevice = new WindowsSipPhone.UI.Pages.AudioDevice
                 {
                     Id = OutputDeviceId,
                     Name = OutputDeviceName,
@@ -120,7 +120,7 @@ namespace WindowsSipPhone.Core.Models
         /// <summary>
         /// Create from AudioSettings object
         /// </summary>
-        public static AudioConfiguration FromAudioSettings(Pages.AudioSettings settings)
+        public static AudioConfiguration FromAudioSettings(WindowsSipPhone.UI.Pages.AudioSettings settings)
         {
             return new AudioConfiguration
             {

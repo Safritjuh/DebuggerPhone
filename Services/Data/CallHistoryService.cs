@@ -340,7 +340,7 @@ namespace WindowsSipPhone.Services.Data
         }
 
         // Mapping from UI model to DB model
-        public static CallHistoryEntry FromUiModel(WindowsSipPhone.Pages.CallHistoryEntry uiEntry)
+        public static CallHistoryEntry FromUiModel(WindowsSipPhone.UI.Pages.CallHistoryEntry uiEntry)
         {
             return new CallHistoryEntry
             {
@@ -354,16 +354,16 @@ namespace WindowsSipPhone.Services.Data
         }
 
         // Mapping from DB model to UI model
-        public WindowsSipPhone.Pages.CallHistoryEntry ToUiModel()
+        public WindowsSipPhone.UI.Pages.CallHistoryEntry ToUiModel()
         {
-            return new WindowsSipPhone.Pages.CallHistoryEntry
+            return new WindowsSipPhone.UI.Pages.CallHistoryEntry
             {
                 CallerName = this.CallerName,
                 Number = this.Number,
-                CallType = (WindowsSipPhone.Pages.CallType)this.CallType,
+                CallType = (WindowsSipPhone.UI.Pages.CallType)this.CallType,
                 DateTime = this.DateTime,
                 Duration = this.Duration,
-                Status = (WindowsSipPhone.Pages.CallStatus)this.Status
+                Status = (WindowsSipPhone.UI.Pages.CallStatus)this.Status
             };
         }
 

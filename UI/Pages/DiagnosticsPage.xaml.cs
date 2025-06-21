@@ -15,6 +15,7 @@ using WindowsSipPhone.Core.Utilities;
 using WindowsSipPhone.Services.Logging;
 using WindowsSipPhone.Services.Diagnostics;
 using WindowsSipPhone.Core.Models;
+using WindowsSipPhone.UI.Controls;
 using System.Globalization;
 using System.Windows.Data;
 

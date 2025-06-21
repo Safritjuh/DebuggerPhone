@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace WindowsSipPhone.Controls
+namespace WindowsSipPhone.UI.Controls
 {
     public partial class NetworkDiagnosticsControl : System.Windows.Controls.UserControl
     {

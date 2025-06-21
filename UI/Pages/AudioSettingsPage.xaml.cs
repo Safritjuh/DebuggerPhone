@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using NAudio.Wave;
 
-namespace WindowsSipPhone.Pages
+namespace WindowsSipPhone.UI.Pages
 {
     /// <summary>
     /// Audio device selection and configuration page - simplified version

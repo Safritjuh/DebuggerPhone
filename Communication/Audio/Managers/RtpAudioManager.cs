@@ -1686,23 +1686,22 @@ namespace WindowsSipPhone
         {
             Console.WriteLine("[RTPAUDIO] Applying audio settings...");
             
-            if (settings is not Pages.AudioSettings audioSettings)
+            if (settings is not Core.Models.AudioConfiguration audioSettings)
             {
                 Console.WriteLine("[RTPAUDIO] ⚠️ Invalid settings object type");
                 return;
             }
-            
-            try
+              try
             {
                 // Apply device selections
-                if (audioSettings.InputDevice != null)
+                if (audioSettings.InputDeviceId >= 0)
                 {
-                    SetInputDevice(audioSettings.InputDevice.Id);
+                    SetInputDevice(audioSettings.InputDeviceId);
                 }
                 
-                if (audioSettings.OutputDevice != null)
+                if (audioSettings.OutputDeviceId >= 0)
                 {
-                    SetOutputDevice(audioSettings.OutputDevice.Id);
+                    SetOutputDevice(audioSettings.OutputDeviceId);
                 }
                 
                 // Apply volume settings
@@ -1715,8 +1714,8 @@ namespace WindowsSipPhone
                 _isMuted = audioSettings.InputMuted; // Legacy compatibility
                 
                 Console.WriteLine($"[RTPAUDIO] ✅ Audio settings applied successfully:");
-                Console.WriteLine($"[RTPAUDIO]   - Input Device: {audioSettings.InputDevice?.Name ?? "Default"}");
-                Console.WriteLine($"[RTPAUDIO]   - Output Device: {audioSettings.OutputDevice?.Name ?? "Default"}");
+                Console.WriteLine($"[RTPAUDIO]   - Input Device: {audioSettings.InputDeviceName}");
+                Console.WriteLine($"[RTPAUDIO]   - Output Device: {audioSettings.OutputDeviceName}");
                 Console.WriteLine($"[RTPAUDIO]   - Input Volume: {audioSettings.InputVolume:F2}");
                 Console.WriteLine($"[RTPAUDIO]   - Output Volume: {audioSettings.OutputVolume:F2}");
                 Console.WriteLine($"[RTPAUDIO]   - Input Muted: {audioSettings.InputMuted}");

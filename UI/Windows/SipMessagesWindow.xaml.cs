@@ -7,9 +7,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using WindowsSipPhone.UI.Dialogs;
 
-namespace WindowsSipPhone
-{    public partial class SipMessagesWindow : Window
+namespace WindowsSipPhone.UI.Windows
+{
+    public partial class SipMessagesWindow : Window
     {
         private readonly StringBuilder _messageBuilder = new();
         private int _messageCount = 0;

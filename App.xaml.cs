@@ -3,7 +3,6 @@ using System.Data;
 using System.Windows;
 using System;
 using System.Runtime.InteropServices;
-using WindowsSipPhone.Themes;
 using WindowsSipPhone.Core.Utilities;
 using WindowsSipPhone.UI.Windows;
 
@@ -31,17 +30,11 @@ public partial class App : System.Windows.Application
 #if DEBUG
             Console.WriteLine("Application starting up...");
 #endif
-            // Track application startup
-            ApplicationTracker.TrackApplicationStart();
+            // Track application startup            ApplicationTracker.TrackApplicationStart();
             
-            // Initialize theme manager
+            // Theme is now static - defined in App.xaml, no dynamic switching needed
 #if DEBUG
-            Console.WriteLine("[THEME DEBUG] Initializing theme manager...");
-#endif
-            var themeManager = ThemeManager.Instance;
-            themeManager.SetTheme(ThemeManager.ThemeType.Light);
-#if DEBUG
-            Console.WriteLine($"[THEME DEBUG] Theme manager initialized with theme: {themeManager.CurrentTheme}");
+            Console.WriteLine("[THEME DEBUG] Using static light theme defined in App.xaml");
             // Test SIP Profile system in debug builds
             Console.WriteLine("\n[PROFILE DEBUG] Testing SIP Profile system...");
             try

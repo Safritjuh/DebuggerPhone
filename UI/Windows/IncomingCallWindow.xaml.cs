@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace WindowsSipPhone
+namespace WindowsSipPhone.UI.Windows
 {
     /// <summary>
     /// Incoming call notification window with accept/decline functionality

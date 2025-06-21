@@ -1,20 +1,22 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using WindowsSipPhone.Pages;
+using WindowsSipPhone.UI.Pages;
+using WindowsSipPhone.UI.Windows;
+using WindowsSipPhone.UI.Dialogs;
 
-namespace WindowsSipPhone
+namespace WindowsSipPhone.UI.Windows
 {    public partial class SettingsWindow : Window
     {
         private SipSettingsPage? _sipSettingsPage;
         private AudioSettingsPage? _audioSettingsPage;
         private SipPhoneService? _sipService;
         private SipMessagesWindow? _messagesWindow = null;
-        private KeyboardShortcutService? _keyboardService;        private MainWindow? _mainWindow;        // Removed _themeComboBox field - theme switching functionality removed per BUG-015
+        private KeyboardShortcutService? _keyboardService;        private UI.Windows.MainWindow? _mainWindow;        // Removed _themeComboBox field - theme switching functionality removed per BUG-015
         private System.Windows.Controls.Button? _enableLoggingButton;
         private System.Windows.Controls.ComboBox? _ringtoneComboBox;        private IRingtoneService? _ringtoneService;
 
-        public SettingsWindow(SipPhoneService? sipService = null, KeyboardShortcutService? keyboardService = null, MainWindow? mainWindow = null, IRingtoneService? ringtoneService = null){
+        public SettingsWindow(SipPhoneService? sipService = null, KeyboardShortcutService? keyboardService = null, UI.Windows.MainWindow? mainWindow = null, IRingtoneService? ringtoneService = null){
             InitializeComponent();
               _sipService = sipService;
             _keyboardService = keyboardService;

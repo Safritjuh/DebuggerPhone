@@ -6,8 +6,9 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using Microsoft.Win32;
 using System.IO;
+using WindowsSipPhone.UI.Windows;
 
-namespace WindowsSipPhone
+namespace WindowsSipPhone.UI.Dialogs
 {    public partial class SipMessageDetailsWindow : Window
     {
         private readonly SipMessageEntry _message;

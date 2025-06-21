@@ -7,7 +7,7 @@ using System.Windows.Threading;
 using NAudio.Wave;
 using WpfColor = System.Windows.Media.Color;
 
-namespace WindowsSipPhone.Controls
+namespace WindowsSipPhone.UI.Controls
 {    public partial class AudioDeviceHealthControl : System.Windows.Controls.UserControl
     {
         private DispatcherTimer _qualityMonitorTimer;

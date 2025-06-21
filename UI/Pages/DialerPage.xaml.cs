@@ -123,7 +123,7 @@ namespace WindowsSipPhone.UI.Pages
                             ApplyCurrentFilter();
                         });
                         
-                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(incomingCall));
+                        _callHistoryService.AddCall(WindowsSipPhone.Services.Data.CallHistoryEntry.FromUiModel(incomingCall));
                         _logger.LogSystemInfo("CALL_HISTORY", $"📞← Incoming call added to history: {_incomingCallNumber}");
                         
                         StartCall(_incomingCallNumber, true); // true = incoming call
@@ -157,7 +157,7 @@ namespace WindowsSipPhone.UI.Pages
                             ApplyCurrentFilter();
                         });
                         
-                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(missedCall));
+                        _callHistoryService.AddCall(WindowsSipPhone.Services.Data.CallHistoryEntry.FromUiModel(missedCall));
                         
                         _logger.LogSystemInfo("CALL", $"✅ Missed call added to history: {_incomingCallNumber}");
                     }
@@ -233,7 +233,7 @@ namespace WindowsSipPhone.UI.Pages
                 }
                 
                 // Persist the call completion to database
-                _callHistoryService.UpdateCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(activeCall));
+                _callHistoryService.UpdateCall(WindowsSipPhone.Services.Data.CallHistoryEntry.FromUiModel(activeCall));
                 _logger.LogSystemInfo("CALL", $"✅ Call ended and updated in database: {activeCall.Number} - Duration: {activeCall.DurationText}");
             }
             
@@ -547,7 +547,7 @@ namespace WindowsSipPhone.UI.Pages
                 });
                 
                 Console.WriteLine($"[DEBUG] About to save to database...");
-                _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(callEntry)); // Save to database
+                _callHistoryService.AddCall(WindowsSipPhone.Services.Data.CallHistoryEntry.FromUiModel(callEntry)); // Save to database
                 Console.WriteLine($"[DEBUG] Database save completed");
                 _logger.LogSystemInfo("CALL_HISTORY", $"🔍 Call saved to database: {DialedNumber}");// Make the actual SIP call
                 await _sipService.MakeCallAsync(DialedNumber);
@@ -840,7 +840,7 @@ namespace WindowsSipPhone.UI.Pages
                     foreach (var call in sampleCalls)
                     {
                         CallHistory.Add(call); // UI model, no conversion needed
-                        _callHistoryService.AddCall(WindowsSipPhone.Database.CallHistoryEntry.FromUiModel(call)); // Save to database
+                        _callHistoryService.AddCall(WindowsSipPhone.Services.Data.CallHistoryEntry.FromUiModel(call)); // Save to database
                     }
                 }
                 

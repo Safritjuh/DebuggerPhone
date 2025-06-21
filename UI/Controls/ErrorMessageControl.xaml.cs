@@ -5,7 +5,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using WpfColor = System.Windows.Media.Color;
 
-namespace WindowsSipPhone.Controls
+namespace WindowsSipPhone.UI.Controls
 {
     public partial class ErrorMessageControl : System.Windows.Controls.UserControl
     {

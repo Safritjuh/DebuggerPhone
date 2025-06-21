@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace WindowsSipPhone.Converters
+namespace WindowsSipPhone.UI.Converters
 {
     public class BooleanToVisibilityConverter : IValueConverter
     {

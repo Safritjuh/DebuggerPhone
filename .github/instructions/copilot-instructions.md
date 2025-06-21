@@ -23,7 +23,7 @@ applyTo: '**'
    
 
 ## Git Branch Workflow
-### Bug Fixes
+#### Bug Fixes
 - When starting work on a bug, create a new branch linked to the corresponding GitHub issue
 - Branch naming format: `bug/BUG-XXX` (e.g., `bug/BUG-013`, `bug/BUG-007`)
 - **NUMBERING**: Check existing issues to use the next available BUG-XXX number (see "Creating New Issues" section)

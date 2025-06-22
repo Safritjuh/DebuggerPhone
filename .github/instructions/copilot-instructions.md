@@ -440,6 +440,107 @@ The extraction methods handle these SIP header formats correctly:
 - **Database Integration**: `CallHistoryService.cs` (AddCall, UpdateCall methods)
 - **UI Templates**: `Pages/DialerPage.xaml` (Call History ListView)
 
+## SIP Profile Configuration Standards
+
+### Profile Management System
+The SIP phone application uses a configurable profile system that prioritizes end-user accessibility and live editing capabilities.
+
+#### **Core Principles**
+- **User-Accessible**: All profile configurations must be easily accessible to end users
+- **Live Editing**: Users must be able to edit profiles and see changes immediately after restart
+- **No Code Changes**: Profile modifications should never require code changes or recompilation
+- **Direct Loading**: Application must load from source files, not copied/cached versions
+
+#### **Directory Structure**
+```
+profiles/                           ← Primary profile directory (user-accessible)
+├── Generic.ini                     ← Default RFC 3261 compliant settings
+├── Avaya_IP_Office.ini            ← Avaya IP Office optimized settings
+├── Avaya_Aura.ini                 ← Avaya Aura systems settings
+├── Elevate.ini                     ← Intermedia Elevate platform
+├── Custom_Provider_Example.ini     ← Template for custom profiles
+├── README.md                       ← Technical documentation
+└── USER_GUIDE.md                   ← End-user instructions
+```
+
+#### **Implementation Requirements**
+- **Loading Logic**: `Core/Models/SipProfile.cs` - `LoadProfilesFromIniFiles()` method
+- **Path Resolution**: Traverses upward from application directory to find source `profiles/` folder
+- **Fallback Mechanism**: Falls back to output directory only if source not found
+- **Debug Logging**: Must log profile loading path and success/failure for each profile
+
+#### **Profile File Standards**
+Each profile INI file must contain these sections:
+```ini
+[Profile]
+Name="Profile Display Name"
+Description="Brief description of profile purpose"
+IsCustom=false
+
+[Connection]
+RegistrationExpiry=300
+RequireKeepAlive=false
+KeepAliveInterval=30
+Transport=TCP
+DefaultPort=5060
+
+[Protocol]
+UserAgentString="SIP TEST Phone"
+UseShortHeaders=false
+SendPreciseTimers=true
+
+[Media]
+PreferredCodecs=PCMA,G722
+RequireSTUN=false
+STUNServer=
+
+[CustomHeaders]
+Header_X-Custom-Header=Value
+```
+
+#### **Modification Guidelines**
+When adding or updating SIP profiles:
+1. **Always edit INI files** in the `profiles/` directory - never hardcode in C#
+2. **Test immediately** by restarting the application after INI changes
+3. **Preserve existing profiles** unless specifically removing legacy ones
+4. **Document changes** in commit messages with clear reasoning
+5. **Update README.md** in profiles/ directory if adding new profile types
+6. **Maintain backwards compatibility** with existing profile structure
+
+#### **Testing Profile Changes**
+```powershell
+# Edit a profile
+notepad profiles/Generic.ini
+
+# Build and test
+dotnet build WindowsSipPhone.csproj
+# Run application and verify profile appears in dropdown with changes
+
+# Check debug output for profile loading confirmation
+# Look for: "[PROFILE LOADER] Loading profiles from: ..." messages
+```
+
+#### **Forbidden Practices**
+- ❌ **Never hardcode** profile settings in C# code when INI files exist
+- ❌ **Never rely on copied files** in output directory for primary profile loading
+- ❌ **Never require recompilation** for profile configuration changes
+- ❌ **Never break the INI loading mechanism** - always maintain compatibility
+
+#### **Current Profile Types**
+- **Generic**: Default RFC 3261 compliant settings for broad compatibility
+- **Avaya IP Office**: Optimized for Avaya IP Office systems
+- **Avaya Aura**: Specialized settings for Avaya Aura platforms  
+- **Elevate**: Intermedia Elevate platform BYOD configuration
+- **Custom Provider Example**: Template showing custom provider configuration
+
+**Legacy profiles removed**: Cisco, Cloud Generic, FreeSWITCH (replaced with modern equivalents)
+
+#### **Key Implementation Files**
+- **Profile Loading**: `Core/Models/SipProfile.cs` (LoadProfilesFromIniFiles method)
+- **Profile Definitions**: `profiles/*.ini` files (user-editable)
+- **UI Integration**: `UI/Pages/SipSettingsPage.xaml.cs` (profile dropdown)
+- **Project Configuration**: `WindowsSipPhone.csproj` (backup file copying)
+
 ## Window Interaction Standards (BUG-028 Resolution)
 
 ### Main Window Dragging Functionality
@@ -508,6 +609,9 @@ private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 - **Documentation**: `BUG-028-WINDOW-DRAGGING-FIX.md` (comprehensive fix details)
 
 ## Current Standards and Implementation Notes
+
+### SIP Profile Management System
+The application implements a sophisticated profile management system that prioritizes end-user accessibility. Profiles are loaded directly from the source `profiles/` directory, enabling users to edit INI files and see changes immediately after restarting the application. This system completely eliminates the need for code changes when modifying SIP provider configurations.
 
 ### Call History and SIP Header Parsing Implementation
 The application includes robust SIP header parsing standards that handle all common SIP header formats. These standards ensure clean display in the Call History UI with proper name/number separation and no duplicate information.

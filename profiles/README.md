@@ -74,9 +74,9 @@ The following predefined profiles are available and can be customized:
 
 - **Generic.ini**: Default RFC 3261 compliant settings
 - **Avaya_IP_Office.ini**: Optimized for Avaya IP Office systems
-- **Cloud_Generic.ini**: Optimized for cloud SIP providers
-- **FreeSWITCH.ini**: Optimized for FreeSWITCH platforms
-- **Cisco.ini**: Optimized for Cisco systems
+- **Avaya_Aura.ini**: Profile for Avaya Aura systems
+- **Elevate.ini**: Intermedia Elevate platform for BYOD
+- **Custom_Provider_Example.ini**: Example showing custom provider configuration
 
 ## How to Create Custom Profiles
 

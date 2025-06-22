@@ -511,12 +511,13 @@ namespace WindowsSipPhone.UI.Windows
             {
                 _isClosingToTray = false; // Force actual close
                 System.Windows.Application.Current.Shutdown();
-            }
-        }
+            }        }
 
         #endregion
 
-        #region Event Handlers        private void SipService_StatusChanged(object? sender, string status)
+        #region Event Handlers
+        
+        private void SipService_StatusChanged(object? sender, string status)
         {
             Dispatcher.Invoke(() =>
             {
@@ -711,12 +712,13 @@ namespace WindowsSipPhone.UI.Windows
                 Console.WriteLine($"[MAIN WINDOW ERROR] Failed to open Settings window: {ex.Message}");
                 System.Windows.MessageBox.Show($"Failed to open Settings: {ex.Message}", "Settings Error",
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
+            }        }
 
         #endregion
 
-        #region Helper Methods        private void UpdateUI()
+        #region Helper Methods
+        
+        private void UpdateUI()
         {
             // Update header status
             HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
@@ -1118,13 +1120,13 @@ namespace WindowsSipPhone.UI.Windows
             {
                 Console.WriteLine($"[MAIN WINDOW] Error closing logging window: {ex.Message}");
             }
-        }
-
-        public bool IsLoggingWindowVisible => _loggingWindow != null && _loggingWindow.IsVisible;
+        }        public bool IsLoggingWindowVisible => _loggingWindow != null && _loggingWindow.IsVisible;
 
         #endregion
 
-        #region Window Control Events        /// <summary>
+        #region Window Control Events
+        
+        /// <summary>
         /// Handles mouse down events on the title bar to enable window dragging
         /// </summary>
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

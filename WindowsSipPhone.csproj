@@ -8,8 +8,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-  </PropertyGroup>  
-  <!-- Include profile files as content to be copied to output -->
+  </PropertyGroup>    <!-- Include profile files as content to be copied to output as backup (primary loading is from source profiles/ directory) -->
   <ItemGroup>
     <Content Include="profiles\*.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

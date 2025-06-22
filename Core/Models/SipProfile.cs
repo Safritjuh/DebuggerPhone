@@ -58,8 +58,7 @@ namespace WindowsSipPhone.Core.Models
             
             // Fallback to hardcoded profiles if INI files are not available
             return GetHardcodedProfiles();
-        }
-        
+        }        
         /// <summary>
         /// Load profiles from INI files in the Profiles directory
         /// </summary>
@@ -67,16 +66,34 @@ namespace WindowsSipPhone.Core.Models
         {
             var profiles = new List<SipProfile>();
             
-            // Get the application directory and look for Profiles folder
+            // Start from the application directory and work backwards to find the source profiles folder
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var profilesDirectory = Path.Combine(baseDirectory, "Profiles");
+            string? profilesDirectory = null;
             
-            if (!Directory.Exists(profilesDirectory))
+            // Try to find the source profiles directory (for development and user editing)
+            var currentDir = new DirectoryInfo(baseDirectory);
+            while (currentDir != null)
             {
-                // Try current directory as fallback
-                profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Profiles");
+                var testProfilesDir = Path.Combine(currentDir.FullName, "profiles");
+                if (Directory.Exists(testProfilesDir))
+                {
+                    profilesDirectory = testProfilesDir;
+                    break;
+                }
+                currentDir = currentDir.Parent;
+            }
+            
+            // Fallback: look in the output directory if source not found
+            if (profilesDirectory == null)
+            {
+                profilesDirectory = Path.Combine(baseDirectory, "Profiles");
                 if (!Directory.Exists(profilesDirectory))
-                    return profiles; // Return empty list if no profiles directory found
+                {
+                    // Final fallback: current working directory
+                    profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "profiles");
+                    if (!Directory.Exists(profilesDirectory))
+                        return profiles; // Return empty list if no profiles directory found
+                }
             }
             
             // Load all INI files in the profiles directory

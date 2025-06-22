@@ -23,17 +23,16 @@ namespace WindowsSipPhone.Tests
             
             Console.WriteLine("✅ All SIP Profile tests completed successfully!");
         }
-        
-        private static void TestPredefinedProfiles()
+          private static void TestPredefinedProfiles()
         {
             Console.WriteLine("\n📋 Testing Predefined Profiles...");
             
             var profiles = SipProfile.GetPredefinedProfiles();
             
-            if (profiles.Count != 5)
-                throw new Exception($"Expected 5 predefined profiles, got {profiles.Count}");
+            if (profiles.Count != 4)
+                throw new Exception($"Expected 4 predefined profiles, got {profiles.Count}");
             
-            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Cloud Generic", "FreeSWITCH", "Cisco" };
+            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Elevate", "Avaya Aura" };
             
             foreach (var expectedName in expectedProfiles)
             {
@@ -67,9 +66,7 @@ namespace WindowsSipPhone.Tests
             if (avayaProfile.Name != "Avaya IP Office")
                 throw new Exception($"Expected 'Avaya IP Office', got '{avayaProfile.Name}'");
             
-            Console.WriteLine($"   ✓ Profile selection: {avayaProfile.Name}");
-            Console.WriteLine($"     - Registration Expiry: {avayaProfile.RegistrationExpiry}s");
-        }
+            Console.WriteLine($"   ✓ Profile selection: {avayaProfile.Name}");        }
         
         private static void TestProfileSelection()
         {
@@ -77,29 +74,34 @@ namespace WindowsSipPhone.Tests
             
             var genericProfile = SipProfile.GetPredefinedProfile("Generic");
             var avayaProfile = SipProfile.GetPredefinedProfile("Avaya IP Office");
-            var cloudProfile = SipProfile.GetPredefinedProfile("Cloud Generic");
+            var elevateProfile = SipProfile.GetPredefinedProfile("Elevate");
             
-            if (genericProfile == null || avayaProfile == null || cloudProfile == null)
+            if (genericProfile == null || avayaProfile == null || elevateProfile == null)
                 throw new Exception("Failed to get predefined profiles");
             
             // Test different registration expiry times
             Console.WriteLine($"   ✓ Generic expiry: {genericProfile.RegistrationExpiry}s");
-            Console.WriteLine($"   ✓ Avaya expiry: {avayaProfile.RegistrationExpiry}s");
-            Console.WriteLine($"   ✓ Cloud expiry: {cloudProfile.RegistrationExpiry}s");
+            Console.WriteLine($"   ✓ Avaya IP Office expiry: {avayaProfile.RegistrationExpiry}s");
+            Console.WriteLine($"   ✓ Elevate expiry: {elevateProfile.RegistrationExpiry}s");
             
-            // Test keep-alive differences
-            Console.WriteLine($"   ✓ Cloud keep-alive: {cloudProfile.RequireKeepAlive} ({cloudProfile.KeepAliveInterval}s)");
-            Console.WriteLine($"   ✓ Avaya keep-alive: {avayaProfile.RequireKeepAlive}");
+            // Test user agent differences
+            Console.WriteLine($"   ✓ Generic user agent: {genericProfile.UserAgentString}");
+            Console.WriteLine($"   ✓ Avaya user agent: {avayaProfile.UserAgentString}");
+            Console.WriteLine($"   ✓ Elevate user agent: {elevateProfile.UserAgentString}");
             
-            // Test custom headers
-            Console.WriteLine($"   ✓ Avaya headers: {avayaProfile.CustomHeaders.Count}");
-            Console.WriteLine($"   ✓ Cloud headers: {cloudProfile.CustomHeaders.Count}");
+            // Test codec preferences
+            Console.WriteLine($"   ✓ Generic codecs: {string.Join(",", genericProfile.PreferredCodecs)}");
+            Console.WriteLine($"   ✓ Avaya codecs: {string.Join(",", avayaProfile.PreferredCodecs)}");
+            Console.WriteLine($"   ✓ Elevate codecs: {string.Join(",", elevateProfile.PreferredCodecs)}");
             
-            if (avayaProfile.CustomHeaders.Count > 0)
-            {
-                var firstHeader = avayaProfile.CustomHeaders.First();
-                Console.WriteLine($"     - {firstHeader.Key}: {firstHeader.Value}");
-            }
+            // Test that Avaya IP Office has updated settings
+            if (avayaProfile.RegistrationExpiry != 180)
+                throw new Exception($"Expected Avaya IP Office expiry to be 180s, got {avayaProfile.RegistrationExpiry}s");
+            
+            if (avayaProfile.UserAgentString != "SIP TEST Phone")
+                throw new Exception($"Expected Avaya IP Office user agent to be 'SIP TEST Phone', got '{avayaProfile.UserAgentString}'");
+            
+            Console.WriteLine($"   ✓ Avaya IP Office updated settings verified");
         }
         
         private static void TestIniFileHandling()

@@ -507,22 +507,15 @@ private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 - **Event Handling**: `MainWindow.xaml.cs` (TitleBar_MouseLeftButtonDown method)
 - **Documentation**: `BUG-028-WINDOW-DRAGGING-FIX.md` (comprehensive fix details)
 
-## Completed Bug Fixes and Improvements
+## Current Standards and Implementation Notes
 
-### ✅ BUG-028: Main Window Dragging Functionality - COMPLETED
-- **Issue**: Main window was not movable/draggable with custom title bar
-- **Solution**: Implemented mouse event handling for title bar dragging
-- **Implementation**: Added `TitleBar_MouseLeftButtonDown` method with `DragMove()` functionality
-- **Features**: Single-click drag, double-click maximize/restore, exception handling
-- **Status**: ✅ RESOLVED - Window is now fully draggable and movable
-- **Files**: `MainWindow.xaml`, `MainWindow.xaml.cs`, comprehensive documentation
-- **Branch**: `bug/BUG-028` (merged via PR)
+### Call History and SIP Header Parsing Implementation
+The application includes robust SIP header parsing standards that handle all common SIP header formats. These standards ensure clean display in the Call History UI with proper name/number separation and no duplicate information.
 
-### ✅ BUG-027: Call History Display Issues - COMPLETED  
-- **Issue**: Call History showed duplicate values or "Unknown Number" incorrectly
-- **Solution**: Enhanced SIP header parsing with robust extraction methods
-- **Implementation**: Improved `ExtractCallerInfo`, `ExtractDisplayName`, `ExtractNumberPart` methods
-- **Features**: Clean display format, proper name/number separation, SIP header compliance
-- **Status**: ✅ RESOLVED - Call History displays correctly for all SIP header formats
-- **Files**: `DialerPage.xaml.cs`, `SimpleSipClient.cs`, `CallHistoryService.cs`
-- **Branch**: `bug/BUG-027` (merged via PR)
+### Window Interaction Implementation  
+The main window with custom title bar is fully draggable and interactive, following Windows conventions for single-click drag and double-click maximize/restore functionality.
+
+### UI Standards
+The application follows a modern flat UI design with consistent colored headers for settings pages and a clean, professional interface throughout.
+
+**Note**: All specific bugs and feature requests are tracked exclusively in GitHub Issues. Use `gh issue list` to see current open issues and their status.

@@ -189,8 +189,7 @@ namespace WindowsSipPhone.Core.Models
             
             IniFileHandler.WriteIniFile(filePath, data);
         }
-        
-        /// <summary>
+          /// <summary>
         /// Fallback method that returns hardcoded profiles if INI files are not available
         /// </summary>
         private static List<SipProfile> GetHardcodedProfiles()
@@ -214,89 +213,55 @@ namespace WindowsSipPhone.Core.Models
                     DefaultPort = 5060
                 },
                 
-                // Avaya IP Office optimized
+                // Avaya IP Office - Updated settings per requirement
                 new SipProfile
                 {
                     Name = "Avaya IP Office",
-                    Description = "Optimized for Avaya IP Office systems with longer registration intervals and specific headers",
+                    Description = "Intermedia Elevate platform for BYOD",
                     IsCustom = false,
-                    RegistrationExpiry = 3600,
+                    RegistrationExpiry = 180,
                     RequireKeepAlive = false,
                     Transport = "TCP",
-                    UserAgentString = "Windows-SIP-Phone/2.0 (Avaya)",
+                    UserAgentString = "SIP TEST Phone",
                     UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "PCMU", "PCMA", "G729" },
+                    PreferredCodecs = new List<string> { "PCMA" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060,
-                    CustomHeaders = new Dictionary<string, string>
-                    {
-                        { "X-Avaya-Client-Type", "SoftPhone" }
-                    }
+                    DefaultPort = 5060
                 },
                 
-                // Cloud Generic (shorter registration, keep-alive)
+                // Elevate - New profile for Intermedia Elevate platform
                 new SipProfile
                 {
-                    Name = "Cloud Generic",
-                    Description = "Optimized for cloud SIP providers with keep-alive and shorter registration intervals",
+                    Name = "Elevate",
+                    Description = "Intermedia Elevate platform for BYOD",
                     IsCustom = false,
                     RegistrationExpiry = 300,
-                    RequireKeepAlive = true,
-                    KeepAliveInterval = 30,
-                    Transport = "TCP",
-                    UserAgentString = "Windows-SIP-Phone/2.0 (Cloud)",
-                    UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "G722", "PCMU", "PCMA" },
-                    RequireSTUN = false,
-                    SendPreciseTimers = true,
-                    DefaultPort = 5060,
-                    CustomHeaders = new Dictionary<string, string>
-                    {
-                        { "X-Cloud-Client", "Windows-SIP-Phone" }
-                    }
-                },
-                
-                // FreeSWITCH optimized
-                new SipProfile
-                {
-                    Name = "FreeSWITCH",
-                    Description = "Optimized for FreeSWITCH platforms with flexible timers and advanced codec support",
-                    IsCustom = false,
-                    RegistrationExpiry = 1800,
                     RequireKeepAlive = false,
                     Transport = "TCP",
-                    UserAgentString = "Windows-SIP-Phone/2.0 (FreeSWITCH)",
+                    UserAgentString = "SIP TEST Phone",
                     UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "G722", "PCMU", "PCMA", "GSM" },
+                    PreferredCodecs = new List<string> { "PCMA", "G722" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060,
-                    CustomHeaders = new Dictionary<string, string>
-                    {
-                        { "X-FS-Support", "update_display,send_info" }
-                    }
+                    DefaultPort = 5060
                 },
                 
-                // Cisco optimized
+                // Avaya Aura - New profile for Avaya Aura systems
                 new SipProfile
                 {
-                    Name = "Cisco",
-                    Description = "Optimized for Cisco systems with G.729 codec preference and specific user agent",
+                    Name = "Avaya Aura",
+                    Description = "Profile for Avaya Aura systems",
                     IsCustom = false,
-                    RegistrationExpiry = 3600,
+                    RegistrationExpiry = 300,
                     RequireKeepAlive = false,
                     Transport = "TCP",
-                    UserAgentString = "Windows-SIP-Phone/2.0 (Cisco)",
+                    UserAgentString = "SIP TEST Phone",
                     UseShortHeaders = false,
-                    PreferredCodecs = new List<string> { "G729", "PCMU", "PCMA" },
+                    PreferredCodecs = new List<string> { "PCMA" },
                     RequireSTUN = false,
                     SendPreciseTimers = true,
-                    DefaultPort = 5060,
-                    CustomHeaders = new Dictionary<string, string>
-                    {
-                        { "X-Cisco-Protocol", "SIP/2.0" }
-                    }
+                    DefaultPort = 5060
                 }
             };
         }

@@ -173,20 +173,12 @@ namespace WindowsSipPhone.UI.Windows
                     {
                         // Could show a call icon, but keep registration status text
                         // StatusBarIcon.Text = "📞"; // Uncomment if you want call icon
-                    }
-                    else
+                    }                    else
                     {
                         // When call ends, ensure status bar shows current registration state
                         UpdateStatusBarIcon();
-                        // Refresh status bar text to ensure it shows registration status
-                        if (_sipService.IsRegistered)
-                        {
-                            StatusBarText.Text = "Registered";
-                        }
-                        else
-                        {
-                            StatusBarText.Text = "Not Registered";
-                        }
+                        // Use dedicated function for status bar - ONLY allows 3 specific states
+                        SetStatusBarRegistrationState();
                     }
                 });
             }
@@ -516,16 +508,15 @@ namespace WindowsSipPhone.UI.Windows
         #endregion
 
         #region Event Handlers
-        
-        private void SipService_StatusChanged(object? sender, string status)
+          private void SipService_StatusChanged(object? sender, string status)
         {
             Dispatcher.Invoke(() =>
             {
                 // Always update header with full status for user feedback
                 HeaderStatusText.Text = status;
 
-                // Filter status bar to only show registration-related messages
-                UpdateStatusBarForRegistrationOnly(status);
+                // Use dedicated function for status bar - ONLY allows 3 specific states
+                SetStatusBarRegistrationState();
 
                 // Update status bar icon based on registration state (not message content)
                 UpdateStatusBarIcon();
@@ -535,51 +526,32 @@ namespace WindowsSipPhone.UI.Windows
             });
         }
 
-        private void UpdateStatusBarForRegistrationOnly(string status)
+        /// <summary>
+        /// Sets status bar to show ONLY registration state - no other messages allowed
+        /// Only shows: "Registered", "Registering...", or "Not Registered"
+        /// </summary>
+        private void SetStatusBarRegistrationState()
         {
-            // Only update status bar with registration-related messages
-            // Filter out debug messages, connection details, and other operational messages
-            if (IsRegistrationRelatedMessage(status))
+            if (_sipService == null) return;
+
+            // Check actual registration state, not message content
+            if (_sipService.IsRegistered)
             {
-                // Map registration messages to clean status bar text
-                if (status.Contains("Registration successful") ||
-                    status.Contains("✅ Registration successful") ||
-                    (status.Contains("Registered") && !status.Contains("Not Registered")))
-                {
-                    StatusBarText.Text = "Registered";
-                }
-                else if (status.Contains("Registering") ||
-                         status.Contains("attempting registration"))
+                StatusBarText.Text = "Registered";
+            }
+            else
+            {
+                // Check if currently attempting registration
+                var headerText = HeaderStatusText.Text?.ToLower() ?? "";
+                if (headerText.Contains("registering") || headerText.Contains("attempting"))
                 {
                     StatusBarText.Text = "Registering...";
                 }
-                else if (status.Contains("Not Registered") ||
-                         status.Contains("Registration failed") ||
-                         status.Contains("Authentication failed"))
+                else
                 {
                     StatusBarText.Text = "Not Registered";
                 }
-            }
-            // For non-registration messages, keep the current status bar text unchanged
-        }
-
-        private bool IsRegistrationRelatedMessage(string status)
-        {
-            // Define what constitutes a registration-related message
-            var registrationKeywords = new[]
-            {
-                "Registration successful",
-                "✅ Registration successful", 
-                "Registered",
-                "Not Registered",
-                "Registering",
-                "Registration failed",
-                "Authentication failed",
-                "attempting registration"
-            };
-
-            return registrationKeywords.Any(keyword => status.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-        }
+            }        }
 
         private void UpdateStatusBarIcon()
         {
@@ -717,14 +689,13 @@ namespace WindowsSipPhone.UI.Windows
         #endregion
 
         #region Helper Methods
-        
-        private void UpdateUI()
+          private void UpdateUI()
         {
             // Update header status
             HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
 
-            // Update status bar - only show registration status
-            StatusBarText.Text = _sipService.IsRegistered ? "Registered" : "Not Registered";
+            // Use dedicated function for status bar - ONLY allows 3 specific states
+            SetStatusBarRegistrationState();
 
             // Update status bar icon to reflect current registration state
             // This is used during initialization and periodic updates

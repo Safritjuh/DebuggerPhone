@@ -93,19 +93,25 @@ namespace WindowsSipPhone.Core.Models
                     profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "profiles");
                     if (!Directory.Exists(profilesDirectory))
                         return profiles; // Return empty list if no profiles directory found
-                }
-            }
+                }            }
+            
+            // Debug: Log where profiles are being loaded from
+            System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Loading profiles from: {profilesDirectory}");
             
             // Load all INI files in the profiles directory
             var iniFiles = Directory.GetFiles(profilesDirectory, "*.ini", SearchOption.TopDirectoryOnly);
             
+            System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Found {iniFiles.Length} INI files");
+            
             foreach (var iniFile in iniFiles)
-            {
-                try
+            {                try
                 {
                     var profile = LoadProfileFromIniFile(iniFile);
                     if (profile != null)
+                    {
                         profiles.Add(profile);
+                        System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Loaded profile: {profile.Name} from {Path.GetFileName(iniFile)}");
+                    }
                 }
                 catch (Exception ex)
                 {

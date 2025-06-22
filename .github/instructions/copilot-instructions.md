@@ -89,12 +89,6 @@ applyTo: '**'
    
 
 ## Testing and Debugging Guidelines
-- After changing the sip stack, always try to register with the credentials:
-  - Username: 103
-  - Password: 274104
-  - Server: 192.168.1.180
-    - Port: 5060
-- Always use TCP as protocol for testing
 - If you encounter a "bind EADDRINUSE" error, ensure the socket is properly cleaned up before retrying. 
 - Use `Console.WriteLine` for debugging output
 - Use `Debug.WriteLine` for debug messages

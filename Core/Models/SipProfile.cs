@@ -49,11 +49,9 @@ namespace WindowsSipPhone.Core.Models
                 var profiles_iniProfiles = LoadProfilesFromIniFiles();
                 if (profiles_iniProfiles.Count > 0)
                     return profiles_iniProfiles;
-            }
-            catch (Exception ex)
+            }            catch (Exception)
             {
-                // Log error and fall back to hardcoded profiles
-                System.Diagnostics.Debug.WriteLine($"Failed to load profiles from INI files: {ex.Message}");
+                // Fall back to hardcoded profiles
             }
             
             // Fallback to hardcoded profiles if INI files are not available
@@ -90,32 +88,23 @@ namespace WindowsSipPhone.Core.Models
                 if (!Directory.Exists(profilesDirectory))
                 {
                     // Final fallback: current working directory
-                    profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "profiles");
-                    if (!Directory.Exists(profilesDirectory))
+                    profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "profiles");                    if (!Directory.Exists(profilesDirectory))
                         return profiles; // Return empty list if no profiles directory found
-                }            }
-            
-            // Debug: Log where profiles are being loaded from
-            System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Loading profiles from: {profilesDirectory}");
-            
-            // Load all INI files in the profiles directory
+                }
+            }
+              // Load all INI files in the profiles directory
             var iniFiles = Directory.GetFiles(profilesDirectory, "*.ini", SearchOption.TopDirectoryOnly);
-            
-            System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Found {iniFiles.Length} INI files");
             
             foreach (var iniFile in iniFiles)
             {                try
-                {
-                    var profile = LoadProfileFromIniFile(iniFile);
+                {                    var profile = LoadProfileFromIniFile(iniFile);
                     if (profile != null)
                     {
                         profiles.Add(profile);
-                        System.Diagnostics.Debug.WriteLine($"[PROFILE LOADER] Loaded profile: {profile.Name} from {Path.GetFileName(iniFile)}");
                     }
-                }
-                catch (Exception ex)
+                }                catch (Exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to load profile from {iniFile}: {ex.Message}");
+                    // Silently skip files that can't be loaded
                 }
             }
             

@@ -38,13 +38,15 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="SIPSorcery" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup>
+  </ItemGroup>  <ItemGroup>
     <Compile Remove="backup\**" />
     <EmbeddedResource Remove="backup\**" />
     <None Remove="backup\**" />
     <Compile Remove="Pages\Settings\backup\**" />
     <EmbeddedResource Remove="Pages\Settings\backup\**" />
     <None Remove="Pages\Settings\backup\**" />
+    <Compile Remove="tmp\**" />
+    <EmbeddedResource Remove="tmp\**" />
+    <None Remove="tmp\**" />
   </ItemGroup>
 </Project>

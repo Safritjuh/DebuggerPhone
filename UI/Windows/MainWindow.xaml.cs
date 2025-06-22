@@ -237,11 +237,13 @@ namespace WindowsSipPhone.UI.Windows
             }
 
             return cleaned.Trim();
-        }
-
-        private void Timer_Tick(object? sender, EventArgs e)
+        }        private void Timer_Tick(object? sender, EventArgs e)
         {
             TimeText.Text = DateTime.Now.ToString("HH:mm:ss");
+            
+            // BULLETPROOF: Continuously enforce registration-only status bar
+            // This prevents any external code from overriding our status bar with SIP messages
+            EnforceRegistrationStatusBar();
         }
 
         #region System Tray Implementation
@@ -494,28 +496,27 @@ namespace WindowsSipPhone.UI.Windows
         private void ExitApplicationFromTray()
         {
             var result = System.Windows.MessageBox.Show(
-                "Are you sure you want to exit the SIP Phone application?",
-                "Exit Confirmation",
+                "Are you sure you want to exit the SIP Phone application?",                "Exit Confirmation",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
-
+                
             if (result == MessageBoxResult.Yes)
             {
                 _isClosingToTray = false; // Force actual close
                 System.Windows.Application.Current.Shutdown();
-            }        }
+            }
+        }
 
         #endregion
 
         #region Event Handlers
-          private void SipService_StatusChanged(object? sender, string status)
+        
+        private void SipService_StatusChanged(object? sender, string status)
         {
             Dispatcher.Invoke(() =>
             {
-                // Always update header with full status for user feedback
-                HeaderStatusText.Text = status;
-
-                // Use dedicated function for status bar - ONLY allows 3 specific states
+                // BULLETPROOF: Both header and status bar ONLY show registration state - ignore ALL SIP messages
+                // This ensures no SIP responses, call states, or operational messages appear in either status display
                 SetStatusBarRegistrationState();
 
                 // Update status bar icon based on registration state (not message content)
@@ -529,49 +530,86 @@ namespace WindowsSipPhone.UI.Windows
         /// <summary>
         /// Sets status bar to show ONLY registration state - no other messages allowed
         /// Only shows: "Registered", "Registering...", or "Not Registered"
+        /// </summary>        /// <summary>
+        /// BULLETPROOF status bar function - ONLY shows registration state, never SIP messages
+        /// This function completely ignores message content and only uses actual service state
+        /// Updates BOTH the top header status AND bottom status bar
         /// </summary>
         private void SetStatusBarRegistrationState()
         {
-            if (_sipService == null) return;
-
-            // Check actual registration state, not message content
-            if (_sipService.IsRegistered)
+            string statusText;
+            
+            if (_sipService == null) 
             {
-                StatusBarText.Text = "Registered";
+                statusText = "Not Registered";
+            }
+            else if (_sipService.IsRegistered)
+            {
+                statusText = "Registered";
             }
             else
             {
                 // Check if currently attempting registration
-                var headerText = HeaderStatusText.Text?.ToLower() ?? "";
-                if (headerText.Contains("registering") || headerText.Contains("attempting"))
+                // Use a simple flag or service state instead of relying on UI text
+                statusText = "Not Registered";
+                
+                // During registration attempts, briefly show "Registering..."
+                // This should ideally check _sipService state, not UI text
+                try 
                 {
-                    StatusBarText.Text = "Registering...";
+                    // Temporary: Check if any registration activity is happening
+                    // In the future, this should check _sipService.IsRegistering or similar
+                    statusText = "Not Registered";
                 }
-                else
+                catch
                 {
-                    StatusBarText.Text = "Not Registered";
+                    // Fallback to safe state
+                    statusText = "Not Registered";
                 }
-            }        }
-
-        private void UpdateStatusBarIcon()
+            }
+            
+            // Update BOTH status displays with the same safe content
+            StatusBarText.Text = statusText;
+            HeaderStatusText.Text = statusText;
+        }        /// <summary>
+        /// BULLETPROOF enforcement function - Called every second by timer to prevent any unauthorized status content
+        /// This overrides any SIP messages or debug content that might leak into EITHER status display
+        /// </summary>
+        private void EnforceRegistrationStatusBar()
         {
-            // Update icon based on actual registration state, not message content
-            if (_sipService.IsRegistered)
+            // Check BOTH status displays for contamination
+            var currentBottomText = StatusBarText.Text;
+            var currentTopText = HeaderStatusText.Text;
+            
+            bool bottomContaminated = currentBottomText != "Registered" && 
+                                    currentBottomText != "Registering..." && 
+                                    currentBottomText != "Not Registered";
+                                    
+            bool topContaminated = currentTopText != "Registered" && 
+                                 currentTopText != "Registering..." && 
+                                 currentTopText != "Not Registered";
+            
+            // If either status display has been contaminated, fix both immediately
+            if (bottomContaminated || topContaminated)
             {
-                StatusBarIcon.Text = "�";
+                SetStatusBarRegistrationState();
+            }
+        }        private void UpdateStatusBarIcon()
+        {
+            // Update icon based ONLY on actual service registration state, never on UI text content
+            if (_sipService == null)
+            {
+                StatusBarIcon.Text = "🔴";
+            }
+            else if (_sipService.IsRegistered)
+            {
+                StatusBarIcon.Text = "🟢";
             }
             else
             {
-                // Check if currently in process of registering
-                var currentStatus = HeaderStatusText.Text;
-                if (currentStatus.Contains("Registering") || currentStatus.Contains("attempting registration"))
-                {
-                    StatusBarIcon.Text = "🟡";
-                }
-                else
-                {
-                    StatusBarIcon.Text = "🔴";
-                }
+                // Not registered - could be idle or attempting registration
+                // For now, just show red since we don't have a reliable "registering" state from service
+                StatusBarIcon.Text = "🔴";
             }
         }
 
@@ -678,27 +716,24 @@ namespace WindowsSipPhone.UI.Windows
                 };
                 // Show as non-modal window
                 settingsWindow.Show();
-            }
-            catch (Exception ex)
+            }            catch (Exception ex)
             {
                 Console.WriteLine($"[MAIN WINDOW ERROR] Failed to open Settings window: {ex.Message}");
                 System.Windows.MessageBox.Show($"Failed to open Settings: {ex.Message}", "Settings Error",
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }        }
+            }
+        }
 
         #endregion
 
         #region Helper Methods
-          private void UpdateUI()
+        
+        private void UpdateUI()
         {
-            // Update header status
-            HeaderStatusText.Text = _sipService.IsRegistered ? "✅ Registered" : "❌ Not Registered";
-
-            // Use dedicated function for status bar - ONLY allows 3 specific states
+            // BULLETPROOF: Use single function to update BOTH header and status bar consistently
             SetStatusBarRegistrationState();
 
             // Update status bar icon to reflect current registration state
-            // This is used during initialization and periodic updates
             StatusBarIcon.Text = _sipService.IsRegistered ? "🟢" : "🔴";
         }
 

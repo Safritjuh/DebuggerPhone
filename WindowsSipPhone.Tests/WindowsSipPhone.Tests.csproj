@@ -25,14 +25,10 @@
 
   <!-- Include only cross-platform SIP components directly -->
   <ItemGroup>
-    <Compile Include="../SipCore/*.cs" />
-    <Compile Include="../SipDigestAuth.cs" />
-    <Compile Include="../SdpManager.cs" />
-    <Compile Include="../SipTransport.cs" />
-    <Compile Include="../Models/SipConfiguration.cs" />
-    <Compile Include="../Models/SipProfile.cs" />
-    <Compile Include="../Utils/IniFileHandler.cs" />
-    <Compile Include="../Utils/ProfileManager.cs" />
+    <Compile Include="../Core/Models/SipProfile.cs" />
+    <Compile Include="../Core/Models/SipConfiguration.cs" />
+    <Compile Include="../Core/Utilities/IniFileHandler.cs" />
+    <Compile Include="../Services/Data/ProfileManager.cs" />
   </ItemGroup>
 
 </Project>

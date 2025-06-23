@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using WindowsSipPhone.Models;
-using WindowsSipPhone.Utils;
+using WindowsSipPhone.Core.Models;
+using WindowsSipPhone.Core.Utilities;
+using WindowsSipPhone.Services.Data;
 
 namespace WindowsSipPhone.Tests
 {

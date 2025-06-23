@@ -1,35 +1,64 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 
 namespace WindowsSipPhone
 {
     public class EnhancedRingtoneService : IRingtoneService
     {
         private WaveOutEvent? _waveOut;
+        private AudioFileReader? _audioFileReader;
         private string _selectedRingtone = "Traditional Ring";
         private CancellationTokenSource? _cancellationTokenSource;
         private Task? _ringtoneTask;
         private bool _isPlaying = false;
+          // Base paths for ringtone files
+        private readonly string _builtInRingtonesPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory, 
+            "Infrastructure", "Resources", "Audio", "Ringtones");
+            
+        private readonly string _customRingtonesPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory, 
+            "Services", "Audio", "Ringtones");
         
-        public string[] AvailableRingtones => new[]
+        // Built-in ringtone names mapping to WAV files
+        private readonly Dictionary<string, string> _builtInRingtones = new()
         {
-            "Traditional Ring",
-            "Classic Bell", 
-            "European Ring",
-            "Old Telephone",
-            "Modern Tone"
+            { "Traditional Ring", "traditional-ring.wav" },
+            { "Classic Bell", "classic-bell.wav" },
+            { "European Ring", "european-ring.wav" },
+            { "Old Telephone", "old-telephone.wav" },
+            { "Modern Tone", "modern-tone.wav" }
         };
-          public string SelectedRingtone 
+        
+        public string[] AvailableRingtones 
+        {
+            get
+            {
+                var ringtones = new List<string>();
+                
+                // Add built-in ringtones
+                ringtones.AddRange(_builtInRingtones.Keys);
+                
+                // Add custom ringtones from Services/Audio/Ringtones
+                ringtones.AddRange(GetCustomRingtones());
+                
+                return ringtones.ToArray();
+            }
+        }
+          
+        public string SelectedRingtone 
         { 
             get => _selectedRingtone; 
             set => _selectedRingtone = value ?? "Traditional Ring"; 
         }
         
         public bool IsPlaying => _isPlaying;
+        
         public void PlayRingtone(string? ringtoneName = null)
         {
             try
@@ -57,14 +86,14 @@ namespace WindowsSipPhone
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    // Generate and play the ringtone sound using NAudio
-                    PlaySingleRingtone(ringtone);
+                    // Play the WAV file
+                    await PlaySingleRingtoneWav(ringtone, cancellationToken);
                     
-                    // Wait before repeating (2 seconds pause between rings)
-                    await Task.Delay(2000, cancellationToken);
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
                     
-                    // Stop current audio before next iteration
-                    _waveOut?.Stop();
+                    // Wait before repeating (1 second pause between rings)
+                    await Task.Delay(1000, cancellationToken);
                 }
             }
             catch (OperationCanceledException)
@@ -78,101 +107,121 @@ namespace WindowsSipPhone
             }
         }
         
-        private void PlaySingleRingtone(string ringtone)
+        private async Task PlaySingleRingtoneWav(string ringtone, CancellationToken cancellationToken)
         {
             try
-            {
-                // Dispose previous wave out if exists
+            {                // Get the audio file path for the selected ringtone
+                var audioFilePath = GetAudioFilePath(ringtone);
+                
+                if (!File.Exists(audioFilePath))
+                {
+                    Console.WriteLine($"[RINGTONE DEBUG] Audio file not found: {audioFilePath}");
+                    return;
+                }
+                
+                // Dispose previous resources
+                _audioFileReader?.Dispose();
                 _waveOut?.Dispose();
-                
-                // Create the ringtone audio based on selected type
-                var sampleProvider = CreateRingtoneSampleProvider(ringtone);
-                
-                // Initialize NAudio for playback
+                  // Load the audio file
+                _audioFileReader = new AudioFileReader(audioFilePath);
                 _waveOut = new WaveOutEvent();
-                _waveOut.Init(sampleProvider);
-                _waveOut.Play();
+                _waveOut.Init(_audioFileReader);
                 
                 _isPlaying = true;
-                Console.WriteLine($"[RINGTONE DEBUG] Playing single ringtone: {ringtone}");
+                _waveOut.Play();
+                
+                Console.WriteLine($"[RINGTONE DEBUG] Playing audio file: {Path.GetFileName(audioFilePath)}");
+                
+                // Wait for playback to complete or cancellation
+                while (_waveOut.PlaybackState == PlaybackState.Playing && !cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(100, cancellationToken);
+                }
+                
+                _waveOut?.Stop();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RINGTONE DEBUG] Error playing single ringtone: {ex.Message}");
-            }
-        }
+                Console.WriteLine($"[RINGTONE DEBUG] Error playing WAV file: {ex.Message}");
+            }        }
         
-        private ISampleProvider CreateRingtoneSampleProvider(string ringtone)
+        private List<string> GetCustomRingtones()
         {
-            const int sampleRate = 44100;
+            var customRingtones = new List<string>();
             
-            switch (ringtone)
+            try
             {
-                case "Traditional Ring":
-                    return CreateTraditionalRing(sampleRate);
-                    
-                case "Classic Bell":
-                    return CreateClassicBell(sampleRate);
-                    
-                case "European Ring":
-                    return CreateEuropeanRing(sampleRate);
-                    
-                case "Old Telephone":
-                    return CreateOldTelephone(sampleRate);
-                    
-                case "Modern Tone":
-                    return CreateModernTone(sampleRate);
-                    
-                default:
-                    return CreateTraditionalRing(sampleRate);
+                // Ensure custom ringtones directory exists
+                if (!Directory.Exists(_customRingtonesPath))
+                {
+                    Directory.CreateDirectory(_customRingtonesPath);
+                    return customRingtones;
+                }
+                
+                // Get all supported audio files
+                var supportedExtensions = new[] { "*.wav", "*.mp3" };
+                var audioFiles = new List<string>();
+                
+                foreach (var extension in supportedExtensions)
+                {
+                    audioFiles.AddRange(Directory.GetFiles(_customRingtonesPath, extension, SearchOption.TopDirectoryOnly));
+                }
+                
+                // Convert file paths to display names (filename without extension)
+                foreach (var filePath in audioFiles)
+                {
+                    var displayName = Path.GetFileNameWithoutExtension(filePath);
+                    customRingtones.Add(displayName);
+                }
+                
+                Console.WriteLine($"[RINGTONE DEBUG] Found {customRingtones.Count} custom ringtones");
             }
-        }
-        
-        private ISampleProvider CreateTraditionalRing(int sampleRate)
-        {
-            // Traditional US phone ring: Two-tone (440Hz + 480Hz) for 2 seconds
-            var tone1 = new SignalGenerator(sampleRate, 1) { Frequency = 440, Type = SignalGeneratorType.Sin, Gain = 0.3 };
-            var tone2 = new SignalGenerator(sampleRate, 1) { Frequency = 480, Type = SignalGeneratorType.Sin, Gain = 0.3 };
-            var mixed = new MixingSampleProvider(new[] { tone1, tone2 });
-            return mixed.Take(TimeSpan.FromSeconds(2));
-        }        private ISampleProvider CreateClassicBell(int sampleRate)
-        {
-            // Classic bell sound: 800Hz for 1.5 seconds
-            var generator = new SignalGenerator(sampleRate, 1) { Frequency = 800, Type = SignalGeneratorType.Sin, Gain = 0.4 };
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RINGTONE DEBUG] Error scanning custom ringtones: {ex.Message}");
+            }
             
-            // Take the duration we want
-            var timedSignal = generator.Take(TimeSpan.FromSeconds(1.5));
+            return customRingtones;
+        }
+        
+        private string GetAudioFilePath(string ringtone)
+        {
+            // Check if it's a built-in ringtone
+            if (_builtInRingtones.ContainsKey(ringtone))
+            {
+                var fileName = _builtInRingtones[ringtone];
+                var builtInPath = Path.Combine(_builtInRingtonesPath, fileName);
+                
+                if (File.Exists(builtInPath))
+                {
+                    return builtInPath;
+                }
+            }
             
-            // Apply fade out to simulate bell decay
-            var fadedSignal = new FadeInOutSampleProvider(timedSignal);
-            fadedSignal.BeginFadeOut(1000); // 1 second fade out
+            // Check for custom ringtones (try both WAV and MP3)
+            var customWavPath = Path.Combine(_customRingtonesPath, $"{ringtone}.wav");
+            var customMp3Path = Path.Combine(_customRingtonesPath, $"{ringtone}.mp3");
             
-            return fadedSignal;
+            if (File.Exists(customWavPath))
+            {
+                return customWavPath;
+            }
+            
+            if (File.Exists(customMp3Path))
+            {
+                return customMp3Path;
+            }
+            
+            // Fallback to default built-in ringtone
+            Console.WriteLine($"[RINGTONE DEBUG] Ringtone '{ringtone}' not found, using default");
+            return Path.Combine(_builtInRingtonesPath, "traditional-ring.wav");
         }
-        
-        private ISampleProvider CreateEuropeanRing(int sampleRate)
-        {
-            // European style: Single 425Hz tone for 1 second
-            var generator = new SignalGenerator(sampleRate, 1) { Frequency = 425, Type = SignalGeneratorType.Sin, Gain = 0.35 };
-            return generator.Take(TimeSpan.FromSeconds(1));
-        }
-        
-        private ISampleProvider CreateOldTelephone(int sampleRate)
-        {
-            // Old telephone: Lower frequency bell-like sound with harmonics
-            var fundamental = new SignalGenerator(sampleRate, 1) { Frequency = 300, Type = SignalGeneratorType.Sin, Gain = 0.3 };
-            var harmonic = new SignalGenerator(sampleRate, 1) { Frequency = 600, Type = SignalGeneratorType.Sin, Gain = 0.15 };
-            var mixed = new MixingSampleProvider(new[] { fundamental, harmonic });
-            return mixed.Take(TimeSpan.FromSeconds(2.5));
-        }
-        
-        private ISampleProvider CreateModernTone(int sampleRate)
-        {
-            // Modern tone: Clean 1000Hz sine wave for 1.2 seconds
-            var generator = new SignalGenerator(sampleRate, 1) { Frequency = 1000, Type = SignalGeneratorType.Sin, Gain = 0.25 };
-            return generator.Take(TimeSpan.FromSeconds(1.2));
-        }
-          public void StopRingtone()
+          
+        public void StopRingtone()
         {
             try
             {
@@ -183,6 +232,9 @@ namespace WindowsSipPhone
                 _waveOut?.Stop();
                 _waveOut?.Dispose();
                 _waveOut = null;
+                
+                _audioFileReader?.Dispose();
+                _audioFileReader = null;
                 
                 _isPlaying = false;
                 

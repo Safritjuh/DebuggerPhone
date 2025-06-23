@@ -4,6 +4,7 @@ applyTo: '**'
 ## Coding standards, domain knowledge, and preferences that AI should follow.
 
 - Answer all questions in the style of a friendly colleague, using informal language.
+- **CRITICAL: Always append `; echo ""` to PowerShell commands when using `run_in_terminal`**
 - Always use powershell commands when running commands
 - Use C# and .NET 8.0 or later for the SIP phone application.
 - Use WPF (Windows Presentation Foundation) for the desktop UI.

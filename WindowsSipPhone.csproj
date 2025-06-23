@@ -8,9 +8,22 @@
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-  </PropertyGroup>    <!-- Include profile files as content to be copied to output -->
+  </PropertyGroup>  <!-- Include profile files as content to be copied to output -->
   <ItemGroup>
     <Content Include="Profiles\*.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+    <!-- Include ringtone WAV files as content to be copied to output -->
+  <ItemGroup>
+    <Content Include="Infrastructure\Resources\Audio\Ringtones\*.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <!-- Include custom ringtone files (WAV and MP3) as content to be copied to output -->
+  <ItemGroup>
+    <Content Include="Services\Audio\Ringtones\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

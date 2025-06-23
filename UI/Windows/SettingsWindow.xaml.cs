@@ -270,30 +270,42 @@ namespace WindowsSipPhone.UI.Windows
                 FontSize = 12,
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(127, 140, 141)),
                 Margin = new Thickness(0, 0, 0, 15)
-            };
-            
-            var ringtoneGrid = new System.Windows.Controls.Grid();
+            };            var ringtoneGrid = new System.Windows.Controls.Grid();
             ringtoneGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(120) });
             ringtoneGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             ringtoneGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(80) });
-            
+            ringtoneGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(80) });
+
             var ringtoneLabel = new System.Windows.Controls.TextBlock
             {
                 Text = "Ringtone:",
                 VerticalAlignment = VerticalAlignment.Center,
                 FontWeight = FontWeights.Medium
             };
-            System.Windows.Controls.Grid.SetColumn(ringtoneLabel, 0);
-              var ringtoneCombo = new System.Windows.Controls.ComboBox
+            System.Windows.Controls.Grid.SetColumn(ringtoneLabel, 0);var ringtoneCombo = new System.Windows.Controls.ComboBox
             {
                 Height = 35,
                 Margin = new Thickness(0, 0, 10, 0)
             };
-            ringtoneCombo.Items.Add("Default Ring");
-            ringtoneCombo.Items.Add("Classic Phone");
-            ringtoneCombo.Items.Add("Modern Chime");
-            ringtoneCombo.Items.Add("Old School Bell");
-            ringtoneCombo.Items.Add("Notification Sound");
+            
+            // Populate with dynamic ringtone list from service
+            if (_ringtoneService != null)
+            {
+                foreach (var ringtone in _ringtoneService.AvailableRingtones)
+                {
+                    ringtoneCombo.Items.Add(ringtone);
+                }
+            }
+            else
+            {
+                // Fallback if no service available
+                ringtoneCombo.Items.Add("Traditional Ring");
+                ringtoneCombo.Items.Add("Classic Bell");
+                ringtoneCombo.Items.Add("European Ring");
+                ringtoneCombo.Items.Add("Old Telephone");
+                ringtoneCombo.Items.Add("Modern Tone");
+            }
+            
             ringtoneCombo.SelectedIndex = 0; // Default selection
               // Store reference for later use
             _ringtoneComboBox = ringtoneCombo;
@@ -321,22 +333,35 @@ namespace WindowsSipPhone.UI.Windows
                 }
             };
             
-            System.Windows.Controls.Grid.SetColumn(ringtoneCombo, 1);
-            
-            var testRingtoneButton = new System.Windows.Controls.Button
+            System.Windows.Controls.Grid.SetColumn(ringtoneCombo, 1);            var testRingtoneButton = new System.Windows.Controls.Button
             {
                 Content = "🔊 Test",
                 Height = 35,
+                Margin = new Thickness(0, 0, 5, 0),
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(76, 175, 80)),
                 Foreground = System.Windows.Media.Brushes.White,
-                FontSize = 12
+                FontSize = 12,
+                ToolTip = "Test the selected ringtone"
             };
             testRingtoneButton.Click += TestRingtone_Click;
             System.Windows.Controls.Grid.SetColumn(testRingtoneButton, 2);
             
+            var stopRingtoneButton = new System.Windows.Controls.Button
+            {
+                Content = "🔇 Stop",
+                Height = 35,
+                Margin = new Thickness(5, 0, 5, 0),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)),
+                Foreground = System.Windows.Media.Brushes.White,
+                FontSize = 12,
+                ToolTip = "Stop playing ringtone"
+            };            stopRingtoneButton.Click += StopRingtone_Click;
+            System.Windows.Controls.Grid.SetColumn(stopRingtoneButton, 3);
+
             ringtoneGrid.Children.Add(ringtoneLabel);
             ringtoneGrid.Children.Add(ringtoneCombo);
             ringtoneGrid.Children.Add(testRingtoneButton);
+            ringtoneGrid.Children.Add(stopRingtoneButton);
             
             ringtoneSectionContent.Children.Add(ringtoneTitle);
             ringtoneSectionContent.Children.Add(ringtoneDescription);
@@ -675,18 +700,33 @@ namespace WindowsSipPhone.UI.Windows
                 if (_ringtoneComboBox == null || _ringtoneService == null)
                     return;
                     
-                var selectedRingtone = _ringtoneComboBox.SelectedItem?.ToString() ?? "Default Ring";
+                var selectedRingtone = _ringtoneComboBox.SelectedItem?.ToString() ?? "Traditional Ring";
                 
                 // Use the RingtoneService to play the selected ringtone
                 _ringtoneService.PlayRingtone(selectedRingtone);
                 
-                // Show feedback to user
-                System.Windows.MessageBox.Show($"Playing ringtone: {selectedRingtone}", "Ringtone Test", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                Console.WriteLine($"[SETTINGS DEBUG] Started playing test ringtone: {selectedRingtone}");
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Error testing ringtone: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }}
+          private void StopRingtone_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_ringtoneService == null)
+                    return;
+                
+                // Stop the currently playing ringtone
+                _ringtoneService.StopRingtone();
+                
+                Console.WriteLine("[SETTINGS DEBUG] Stopped ringtone playback");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error stopping ringtone: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }        }
     }

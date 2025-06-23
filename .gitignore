@@ -361,3 +361,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Test backup files
+*.cs.bak

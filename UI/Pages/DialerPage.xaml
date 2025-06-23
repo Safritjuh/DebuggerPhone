@@ -111,20 +111,27 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         
                         <Button Grid.Column="0" Content="🗑️ Clear" Style="{StaticResource ActionButtonStyle}"
                                Command="{Binding ClearCommand}" Background="#E74C3C" Margin="0,0,2,0"
-                               IsEnabled="{Binding IsCallActive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                               Visibility="{Binding IsCallActive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                         <Button Grid.Column="1" Content="📞 Call" Style="{StaticResource ActionButtonStyle}"
                                Command="{Binding CallCommand}" Background="#27AE60" Margin="2,0,2,0"
                                Visibility="{Binding IsCallActive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                         
                         <!-- Hold/Resume Button (visible during active calls) -->
-                        <Button Grid.Column="1" Content="{Binding HoldButtonText}" Style="{StaticResource ActionButtonStyle}"
-                               Command="{Binding HoldCommand}" Background="#9B59B6" Margin="2,0,2,0"
+                        <Button Grid.Column="0" Content="{Binding HoldButtonText}" Style="{StaticResource ActionButtonStyle}"
+                               Command="{Binding HoldCommand}" Background="#9B59B6" Margin="0,0,2,0"
                                Visibility="{Binding IsCallActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                                ToolTip="Hold or resume current call"/>
+                        
+                        <!-- DTMF Button (visible during active calls) -->
+                        <Button Grid.Column="1" Content="🔢 DTMF" Style="{StaticResource ActionButtonStyle}"
+                               Command="{Binding ShowDtmfKeypadCommand}" Background="#F39C12" Margin="2,0,2,0"
+                               Visibility="{Binding IsCallActive, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               ToolTip="Open DTMF keypad for tone input"/>
                         
                         <Button Grid.Column="2" Content="{Binding AudioButtonText}" Style="{StaticResource ActionButtonStyle}"
                                Command="{Binding AudioCommand}" Background="#3498DB" Margin="2,0,2,0"

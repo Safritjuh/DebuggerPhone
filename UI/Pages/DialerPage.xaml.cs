@@ -403,30 +403,36 @@ namespace WindowsSipPhone.UI.Pages
             }
         }
 
-        #endregion        #region Commands
+        #region Commands
         public ICommand KeypadCommand { get; private set; } = null!; // Unified keypad command for dialing/DTMF
         public ICommand ClearCommand { get; private set; } = null!;
         public ICommand CallCommand { get; private set; } = null!;
         public ICommand HangupCommand { get; private set; } = null!;
         public ICommand HoldCommand { get; private set; } = null!;
         public ICommand AudioCommand { get; private set; } = null!;
+        public ICommand ShowDtmfKeypadCommand { get; private set; } = null!;
         public ICommand FilterCallsCommand { get; private set; } = null!;
-        public ICommand RedialCommand { get; private set; } = null!;        public ICommand ClearHistoryCommand { get; private set; } = null!;
-        public ICommand ExportCsvCommand { get; private set; } = null!;
+        public ICommand RedialCommand { get; private set; } = null!;        public ICommand ClearHistoryCommand { get; private set; } = null!;        public ICommand ExportCsvCommand { get; private set; } = null!;
         // TestCallCommand and RefreshCommand removed for cleaner UI
 
+        #endregion
+
         private void InitializeCommands()
-        {            KeypadCommand = new RelayCommand<string>(HandleKeypadPress); // Unified keypad handler
+        {
+            KeypadCommand = new RelayCommand<string>(HandleKeypadPress); // Unified keypad handler
             ClearCommand = new RelayCommand(Clear);
             CallCommand = new RelayCommand(() => _ = MakeCallAsync(), CanMakeCall);
             HangupCommand = new RelayCommand(() => _ = HangupCallAsync());
             HoldCommand = new RelayCommand(() => _ = ToggleHoldAsync());
             AudioCommand = new RelayCommand(ToggleAudio);
+            ShowDtmfKeypadCommand = new RelayCommand(ShowDtmfKeypad, () => _isCallActive);
             FilterCallsCommand = new RelayCommand<string>(FilterCalls);
-            RedialCommand = new RelayCommand(RedialCall, CanRedial);            ClearHistoryCommand = new RelayCommand(ClearCallHistory);
-            ExportCsvCommand = new RelayCommand(ExportCallHistoryToCsv);
-            // TestCallCommand and RefreshCommand initialization removed
+            RedialCommand = new RelayCommand(RedialCall, CanRedial);
+            ClearHistoryCommand = new RelayCommand(ClearCallHistory);
+            ExportCsvCommand = new RelayCommand(ExportCallHistoryToCsv);            // TestCallCommand and RefreshCommand initialization removed
         }
+
+        #endregion
 
         private async Task MakeCallAsync()
         {
@@ -762,12 +768,39 @@ namespace WindowsSipPhone.UI.Pages
             {
                 _logger.LogError("DTMF", $"Error sending DTMF digit '{digit}': {ex.Message}");
                 DtmfStatusText = $"❌ DTMF Error: {digit}";
-                
-                await Task.Delay(1000);
+                  await Task.Delay(1000);
                 IsDtmfActive = false;
                 DtmfStatusText = "";
             }
-        }        private void ExportCallHistoryToCsv()
+        }
+
+        /// <summary>
+        /// Show dedicated DTMF keypad window during active call
+        /// </summary>
+        private void ShowDtmfKeypad()
+        {
+            try
+            {
+                if (!_isCallActive)
+                {
+                    _logger.LogWarning("UI", "DTMF keypad requested but no active call");
+                    return;
+                }
+
+                _logger.LogAction("UI", "Opening DTMF keypad window");
+
+                var dtmfWindow = new WindowsSipPhone.UI.Dialogs.DtmfKeypadWindow(_sipService, CallStatusText)
+                {
+                    Owner = System.Windows.Application.Current.MainWindow
+                };
+
+                dtmfWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("UI", $"Error opening DTMF keypad: {ex.Message}");
+            }
+        }private void ExportCallHistoryToCsv()
         {
             try
             {
@@ -806,8 +839,7 @@ namespace WindowsSipPhone.UI.Pages
                     "Export Error", 
                     System.Windows.MessageBoxButton.OK, 
                     System.Windows.MessageBoxImage.Error);
-            }
-        }
+            }        }
 
         #endregion
 
@@ -1077,8 +1109,7 @@ namespace WindowsSipPhone.UI.Pages
     {
         InProgress,
         Completed,
-        Missed,
-        Failed    
+        Missed,        Failed    
     }
 
     #endregion

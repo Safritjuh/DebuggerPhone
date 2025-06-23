@@ -230,23 +230,16 @@ namespace WindowsSipPhone.Services.Data
                     info.Add("✓ Long registration intervals reduce server load");
                     info.Add("✓ Compatible with Avaya-specific extensions");
                     break;
-                    
-                case "cloud generic":
-                    info.Add("✓ Works with most cloud SIP providers");
-                    info.Add("✓ Keep-alive prevents NAT timeouts"); 
-                    info.Add("✓ Short registration intervals for better reliability");
+                      case "elevate":
+                    info.Add("✓ Optimized for Intermedia Elevate platform");
+                    info.Add("✓ Supports high-quality G722 codec");
+                    info.Add("✓ BYOD-friendly configuration");
                     break;
                     
-                case "freeswitch":
-                    info.Add("✓ Optimized for FreeSWITCH platforms");
-                    info.Add("✓ Supports advanced codec negotiation");
-                    info.Add("✓ Compatible with FreeSWITCH-specific features");
-                    break;
-                    
-                case "cisco":
-                    info.Add("✓ Optimized for Cisco systems");
-                    info.Add("✓ G.729 codec preference for bandwidth efficiency");
-                    info.Add("✓ Compatible with Cisco-specific protocols");
+                case "avaya aura":
+                    info.Add("✓ Optimized for Avaya Aura systems");
+                    info.Add("✓ Enterprise-grade reliability");
+                    info.Add("✓ Compatible with Avaya-specific features");
                     break;
                     
                 default:

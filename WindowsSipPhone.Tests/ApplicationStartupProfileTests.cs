@@ -20,14 +20,14 @@ namespace WindowsSipPhone.Tests
             // Assert
             Assert.NotNull(profiles);
             Assert.NotEmpty(profiles);
-            Assert.True(profiles.Count >= 5, $"Expected at least 5 profiles, got {profiles.Count}");
+            Assert.True(profiles.Count >= 4, $"Expected at least 4 profiles, got {profiles.Count}");
         }
 
         [Fact]
         public void ApplicationStartup_ShouldHaveRequiredProfiles()
         {
             // Arrange
-            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Cloud Generic", "FreeSWITCH", "Cisco" };
+            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Elevate", "Avaya Aura" };
             
             // Act
             var profiles = SipProfile.GetPredefinedProfiles();

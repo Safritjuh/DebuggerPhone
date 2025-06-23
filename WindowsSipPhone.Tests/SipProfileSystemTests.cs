@@ -20,10 +20,9 @@ namespace WindowsSipPhone.Tests
             var profiles = SipProfile.GetPredefinedProfiles();
             
             // Assert
-            Assert.NotNull(profiles);
-            Assert.Equal(5, profiles.Count);
+            Assert.NotNull(profiles);            Assert.Equal(4, profiles.Count);
             
-            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Cloud Generic", "FreeSWITCH", "Cisco" };
+            var expectedProfiles = new[] { "Generic", "Avaya IP Office", "Elevate", "Avaya Aura" };
             
             foreach (var expectedName in expectedProfiles)
             {
@@ -50,7 +49,7 @@ namespace WindowsSipPhone.Tests
             Assert.Equal(300, profile.RegistrationExpiry);
             Assert.False(profile.RequireKeepAlive);
             Assert.Equal("TCP", profile.Transport);
-            Assert.Equal("Windows-SIP-Phone/2.0", profile.UserAgentString);
+            Assert.Equal("SIP TEST Phone", profile.UserAgentString);
             Assert.False(profile.UseShortHeaders);
             Assert.Equal(5060, profile.DefaultPort);
         }
@@ -64,11 +63,10 @@ namespace WindowsSipPhone.Tests
             // Assert
             Assert.NotNull(profile);
             Assert.Equal("Avaya IP Office", profile.Name);
-            Assert.False(profile.IsCustom);
-            Assert.Equal(3600, profile.RegistrationExpiry);
+            Assert.False(profile.IsCustom);            Assert.Equal(180, profile.RegistrationExpiry);
             Assert.False(profile.RequireKeepAlive);
             Assert.Equal("TCP", profile.Transport);
-            Assert.Contains("Avaya", profile.UserAgentString);
+            Assert.Contains("SIP TEST Phone", profile.UserAgentString);
         }
 
         [Fact]

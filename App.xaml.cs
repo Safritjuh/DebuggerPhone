@@ -119,8 +119,8 @@ public partial class App : System.Windows.Application
         Console.WriteLine($"Unhandled domain exception: {exception.Message}");
         Console.WriteLine($"Stack trace: {exception.StackTrace}");
         Console.ReadKey();
-#else
-        // In release builds, log to Windows Event Log and show critical error        System.Windows.MessageBox.Show($"A critical error occurred and the application must close: {exception.Message}", 
+#else        // In release builds, log to Windows Event Log and show critical error
+        System.Windows.MessageBox.Show($"A critical error occurred and the application must close: {exception.Message}", 
                        "SIP Phone Critical Error", MessageBoxButton.OK, MessageBoxImage.Error);
 #endif
     }

@@ -5,6 +5,8 @@ using WindowsSipPhone.SipCore;
 using WindowsSipPhone.Core.Managers;
 using WindowsSipPhone.Core.Interfaces;
 using WindowsSipPhone.Core.Models;
+using WindowsSipPhone.Core.Protocol;
+using WindowsSipPhone.Core.Validation;
 
 namespace WindowsSipPhone
 {
@@ -26,11 +28,13 @@ namespace WindowsSipPhone
         private EnhancedProfileManager? _profileManager;
         private ISipProfileHandler? _currentProfileHandler;
         private SipProfileConfiguration? _currentProfileConfig;
-        
-        // JSIP-style components
+          // JSIP-style components
         private WindowsSipPhone.SipCore.DialogManager _dialogManager;
         private WindowsSipPhone.SipCore.RegistrationManager _registrationManager;
         private WindowsSipPhone.SipCore.SipMessageFactory _messageFactory;
+          // RFC 3261 Enhanced Components
+        private EnhancedSipMessageFactory? _enhancedMessageFactory;
+        private Rfc3261Validator? _rfc3261Validator;
         
         // Legacy fields for backward compatibility
         private int _sequenceNumber = 1;
@@ -85,10 +89,14 @@ namespace WindowsSipPhone
             _dialogManager = new DialogManager();
             _registrationManager = new RegistrationManager(_messageFactory, SendMessageAsync);
             
+            // Initialize RFC 3261 Enhanced Components
+            _enhancedMessageFactory = new EnhancedSipMessageFactory(_localIp, _username);
+            _rfc3261Validator = new Rfc3261Validator();
+            
             // Wire up events
             _dialogManager.DialogStateChanged += OnDialogStateChanged;
             _registrationManager.RegistrationStatusChanged += OnRegistrationStatusChanged;
-            _registrationManager.AuthenticationRequired += OnAuthenticationRequired;            _localIp = GetLocalIPAddress();
+            _registrationManager.AuthenticationRequired += OnAuthenticationRequired;_localIp = GetLocalIPAddress();
             
             // Initialize bidirectional SIP transport
             _sipTransport = new SipTransport(_localIp, _serverPort);
@@ -845,6 +853,34 @@ namespace WindowsSipPhone
                 }
                 
                 actualSipMessage = processedMessage;
+                  // Validate incoming message for RFC 3261 compliance
+                try
+                {
+                    if (_rfc3261Validator != null)
+                    {
+                        var validationResult = _rfc3261Validator.ValidateMessage(actualSipMessage);
+                        if (validationResult.HasCriticalErrors)
+                        {
+                            StatusChanged?.Invoke(this, "⚠️ Incoming message has RFC 3261 compliance issues:");
+                            foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical).Take(3)) // Limit to first 3 errors
+                            {
+                                Console.WriteLine($"[RFC 3261 CRITICAL] {error.Message}");
+                            }
+                        }
+                        
+                        if (validationResult.Errors.Any(e => e.Severity == ValidationSeverity.Warning))
+                        {
+                            foreach (var warning in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Warning).Take(2)) // Limit warnings
+                            {
+                                Console.WriteLine($"[RFC 3261 WARNING] {warning.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception validationEx)
+                {
+                    Console.WriteLine($"[RFC 3261 VALIDATION] Error validating incoming message: {validationEx.Message}");
+                }
                 
                 // Extract common headers for dialog management
                 var callId = ExtractHeader(actualSipMessage, "Call-ID:");
@@ -2073,25 +2109,50 @@ namespace WindowsSipPhone
             return string.Empty;
         }        private string CreateRegisterMessage(int expires = 3600)
         {
-            var sipUri = $"sip:{_serverHost}:{_serverPort}";
-            var userUri = $"sip:{_username}@{_serverHost}";
-            var contactUri = $"sip:{_username}@{_localIp}:5060";
-            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
-            
-            var message = $"REGISTER {sipUri} SIP/2.0\r\n" +
-                         $"Via: SIP/2.0/TCP {_localIp}:5060;branch={branch}\r\n" +
-                         $"From: <{userUri}>;tag={_fromTag}\r\n" +
-                         $"To: <{userUri}>\r\n" +                         $"Contact: <{contactUri}>\r\n" +
-                         $"Call-ID: {_callId}\r\n" +
-                         $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
-                         $"User-Agent: {_userAgent}\r\n" +
-                         $"Max-Forwards: 70\r\n"+
-                         $"Expires: {expires}\r\n" +
-                         $"Content-Length: 0\r\n" +
-                         $"\r\n";
-                         
-            return message;
-        }        private string CreateAuthenticatedRegisterMessage(Dictionary<string, string> authParams)
+            // Use enhanced RFC 3261 compliant factory
+            try
+            {                var enhancedMessage = _enhancedMessageFactory.CreateRegisterRequest(
+                    _username, _serverHost, _serverPort, (uint)_sequenceNumber++, null, expires);
+                
+                // Validate the message for compliance
+                var validationResult = _rfc3261Validator.ValidateMessage(enhancedMessage);
+                if (validationResult.HasCriticalErrors)
+                {
+                    StatusChanged?.Invoke(this, "⚠️ RFC 3261 compliance issues detected in REGISTER message");
+                    foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
+                    {
+                        StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
+                    }
+                }
+                
+                return enhancedMessage;
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke(this, $"⚠️ Enhanced factory failed, falling back to legacy: {ex.Message}");
+                
+                // Fallback to legacy implementation if enhanced factory fails
+                var sipUri = $"sip:{_serverHost}:{_serverPort}";
+                var userUri = $"sip:{_username}@{_serverHost}";
+                var contactUri = $"sip:{_username}@{_localIp}:5060";
+                var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
+                
+                var message = $"REGISTER {sipUri} SIP/2.0\r\n" +
+                             $"Via: SIP/2.0/TCP {_localIp}:5060;branch={branch}\r\n" +
+                             $"From: <{userUri}>;tag={_fromTag}\r\n" +
+                             $"To: <{userUri}>\r\n" +
+                             $"Contact: <{contactUri}>\r\n" +
+                             $"Call-ID: {_callId}\r\n" +
+                             $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
+                             $"User-Agent: {_userAgent}\r\n" +
+                             $"Max-Forwards: 70\r\n"+
+                             $"Expires: {expires}\r\n" +
+                             $"Content-Length: 0\r\n" +
+                             $"\r\n";
+                             
+                return message;
+            }
+        }private string CreateAuthenticatedRegisterMessage(Dictionary<string, string> authParams)
         {
             var sipUri = $"sip:{_serverHost}:{_serverPort}";
             var userUri = $"sip:{_username}@{_serverHost}";
@@ -2184,7 +2245,6 @@ namespace WindowsSipPhone
             var localIp = GetLocalIPAddress();
             var newCallId = Guid.NewGuid().ToString().Replace("-", "");
             _activeCallId = newCallId; // Store the active call ID for later BYE message
-            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
             
             // CRITICAL FIX: Prepare RTP socket early to get valid port for SDP offer
             var rtpPort = 5004; // Default fallback port
@@ -2193,18 +2253,51 @@ namespace WindowsSipPhone
                 if (_audioManager.PrepareRtpSocket())
                 {
                     rtpPort = _audioManager.LocalRtpPort;
-                    Console.WriteLine($"[LEGACY INVITE DEBUG] ✅ RTP socket prepared, using port: {rtpPort}");
+                    Console.WriteLine($"[INVITE DEBUG] ✅ RTP socket prepared, using port: {rtpPort}");
                 }
                 else
                 {
-                    Console.WriteLine($"[LEGACY INVITE DEBUG] ⚠️ Failed to prepare RTP socket, using fallback port: {rtpPort}");
+                    Console.WriteLine($"[INVITE DEBUG] ⚠️ Failed to prepare RTP socket, using fallback port: {rtpPort}");
                 }
             }
             
             // Create SDP offer for audio negotiation
             var sdpContent = SdpManager.CreateSdpOffer(localIp, rtpPort);
+            
+            // Try to use enhanced RFC 3261 compliant factory
+            try
+            {
+                if (_enhancedMessageFactory != null && _rfc3261Validator != null)
+                {
+                    // Use enhanced message factory
+                    var enhancedMessage = _enhancedMessageFactory.CreateInviteRequest(
+                        _username, targetNumber, _serverHost, _serverPort, 
+                        (uint)_sequenceNumber++, newCallId, GenerateTag(), sdpContent);
+                    
+                    // Validate the message for compliance
+                    var validationResult = _rfc3261Validator.ValidateMessage(enhancedMessage);
+                    if (validationResult.HasCriticalErrors)
+                    {
+                        StatusChanged?.Invoke(this, "⚠️ RFC 3261 compliance issues detected in INVITE message");
+                        foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
+                        {
+                            StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
+                        }
+                    }
+                    
+                    return enhancedMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke(this, $"⚠️ Enhanced factory failed, falling back to legacy: {ex.Message}");
+            }
+            
+            // Fallback to legacy implementation if enhanced factory fails or is null
+            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
             var contentLength = SdpManager.GetSdpLength(sdpContent);
-              return $"INVITE sip:{targetNumber}@{_serverHost}:{_serverPort} SIP/2.0\r\n" +
+              
+            return $"INVITE sip:{targetNumber}@{_serverHost}:{_serverPort} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
                    $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +
                    $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +
@@ -2217,7 +2310,7 @@ namespace WindowsSipPhone
                    $"Content-Length: {contentLength}\r\n" +
                    $"\r\n" +
                    $"{sdpContent}";
-        }        private string CreateAuthenticatedInviteMessage(string targetNumber, Dictionary<string, string> authParams)
+        }private string CreateAuthenticatedInviteMessage(string targetNumber, Dictionary<string, string> authParams)
         {
             var localIp = GetLocalIPAddress();            var newCallId = Guid.NewGuid().ToString().Replace("-", "");
             _activeCallId = newCallId; // Store the active call ID for later BYE message
@@ -2986,12 +3079,40 @@ namespace WindowsSipPhone
                 // Keep timer running to retry later
             }
         }
-        #region JSIP-Style Event Handlers and Helper Methods
-          /// <summary>
+        #region JSIP-Style Event Handlers and Helper Methods        /// <summary>
         /// Sends a SIP message through the bidirectional transport layer
         /// </summary>
         private async Task SendMessageAsync(string message)
         {
+            // Validate outgoing message for RFC 3261 compliance
+            try
+            {
+                if (_rfc3261Validator != null)
+                {
+                    var validationResult = _rfc3261Validator.ValidateMessage(message);
+                    if (validationResult.HasCriticalErrors)
+                    {
+                        StatusChanged?.Invoke(this, "⚠️ Outgoing message has RFC 3261 compliance issues:");
+                        foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
+                        {
+                            StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
+                        }
+                    }
+                    
+                    if (validationResult.Errors.Any(e => e.Severity == ValidationSeverity.Warning))
+                    {
+                        foreach (var warning in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Warning))
+                        {
+                            Console.WriteLine($"[RFC 3261 WARNING] {warning.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception validationEx)
+            {
+                Console.WriteLine($"[RFC 3261 VALIDATION] Error validating message: {validationEx.Message}");
+            }
+            
             // Try to send through SipTransport first (for bidirectional communication)
             if (_sipTransport != null)
             {                try

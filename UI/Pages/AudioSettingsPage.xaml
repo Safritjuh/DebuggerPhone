@@ -24,9 +24,11 @@
                           Margin="0,3,0,0"/>
             </StackPanel>
         </Border>
-        
-        <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="20">
+          <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+                     PanningMode="VerticalOnly" 
+                     CanContentScroll="True" 
+                     Margin="20">
             <StackPanel>
                 
                 <!-- Audio Input (Microphone) Section -->

@@ -28,25 +28,18 @@ namespace WindowsSipPhone.UI.Pages
         private string _statusDetails = "Configure settings and click Register to connect";
         private DateTime _lastUpdated = DateTime.Now;        private bool _isRegistered = false;
         private SipPhoneService? _sipService;
-        
-        // IMP-016: Enhanced Profile Management
-        private EnhancedProfileManager? _enhancedProfileManager;
-        private List<string> _availableEnhancedProfiles = new();
-        private string _selectedEnhancedProfile = "Generic";
-        
-        // Legacy profile system properties (for backward compatibility)
-        private List<SipProfile> _availableProfiles = new();
-        private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
+          // Profile Management (IMP-016)
+        private EnhancedProfileManager? _profileManager;
+        private List<string> _availableProfiles = new();
+        private string _selectedProfile = "Generic";
 
         // Reference to PasswordBox control
         private PasswordBox PasswordBoxRef;        public SipSettingsPage()
-        {
-            InitializeComponent();
+        {            InitializeComponent();
             DataContext = this;
             // Assign PasswordBoxRef after InitializeComponent
             PasswordBoxRef = (PasswordBox)this.FindName("PasswordBox");
-            InitializeProfiles();
-            InitializeEnhancedProfiles(); // IMP-016: Initialize enhanced profile system
+            InitializeProfiles(); // Initialize profile system
             InitializeCommands();
             LoadSettings();
         }        public SipPhoneService? SipService 
@@ -59,13 +52,12 @@ namespace WindowsSipPhone.UI.Pages
                 {
                     _sipService.StatusChanged += OnSipStatusChanged;
                     UpdateRegistrationStatus();
-                    
-                    // IMP-016: Sync enhanced profile selection with SIP service
+                      // Sync profile selection with SIP service
                     if (_sipService.ProfileManager != null)
                     {
                         var serviceProfiles = _sipService.GetAvailableProfiles();
-                        AvailableEnhancedProfiles = serviceProfiles.ToList();
-                        SelectedEnhancedProfile = _sipService.CurrentProfileName;
+                        AvailableProfiles = serviceProfiles.ToList();
+                        SelectedProfile = _sipService.CurrentProfileName;
                     }
                 }
             }
@@ -214,8 +206,7 @@ namespace WindowsSipPhone.UI.Pages
             }
         }
         
-        // Profile System Properties
-        public List<SipProfile> AvailableProfiles
+        // Profile System Properties        public List<string> AvailableProfiles
         {
             get => _availableProfiles;
             set
@@ -224,7 +215,8 @@ namespace WindowsSipPhone.UI.Pages
                 OnPropertyChanged();
             }
         }
-          public SipProfile SelectedProfile
+        
+        public string SelectedProfile
         {
             get => _selectedProfile;
             set
@@ -232,28 +224,6 @@ namespace WindowsSipPhone.UI.Pages
                 _selectedProfile = value;
                 OnPropertyChanged();
                 OnProfileChanged();
-            }
-        }
-        
-        // IMP-016: Enhanced Profile System Properties
-        public List<string> AvailableEnhancedProfiles
-        {
-            get => _availableEnhancedProfiles;
-            set
-            {
-                _availableEnhancedProfiles = value;
-                OnPropertyChanged();
-            }
-        }
-        
-        public string SelectedEnhancedProfile
-        {
-            get => _selectedEnhancedProfile;
-            set
-            {
-                _selectedEnhancedProfile = value;
-                OnPropertyChanged();
-                OnEnhancedProfileChanged();
             }
         }
 
@@ -301,12 +271,10 @@ namespace WindowsSipPhone.UI.Pages
             {
                 StatusDetails = "SIP service not available";
                 return;
-            }
-
-            try
+            }            try
             {
                 RegistrationStatus = "Registering...";
-                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile.Name}'";
+                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile}'";
                 LastUpdated = DateTime.Now;
 
                 var password = PasswordBoxRef.Password;
@@ -315,7 +283,9 @@ namespace WindowsSipPhone.UI.Pages
                     StatusDetails = "Password is required";
                     RegistrationStatus = "Registration Failed";
                     return;
-                }                if (!int.TryParse(ServerPort, out var port))
+                }
+
+                if (!int.TryParse(ServerPort, out var port))
                 {
                     StatusDetails = "Invalid port number";
                     RegistrationStatus = "Registration Failed";
@@ -329,7 +299,7 @@ namespace WindowsSipPhone.UI.Pages
                     return;
                 }
 
-                // Use profile-based registration
+                // Use enhanced profile-based registration
                 await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, SelectedProfile, expires);
             }
             catch (Exception ex)
@@ -361,9 +331,7 @@ namespace WindowsSipPhone.UI.Pages
                 StatusDetails = $"Unregister error: {ex.Message}";
                 LastUpdated = DateTime.Now;
             }
-        }
-
-        private void SaveSettings()
+        }        private void SaveSettings()
         {
             try
             {
@@ -375,7 +343,7 @@ namespace WindowsSipPhone.UI.Pages
                     Transport = SelectedTransport,
                     RememberCredentials = true, // Could be a checkbox in UI
                     AutoRegisterOnStartup = false,
-                    SelectedProfileName = SelectedProfile.Name
+                    SelectedProfileName = SelectedProfile
                 };
                 
                 config.Save();
@@ -392,7 +360,7 @@ namespace WindowsSipPhone.UI.Pages
         private void ResetSettings()
         {
             // Reset to Generic profile (default)
-            SelectedProfile = SipProfile.GetDefaultProfile();
+            SelectedProfile = "Generic";
             
             // Reset basic settings
             Username = "103";
@@ -452,9 +420,7 @@ namespace WindowsSipPhone.UI.Pages
 
         #endregion
 
-        #region Helper Methods
-
-        private void LoadSettings()
+        #region Helper Methods        private void LoadSettings()
         {
             try
             {
@@ -465,11 +431,10 @@ namespace WindowsSipPhone.UI.Pages
                 ServerPort = config.ServerPort;
                 SelectedTransport = config.Transport;
                 
-                // Load selected profile
-                var selectedProfile = config.GetSelectedProfile();
-                SelectedProfile = selectedProfile;
+                // Load selected profile name
+                SelectedProfile = config.SelectedProfileName ?? "Generic";
                 
-                StatusDetails = $"Settings loaded from configuration (Profile: {selectedProfile.Name})";
+                StatusDetails = $"Settings loaded from configuration (Profile: {SelectedProfile})";
                 LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
@@ -482,102 +447,31 @@ namespace WindowsSipPhone.UI.Pages
                 ServerHost = "192.168.1.180";
                 ServerPort = "5060";
                 SelectedTransport = "TCP";
-            }        }
+                SelectedProfile = "Generic";
+            }
+        }
 
         #endregion
         
         #region Profile Management
-        
-        private void InitializeProfiles()
-        {
-            // Create default INI files if they don't exist
-            SipProfile.CreateDefaultProfilesIfNeeded();
-            
-            // Load predefined profiles
-            AvailableProfiles = SipProfile.GetPredefinedProfiles();
-            
-            // Load selected profile from configuration
-            var config = SipConfiguration.Load();
-            var selectedProfile = config.GetSelectedProfile();
-            SelectedProfile = selectedProfile;
-        }
-        
-        private void OnProfileChanged()
-        {
-            if (_selectedProfile != null)
-            {
-                // Update UI fields based on selected profile
-                RegistrationExpires = _selectedProfile.RegistrationExpiry.ToString();
-                UserAgent = _selectedProfile.UserAgentString;
-                SelectedTransport = _selectedProfile.Transport;
-                
-                StatusDetails = $"Profile '{_selectedProfile.Name}' selected - {_selectedProfile.Description}";
-                LastUpdated = DateTime.Now;
-                
-                // Trigger property changed for profile-dependent display values
-                OnPropertyChanged(nameof(ProfileDetails));
-            }
-        }
-        
-        /// <summary>
-        /// Gets detailed information about the selected profile
-        /// </summary>
-        public string ProfileDetails
-        {
-            get
-            {
-                if (_selectedProfile == null) return "";
-                
-                var details = new StringBuilder();
-                details.AppendLine($"📋 Profile: {_selectedProfile.Name}");
-                details.AppendLine($"📝 Description: {_selectedProfile.Description}");
-                details.AppendLine($"⏱️ Registration Expiry: {_selectedProfile.RegistrationExpiry}s");
-                details.AppendLine($"🚀 Transport: {_selectedProfile.Transport}");
-                details.AppendLine($"🤖 User Agent: {_selectedProfile.UserAgentString}");
-                
-                if (_selectedProfile.RequireKeepAlive)
-                {
-                    details.AppendLine($"💓 Keep-Alive: Every {_selectedProfile.KeepAliveInterval}s");
-                }
-                
-                if (_selectedProfile.PreferredCodecs.Any())
-                {
-                    details.AppendLine($"🎵 Preferred Codecs: {string.Join(", ", _selectedProfile.PreferredCodecs)}");
-                }
-                
-                if (_selectedProfile.CustomHeaders.Any())
-                {
-                    details.AppendLine($"📎 Custom Headers: {_selectedProfile.CustomHeaders.Count}");
-                }
-                
-                // Add compatibility information
-                details.AppendLine();
-                details.AppendLine("🔧 Compatibility:");
-                var compatInfo = ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
-                details.AppendLine(compatInfo);
-                  return details.ToString().Trim();
-            }
-        }
-        
-        // IMP-016: Enhanced Profile Management Methods
-        private void InitializeEnhancedProfiles()
+          private void InitializeProfiles()
         {
             try
             {
-                _enhancedProfileManager = new EnhancedProfileManager();
-                AvailableEnhancedProfiles = _enhancedProfileManager.GetAvailableProfiles().ToList();
+                _profileManager = new EnhancedProfileManager();
+                AvailableProfiles = _profileManager.GetAvailableProfiles().ToList();
                 
                 // Set default profile or load from SIP service
                 if (_sipService?.ProfileManager != null)
                 {
-                    SelectedEnhancedProfile = _sipService.CurrentProfileName;
+                    SelectedProfile = _sipService.CurrentProfileName;
                 }
                 else
                 {
-                    SelectedEnhancedProfile = AvailableEnhancedProfiles.FirstOrDefault() ?? "Generic";
+                    SelectedProfile = AvailableProfiles.FirstOrDefault() ?? "Generic";
                 }
                 
-                StatusDetails = $"Enhanced profile system initialized - {AvailableEnhancedProfiles.Count} profiles available";
+                StatusDetails = $"Enhanced profile system initialized - {AvailableProfiles.Count} profiles available";
                 LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
@@ -586,27 +480,32 @@ namespace WindowsSipPhone.UI.Pages
                 LastUpdated = DateTime.Now;
                 
                 // Fallback to at least generic profile
-                AvailableEnhancedProfiles = new List<string> { "Generic" };
-                SelectedEnhancedProfile = "Generic";
+                AvailableProfiles = new List<string> { "Generic" };
+                SelectedProfile = "Generic";
             }
         }
-        
-        private async void OnEnhancedProfileChanged()
+          private async void OnProfileChanged()
         {
-            if (string.IsNullOrEmpty(_selectedEnhancedProfile)) return;
+            if (string.IsNullOrEmpty(_selectedProfile)) return;
             
             try
             {
-                StatusDetails = $"Switching to enhanced profile: {_selectedEnhancedProfile}";
+                StatusDetails = $"Switching to enhanced profile: {_selectedProfile}";
                 LastUpdated = DateTime.Now;
+                
+                // Load the profile using the enhanced profile manager
+                if (_profileManager != null)
+                {
+                    _profileManager.LoadProfile(_selectedProfile);
+                }
                 
                 // If we have a SIP service, switch the profile
                 if (_sipService != null)
                 {
-                    var success = await _sipService.SwitchProfileAsync(_selectedEnhancedProfile);
+                    var success = await _sipService.SwitchProfileAsync(_selectedProfile);
                     if (success)
                     {
-                        StatusDetails = $"✅ Successfully switched to profile: {_selectedEnhancedProfile}";
+                        StatusDetails = $"✅ Successfully switched to profile: {_selectedProfile}";
                         
                         // If currently registered, may need to re-register with new profile settings
                         if (_isRegistered)
@@ -616,16 +515,16 @@ namespace WindowsSipPhone.UI.Pages
                     }
                     else
                     {
-                        StatusDetails = $"❌ Failed to switch to profile: {_selectedEnhancedProfile}";
+                        StatusDetails = $"❌ Failed to switch to profile: {_selectedProfile}";
                     }
                 }
                 else
                 {
-                    StatusDetails = $"Profile '{_selectedEnhancedProfile}' selected - will be applied when connecting";
+                    StatusDetails = $"Profile '{_selectedProfile}' selected - will be applied when connecting";
                 }
                 
                 LastUpdated = DateTime.Now;
-                OnPropertyChanged(nameof(EnhancedProfileDetails));
+                OnPropertyChanged(nameof(ProfileDetails));
             }
             catch (Exception ex)
             {
@@ -633,21 +532,22 @@ namespace WindowsSipPhone.UI.Pages
                 LastUpdated = DateTime.Now;
             }
         }
-        
-        /// <summary>
+          /// <summary>
         /// Gets detailed information about the selected enhanced profile
         /// </summary>
-        public string EnhancedProfileDetails
+        public string ProfileDetails
         {
             get
             {
-                if (_enhancedProfileManager == null || string.IsNullOrEmpty(_selectedEnhancedProfile)) 
-                    return "No enhanced profile selected";
-                  try
+                if (_profileManager == null || string.IsNullOrEmpty(_selectedProfile)) 
+                    return "No profile selected";
+                  
+                try
                 {
-                    var config = _enhancedProfileManager.CurrentConfig;
+                    var config = _profileManager.CurrentConfig;
                     if (config == null) return "Profile configuration not available";
-                      var details = new StringBuilder();
+                      
+                    var details = new StringBuilder();
                     details.AppendLine($"📋 Enhanced Profile: {config.Name}");
                     details.AppendLine($"📝 Description: {config.Description}");
                     details.AppendLine($"🏷️ Protocol: {config.Protocol}");
@@ -683,35 +583,12 @@ namespace WindowsSipPhone.UI.Pages
                     return "Error loading profile details";
                 }
             }
-        }
-        
-        private void ExportProfile()
+        }          private void ExportProfile()
         {
             try
             {
-                var saveDialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Title = "Export SIP Profile",
-                    Filter = "INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
-                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}.ini"
-                };
-                
-                if (saveDialog.ShowDialog() == true)
-                {
-                    var extension = Path.GetExtension(saveDialog.FileName).ToLower();
-                    if (extension == ".ini")
-                    {
-                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
-                    }
-                    else
-                    {
-                        // Fallback to JSON for backward compatibility
-                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
-                    }
-                    
-                    StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
-                    LastUpdated = DateTime.Now;
-                }
+                StatusDetails = "Export functionality not yet implemented for enhanced profile system";
+                LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -724,43 +601,8 @@ namespace WindowsSipPhone.UI.Pages
         {
             try
             {
-                var openDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Title = "Import SIP Profile", 
-                    Filter = "Profile files (*.ini;*.json)|*.ini;*.json|INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
-                    Multiselect = false
-                };
-                
-                if (openDialog.ShowDialog() == true)
-                {
-                    SipProfile importedProfile;
-                    var extension = Path.GetExtension(openDialog.FileName).ToLower();
-                    
-                    if (extension == ".ini")
-                    {
-                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfileFromIni(openDialog.FileName);
-                    }
-                    else
-                    {
-                        // Fallback to JSON for backward compatibility
-                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfile(openDialog.FileName);
-                    }
-                    
-                    // Add to available profiles if not already present
-                    var existingProfile = AvailableProfiles.FirstOrDefault(p => p.Name == importedProfile.Name);
-                    if (existingProfile == null)
-                    {
-                        var newList = AvailableProfiles.ToList();
-                        newList.Add(importedProfile);
-                        AvailableProfiles = newList;
-                    }
-                    
-                    // Select the imported profile
-                    SelectedProfile = importedProfile;
-                    
-                    StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
-                    LastUpdated = DateTime.Now;
-                }
+                StatusDetails = "Import functionality not yet implemented for enhanced profile system";
+                LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
             {

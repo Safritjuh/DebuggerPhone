@@ -26,7 +26,8 @@ namespace WindowsSipPhone.UI.Pages
         private string _timerT4 = "5000";
         private string _registrationStatus = "Not Registered";
         private string _statusDetails = "Configure settings and click Register to connect";
-        private DateTime _lastUpdated = DateTime.Now;        private bool _isRegistered = false;
+        private DateTime _lastUpdated = DateTime.Now;
+        private bool _isRegistered = false;
         private SipPhoneService? _sipService;
           // Profile Management (IMP-016)
         private EnhancedProfileManager? _profileManager;
@@ -206,7 +207,8 @@ namespace WindowsSipPhone.UI.Pages
             }
         }
         
-        // Profile System Properties        public List<string> AvailableProfiles
+        // Profile System Properties
+        public List<string> AvailableProfiles
         {
             get => _availableProfiles;
             set
@@ -297,10 +299,17 @@ namespace WindowsSipPhone.UI.Pages
                     StatusDetails = "Invalid registration expires value";
                     RegistrationStatus = "Registration Failed";
                     return;
+                }                // Use enhanced profile-based registration
+                var profile = WindowsSipPhone.Core.Models.SipProfile.GetPredefinedProfile(SelectedProfile);
+                if (profile == null)
+                {
+                    RegistrationStatus = "Registration Failed";
+                    StatusDetails = $"Profile '{SelectedProfile}' not found";
+                    LastUpdated = DateTime.Now;
+                    return;
                 }
-
-                // Use enhanced profile-based registration
-                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, SelectedProfile, expires);
+                
+                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, profile, expires);
             }
             catch (Exception ex)
             {
@@ -420,7 +429,9 @@ namespace WindowsSipPhone.UI.Pages
 
         #endregion
 
-        #region Helper Methods        private void LoadSettings()
+        #region Helper Methods
+        
+        private void LoadSettings()
         {
             try
             {
@@ -452,9 +463,9 @@ namespace WindowsSipPhone.UI.Pages
         }
 
         #endregion
+          #region Profile Management
         
-        #region Profile Management
-          private void InitializeProfiles()
+        private void InitializeProfiles()
         {
             try
             {
@@ -482,9 +493,9 @@ namespace WindowsSipPhone.UI.Pages
                 // Fallback to at least generic profile
                 AvailableProfiles = new List<string> { "Generic" };
                 SelectedProfile = "Generic";
-            }
-        }
-          private async void OnProfileChanged()
+            }        }
+        
+        private async void OnProfileChanged()
         {
             if (string.IsNullOrEmpty(_selectedProfile)) return;
             

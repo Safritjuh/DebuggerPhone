@@ -53,12 +53,11 @@ public partial class App : System.Windows.Application
 
             // Set shutdown mode to close when main window closes
             this.ShutdownMode = ShutdownMode.OnMainWindowClose;
-            
-            // Create and show the main window
+              // Create and show the main window
 #if DEBUG
             Console.WriteLine("Creating main window...");
 #endif
-            MainWindow = new MainWindow();
+            MainWindow = new WindowsSipPhone.UI.Windows.MainWindow();
             MainWindow.Show();
             MainWindow.Activate();
             

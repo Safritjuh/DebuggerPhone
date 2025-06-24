@@ -194,32 +194,66 @@ namespace WindowsSipPhone.Core.SipHandlers
         
         public string ProcessOutgoingMessage(string message, string messageType)
         {
-            Console.WriteLine($"[AVAYA HANDLER] Processing outgoing {messageType} message");
-            
             // Add Avaya-specific headers to outgoing messages
             var customHeaders = GetCustomHeaders();
             var modifiedMessage = message;
             
-            // Find the end of the headers (before the body)
-            var headerEndIndex = modifiedMessage.IndexOf("\r\n\r\n");
-            if (headerEndIndex >= 0)
+            // Insert custom headers before the Content-Length header
+            var contentLengthIndex = message.IndexOf("Content-Length:");
+            if (contentLengthIndex > 0)
             {
-                var headers = modifiedMessage.Substring(0, headerEndIndex);
-                var body = modifiedMessage.Substring(headerEndIndex);
+                var beforeContentLength = message.Substring(0, contentLengthIndex);
+                var afterContentLength = message.Substring(contentLengthIndex);
                 
-                // Add custom headers before the body
-                foreach (var header in customHeaders)
-                {
-                    if (!headers.Contains($"{header.Key}:"))
-                    {
-                        headers += $"\r\n{header.Key}: {header.Value}";
-                        Console.WriteLine($"[AVAYA HANDLER] Added header: {header.Key}: {header.Value}");
-                    }
-                }
-                  modifiedMessage = headers + body;
+                var headerString = string.Join("\r\n", customHeaders.Select(h => $"{h.Key}: {h.Value}")) + "\r\n";
+                modifiedMessage = beforeContentLength + headerString + afterContentLength;
+                
+                Console.WriteLine($"[AVAYA HANDLER] Added {customHeaders.Count} custom headers to {messageType}");
             }
             
             return modifiedMessage;
+        }
+        
+        public string PreprocessIncomingMessage(string message)
+        {
+            // Log Avaya-specific incoming message processing
+            Console.WriteLine($"[AVAYA HANDLER] Preprocessing incoming message");
+            
+            // For Avaya, we might need to handle specific response codes or headers differently
+            // For now, return the message as-is but log that we processed it
+            if (message.Contains("P-Asserted-Identity") || message.Contains("X-Avaya"))
+            {
+                Console.WriteLine($"[AVAYA HANDLER] Detected Avaya-specific headers in incoming message");
+            }
+            
+            return message; // No modifications needed for basic implementation
+        }
+        
+        public string PostprocessOutgoingResponse(string response, string originalRequest)
+        {
+            // Add Avaya-specific response headers if needed
+            Console.WriteLine($"[AVAYA HANDLER] Postprocessing outgoing response");
+            
+            // For responses to INVITE requests, add Avaya session management headers
+            if (originalRequest.StartsWith("INVITE"))
+            {
+                var customHeaders = new Dictionary<string, string>
+                {
+                    { "X-Avaya-Response-Source", "Windows-SIP-Phone" }
+                };
+                
+                var contentLengthIndex = response.IndexOf("Content-Length:");
+                if (contentLengthIndex > 0)
+                {
+                    var beforeContentLength = response.Substring(0, contentLengthIndex);
+                    var afterContentLength = response.Substring(contentLengthIndex);
+                    
+                    var headerString = string.Join("\r\n", customHeaders.Select(h => $"{h.Key}: {h.Value}")) + "\r\n";
+                    return beforeContentLength + headerString + afterContentLength;
+                }
+            }
+            
+            return response;
         }
     }
 }

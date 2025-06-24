@@ -8,6 +8,11 @@ namespace WindowsSipPhone.Core.Models
     /// </summary>
     public class SipProfileConfiguration
     {
+        // Profile identification
+        public string Name { get; set; } = "Unknown";
+        public string Description { get; set; } = "";
+        public bool IsCustom { get; set; } = false;
+        
         // Basic SIP settings (existing compatibility)
         public string ServerAddress { get; set; } = "";
         public int Port { get; set; } = 5060;
@@ -68,6 +73,15 @@ namespace WindowsSipPhone.Core.Models
         public static SipProfileConfiguration ParseFromIni(Dictionary<string, Dictionary<string, string>> iniData)
         {
             var config = new SipProfileConfiguration();
+            
+            // Parse profile identification
+            if (iniData.ContainsKey("Profile"))
+            {
+                var profileSection = iniData["Profile"];
+                config.Name = GetValue(profileSection, "Name", "Unknown");
+                config.Description = GetValue(profileSection, "Description", "");
+                config.IsCustom = GetBoolValue(profileSection, "IsCustom", false);
+            }
             
             // Parse basic SIP settings
             if (iniData.ContainsKey("SIP"))

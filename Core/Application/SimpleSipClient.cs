@@ -2,6 +2,9 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using WindowsSipPhone.SipCore;
+using WindowsSipPhone.Core.Managers;
+using WindowsSipPhone.Core.Interfaces;
+using WindowsSipPhone.Core.Models;
 
 namespace WindowsSipPhone
 {
@@ -18,7 +21,13 @@ namespace WindowsSipPhone
         private readonly string _username;
         private readonly string _password;
         private readonly string _userAgent;
-          // JSIP-style components
+        
+        // IMP-016: Enhanced Profile Management
+        private EnhancedProfileManager? _profileManager;
+        private ISipProfileHandler? _currentProfileHandler;
+        private SipProfileConfiguration? _currentProfileConfig;
+        
+        // JSIP-style components
         private WindowsSipPhone.SipCore.DialogManager _dialogManager;
         private WindowsSipPhone.SipCore.RegistrationManager _registrationManager;
         private WindowsSipPhone.SipCore.SipMessageFactory _messageFactory;
@@ -121,11 +130,59 @@ namespace WindowsSipPhone
                 MessageReceived?.Invoke(this, $"INCOMING (Transport):\n{message}");
                 _ = Task.Run(async () => await ProcessIncomingMessage(message));
             };
-            _sipTransport.TransportError += (sender, error) => StatusChanged?.Invoke(this, $"Transport Error: {error}");
-            
+            _sipTransport.TransportError += (sender, error) => StatusChanged?.Invoke(this, $"Transport Error: {error}");            
             // Initialize audio manager for RTP streaming
             _audioManager = new RtpAudioManager();
-        }        public async Task<bool> ConnectAsync()
+        }
+        
+        /// <summary>
+        /// IMP-016: Set the Enhanced Profile Manager for provider-specific SIP handling
+        /// </summary>
+        /// <param name="profileManager">The enhanced profile manager instance</param>
+        public void SetProfileManager(EnhancedProfileManager profileManager)
+        {
+            _profileManager = profileManager;
+            _profileManager.SetSipClient(this);
+            _profileManager.ProfileChanged += OnProfileChanged;
+            
+            // Set current profile handler and config if available
+            _currentProfileHandler = _profileManager.CurrentHandler;
+            _currentProfileConfig = _profileManager.CurrentConfig;
+            
+            StatusChanged?.Invoke(this, "✅ Enhanced Profile Manager integrated");
+            Console.WriteLine($"[PROFILE MANAGER] Integrated EnhancedProfileManager with SimpleSipClient");
+        }
+        
+        /// <summary>
+        /// IMP-016: Handle profile changes at runtime
+        /// </summary>
+        private void OnProfileChanged(object? sender, string profileName)
+        {
+            if (_profileManager != null)
+            {
+                _currentProfileHandler = _profileManager.CurrentHandler;
+                _currentProfileConfig = _profileManager.CurrentConfig;
+                
+                StatusChanged?.Invoke(this, $"📋 Profile switched to: {profileName}");
+                Console.WriteLine($"[PROFILE MANAGER] Profile changed to: {profileName}");
+                
+                // Update SIP message factory with new profile configuration if available
+                if (_currentProfileConfig != null && _messageFactory != null)
+                {
+                    // TODO: Update message factory with profile-specific settings
+                    Console.WriteLine($"[PROFILE MANAGER] Updated message factory with profile settings");
+                }
+            }
+        }
+          /// <summary>
+        /// IMP-016: Get current profile name for debugging/display
+        /// </summary>
+        public string GetCurrentProfileName()
+        {
+            return _currentProfileConfig?.Name ?? "Unknown";
+        }
+
+        public async Task<bool> ConnectAsync()
         {
             try
             {
@@ -767,6 +824,27 @@ namespace WindowsSipPhone
                 
                 var statusLine = lines[0].Trim();
                 StatusChanged?.Invoke(this, $"📨 Processing SIP message");
+                
+                // IMP-016: Apply provider-specific preprocessing if profile handler is available
+                string processedMessage = actualSipMessage;
+                if (_currentProfileHandler != null)
+                {
+                    try
+                    {
+                        processedMessage = _currentProfileHandler.PreprocessIncomingMessage(actualSipMessage);
+                        if (processedMessage != actualSipMessage)
+                        {
+                            Console.WriteLine($"[PROFILE HANDLER] {GetCurrentProfileName()}: Preprocessed incoming message");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[PROFILE HANDLER] {GetCurrentProfileName()}: Preprocessing failed: {ex.Message}");
+                        // Continue with original message if preprocessing fails
+                    }
+                }
+                
+                actualSipMessage = processedMessage;
                 
                 // Extract common headers for dialog management
                 var callId = ExtractHeader(actualSipMessage, "Call-ID:");
@@ -1517,7 +1595,7 @@ namespace WindowsSipPhone
                 
                 // Send 200 OK response using message factory
                 var okResponse = _messageFactory.CreateResponse(200, "OK", 
-                    callId, dialog?.LocalTag ?? "", dialog?.RemoteTag ?? "", 
+                    callId, dialog?.LocalTag ?? GenerateTag(), dialog?.RemoteTag ?? "", 
                     via, from, to, cseq);
                 
                 await SendMessageAsync(okResponse);
@@ -1565,7 +1643,7 @@ namespace WindowsSipPhone
                               $"{sdpAnswer}";
                   StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call");
                 MessageReceived?.Invoke(this, $"OUTGOING (Call Answer):\n{response}");
-                
+
                 // FIXED: Use SipTransport to send response back to incoming connection
                 if (_sipTransport != null)
                 {
@@ -1876,7 +1954,7 @@ namespace WindowsSipPhone
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke(this, $"❌ Authentication error: {ex.Message}");
+                StatusChanged?.Invoke(this, $"❌ Authentication failed: {ex.Message}");
                 StatusChanged?.Invoke(this, $"Stack trace: {ex.StackTrace}");
             }
         }        
@@ -1948,11 +2026,10 @@ namespace WindowsSipPhone
                 // Build authenticated INVITE using existing dialog information
                 var authenticatedInvite = $"INVITE {inviteUri} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
-                   $"From: <sip:{_username}@{localIp}>;tag={dialog.LocalTag}\r\n" +
-                   $"To: <sip:{_currentTargetNumber}@{_serverHost}>\r\n" +
+                   $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +                   $"To: <sip:{_currentTargetNumber}@{_serverHost}>\r\n" +
                    $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
-                   $"Call-ID: {dialog.CallId}\r\n" +
-                   $"CSeq: {dialog.LocalSequenceNumber + 1} INVITE\r\n" +
+                   $"Call-ID: {_activeCallId}\r\n" +
+                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
                    $"Authorization: {authHeader}\r\n" +
                    $"User-Agent: {_userAgent}\r\n" +
                    $"Max-Forwards: 70\r\n"+
@@ -2032,7 +2109,7 @@ namespace WindowsSipPhone
                          $"Call-ID: {_callId}\r\n" +                         $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
                          $"Authorization: {authHeader}\r\n" +
                          $"User-Agent: {_userAgent}\r\n" +
-                         $"Max-Forwards: 70\r\n"+
+                         $"Max-Forwards: 70\r\n" +
                          $"Expires: {_registrationExpiry}\r\n" +
                          $"Content-Length: 0\r\n" +
                          $"\r\n";
@@ -2109,7 +2186,7 @@ namespace WindowsSipPhone
             _activeCallId = newCallId; // Store the active call ID for later BYE message
             var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
             
-            // CRITICAL FIX: Prepare RTP socket to get valid port for SDP offer
+            // CRITICAL FIX: Prepare RTP socket early to get valid port for SDP offer
             var rtpPort = 5004; // Default fallback port
             if (_audioManager != null)
             {
@@ -2130,7 +2207,8 @@ namespace WindowsSipPhone
               return $"INVITE sip:{targetNumber}@{_serverHost}:{_serverPort} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
                    $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +
-                   $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +                   $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
+                   $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +
+                   $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
                    $"Call-ID: {newCallId}\r\n" +
                    $"CSeq: {_sequenceNumber++} INVITE\r\n" +
                    $"User-Agent: {_userAgent}\r\n" +
@@ -2167,19 +2245,23 @@ namespace WindowsSipPhone
             // Create authorization header for INVITE
             var inviteUri = $"sip:{targetNumber}@{_serverHost}:{_serverPort}";
             var authHeader = CreateAuthorizationHeader(_username, _password, "INVITE", inviteUri, authParams);
-              return $"INVITE {inviteUri} SIP/2.0\r\n" +
+            
+            // Build authenticated INVITE using existing dialog information
+            var authenticatedInvite = $"INVITE {inviteUri} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
                    $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +
                    $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +
                    $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
-                   $"Call-ID: {newCallId}\r\n" +                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
+                   $"Call-ID: {newCallId}\r\n" +
+                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
                    $"Authorization: {authHeader}\r\n" +
-                   $"User-Agent: {_userAgent}\r\n" +
-                   $"Max-Forwards: 70\r\n"+
+                   $"User-Agent: {_userAgent}\r\n" +                   $"Max-Forwards: 70\r\n"+
                    $"Content-Type: application/sdp\r\n" +
                    $"Content-Length: {contentLength}\r\n" +
                    $"\r\n" +
                    $"{sdpContent}";
+                   
+            return authenticatedInvite;
         }
 
         private string ExtractTargetNumberFromChallenge(string challengeMessage)
@@ -2743,7 +2825,9 @@ namespace WindowsSipPhone
                               $"To: {to}\r\n" +
                               $"Call-ID: {callId}\r\n" +
                               $"CSeq: {cseq}\r\n" +                              $"Contact: <sip:{_username}@{localIp}:5060>\r\n" +
-                              $"User-Agent: {_userAgent}\r\n";
+                              $"User-Agent: {_userAgent}\r\n" +
+                              $"Content-Length: 0\r\n"+
+                              $"\r\n";
                   // If remote sent SDP, respond with our SDP
                 if (!string.IsNullOrEmpty(remoteSdpContent) && _audioManager != null)
                 {

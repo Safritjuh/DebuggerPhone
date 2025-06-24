@@ -73,12 +73,27 @@ namespace WindowsSipPhone.Core.Interfaces
         /// </summary>
         /// <param name="requestMessage">The raw SIP request message requiring SDP</param>
         /// <returns>Custom SDP content or null for default handling</returns>
-        string? GenerateCustomSDP(string requestMessage);
-          /// <summary>
+        string? GenerateCustomSDP(string requestMessage);        /// <summary>
         /// Modifies outgoing SIP messages for provider-specific requirements
-        /// </summary>        /// <param name="message">The raw SIP message to modify</param>
+        /// </summary>
+        /// <param name="message">The raw SIP message to modify</param>
         /// <param name="messageType">The type of SIP message (REGISTER, INVITE, etc.)</param>
         /// <returns>Modified SIP message or original if no changes needed</returns>
         string ProcessOutgoingMessage(string message, string messageType);
+        
+        /// <summary>
+        /// Preprocesses incoming SIP messages for provider-specific requirements
+        /// </summary>
+        /// <param name="message">The raw incoming SIP message to preprocess</param>
+        /// <returns>Preprocessed SIP message or original if no changes needed</returns>
+        string PreprocessIncomingMessage(string message);
+        
+        /// <summary>
+        /// Postprocesses outgoing SIP responses for provider-specific requirements
+        /// </summary>
+        /// <param name="response">The raw SIP response to postprocess</param>
+        /// <param name="originalRequest">The original request that triggered this response</param>
+        /// <returns>Postprocessed SIP response or original if no changes needed</returns>
+        string PostprocessOutgoingResponse(string response, string originalRequest);
     }
 }

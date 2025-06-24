@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using WindowsSipPhone.Core.Interfaces;
 using WindowsSipPhone.Core.Models;
@@ -214,44 +215,91 @@ namespace WindowsSipPhone.Core.SipHandlers
         
         public string ProcessOutgoingMessage(string message, string messageType)
         {
-            Console.WriteLine($"[ELEVATE HANDLER] Processing outgoing {messageType} message for cloud");
-            
-            // Add Elevate-specific headers to outgoing messages
+            // Add Elevate cloud-specific headers to outgoing messages
             var customHeaders = GetCustomHeaders();
             var modifiedMessage = message;
             
-            // Find the end of the headers (before the body)
-            var headerEndIndex = modifiedMessage.IndexOf("\r\n\r\n");
-            if (headerEndIndex >= 0)
+            // For cloud providers like Elevate, add specific network and client info
+            if (messageType == "REGISTER")
             {
-                var headers = modifiedMessage.Substring(0, headerEndIndex);
-                var body = modifiedMessage.Substring(headerEndIndex);
+                customHeaders.Add("X-Elevate-Registration-Type", "cloud");
+                customHeaders.Add("X-Elevate-Client-Location", "remote");
+            }
+            else if (messageType == "INVITE")
+            {
+                customHeaders.Add("X-Elevate-Call-Type", "p2p");
+                customHeaders.Add("X-Elevate-Media-Path", "optimized");
+            }
+            
+            // Insert custom headers before the Content-Length header
+            var contentLengthIndex = message.IndexOf("Content-Length:");
+            if (contentLengthIndex > 0)
+            {
+                var beforeContentLength = message.Substring(0, contentLengthIndex);
+                var afterContentLength = message.Substring(contentLengthIndex);
                 
-                // Add custom headers before the body
-                foreach (var header in customHeaders)
-                {
-                    if (!headers.Contains($"{header.Key}:"))
-                    {
-                        headers += $"\r\n{header.Key}: {header.Value}";
-                        Console.WriteLine($"[ELEVATE HANDLER] Added cloud header: {header.Key}: {header.Value}");
-                    }
-                }
+                var headerString = string.Join("\r\n", customHeaders.Select(h => $"{h.Key}: {h.Value}")) + "\r\n";
+                modifiedMessage = beforeContentLength + headerString + afterContentLength;
                 
-                // For INVITE messages, add cloud-specific optimizations
-                if (messageType == "INVITE")
-                {
-                    // Add supported header for cloud features
-                    if (!headers.Contains("Supported:"))
-                    {
-                        headers += "\r\nSupported: replaces, timer, path";
-                        Console.WriteLine($"[ELEVATE HANDLER] Added cloud Supported header");
-                    }
-                }
-                
-                modifiedMessage = headers + body;
+                Console.WriteLine($"[ELEVATE HANDLER] Added {customHeaders.Count} cloud-specific headers to {messageType}");
             }
             
             return modifiedMessage;
+        }
+        
+        public string PreprocessIncomingMessage(string message)
+        {
+            // Log Elevate cloud-specific incoming message processing
+            Console.WriteLine($"[ELEVATE HANDLER] Preprocessing incoming message for cloud environment");
+            
+            // Handle cloud-specific message formats and headers
+            if (message.Contains("X-Elevate") || message.Contains("X-Cloud"))
+            {
+                Console.WriteLine($"[ELEVATE HANDLER] Detected Elevate cloud-specific headers in incoming message");
+            }
+            
+            // Check for cloud-specific routing information
+            if (message.Contains("Route:") && message.Contains("cloud"))
+            {
+                Console.WriteLine($"[ELEVATE HANDLER] Processing cloud routing information");
+            }
+            
+            return message; // No modifications needed for basic implementation
+        }
+        
+        public string PostprocessOutgoingResponse(string response, string originalRequest)
+        {
+            // Add Elevate cloud-specific response headers
+            Console.WriteLine($"[ELEVATE HANDLER] Postprocessing outgoing response for cloud environment");
+            
+            var customHeaders = new Dictionary<string, string>
+            {
+                { "X-Elevate-Response-Source", "Windows-SIP-Phone" },
+                { "X-Elevate-Cloud-Node", "edge-server" }
+            };
+            
+            // For responses to specific request types, add additional headers
+            if (originalRequest.StartsWith("INVITE"))
+            {
+                customHeaders.Add("X-Elevate-Media-Support", "G711,G729");
+                customHeaders.Add("X-Elevate-Session-Manager", "cloud");
+            }
+            else if (originalRequest.StartsWith("REGISTER"))
+            {
+                customHeaders.Add("X-Elevate-Registration-Source", "desktop-client");
+            }
+            
+            var contentLengthIndex = response.IndexOf("Content-Length:");
+            if (contentLengthIndex > 0)
+            {
+                var beforeContentLength = response.Substring(0, contentLengthIndex);
+                var afterContentLength = response.Substring(contentLengthIndex);
+                
+                var headerString = string.Join("\r\n", customHeaders.Select(h => $"{h.Key}: {h.Value}")) + "\r\n";
+                return beforeContentLength + headerString + afterContentLength;
+            }
+            
+            return response;
         }
     }
 }

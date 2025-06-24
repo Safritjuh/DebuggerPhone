@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using WindowsSipPhone.Core.Utilities;
 using WindowsSipPhone.Core.Models;
+using WindowsSipPhone.Core.Managers;
 using System.Linq;
 using System.Text;
 using WindowsSipPhone.Services.Data;
@@ -25,29 +26,30 @@ namespace WindowsSipPhone.UI.Pages
         private string _timerT4 = "5000";
         private string _registrationStatus = "Not Registered";
         private string _statusDetails = "Configure settings and click Register to connect";
-        private DateTime _lastUpdated = DateTime.Now;
-        private bool _isRegistered = false;
+        private DateTime _lastUpdated = DateTime.Now;        private bool _isRegistered = false;
         private SipPhoneService? _sipService;
         
-        // Profile system properties
+        // IMP-016: Enhanced Profile Management
+        private EnhancedProfileManager? _enhancedProfileManager;
+        private List<string> _availableEnhancedProfiles = new();
+        private string _selectedEnhancedProfile = "Generic";
+        
+        // Legacy profile system properties (for backward compatibility)
         private List<SipProfile> _availableProfiles = new();
         private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
 
         // Reference to PasswordBox control
-        private PasswordBox PasswordBoxRef;
-
-        public SipSettingsPage()
+        private PasswordBox PasswordBoxRef;        public SipSettingsPage()
         {
             InitializeComponent();
             DataContext = this;
             // Assign PasswordBoxRef after InitializeComponent
             PasswordBoxRef = (PasswordBox)this.FindName("PasswordBox");
             InitializeProfiles();
+            InitializeEnhancedProfiles(); // IMP-016: Initialize enhanced profile system
             InitializeCommands();
             LoadSettings();
-        }
-
-        public SipPhoneService? SipService 
+        }        public SipPhoneService? SipService 
         { 
             get => _sipService;
             set
@@ -57,6 +59,14 @@ namespace WindowsSipPhone.UI.Pages
                 {
                     _sipService.StatusChanged += OnSipStatusChanged;
                     UpdateRegistrationStatus();
+                    
+                    // IMP-016: Sync enhanced profile selection with SIP service
+                    if (_sipService.ProfileManager != null)
+                    {
+                        var serviceProfiles = _sipService.GetAvailableProfiles();
+                        AvailableEnhancedProfiles = serviceProfiles.ToList();
+                        SelectedEnhancedProfile = _sipService.CurrentProfileName;
+                    }
                 }
             }
         }
@@ -214,8 +224,7 @@ namespace WindowsSipPhone.UI.Pages
                 OnPropertyChanged();
             }
         }
-        
-        public SipProfile SelectedProfile
+          public SipProfile SelectedProfile
         {
             get => _selectedProfile;
             set
@@ -223,6 +232,28 @@ namespace WindowsSipPhone.UI.Pages
                 _selectedProfile = value;
                 OnPropertyChanged();
                 OnProfileChanged();
+            }
+        }
+        
+        // IMP-016: Enhanced Profile System Properties
+        public List<string> AvailableEnhancedProfiles
+        {
+            get => _availableEnhancedProfiles;
+            set
+            {
+                _availableEnhancedProfiles = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public string SelectedEnhancedProfile
+        {
+            get => _selectedEnhancedProfile;
+            set
+            {
+                _selectedEnhancedProfile = value;
+                OnPropertyChanged();
+                OnEnhancedProfileChanged();
             }
         }
 
@@ -524,8 +555,133 @@ namespace WindowsSipPhone.UI.Pages
                 details.AppendLine("🔧 Compatibility:");
                 var compatInfo = ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
                 details.AppendLine(compatInfo);
+                  return details.ToString().Trim();
+            }
+        }
+        
+        // IMP-016: Enhanced Profile Management Methods
+        private void InitializeEnhancedProfiles()
+        {
+            try
+            {
+                _enhancedProfileManager = new EnhancedProfileManager();
+                AvailableEnhancedProfiles = _enhancedProfileManager.GetAvailableProfiles().ToList();
                 
-                return details.ToString().Trim();
+                // Set default profile or load from SIP service
+                if (_sipService?.ProfileManager != null)
+                {
+                    SelectedEnhancedProfile = _sipService.CurrentProfileName;
+                }
+                else
+                {
+                    SelectedEnhancedProfile = AvailableEnhancedProfiles.FirstOrDefault() ?? "Generic";
+                }
+                
+                StatusDetails = $"Enhanced profile system initialized - {AvailableEnhancedProfiles.Count} profiles available";
+                LastUpdated = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"Failed to initialize enhanced profiles: {ex.Message}";
+                LastUpdated = DateTime.Now;
+                
+                // Fallback to at least generic profile
+                AvailableEnhancedProfiles = new List<string> { "Generic" };
+                SelectedEnhancedProfile = "Generic";
+            }
+        }
+        
+        private async void OnEnhancedProfileChanged()
+        {
+            if (string.IsNullOrEmpty(_selectedEnhancedProfile)) return;
+            
+            try
+            {
+                StatusDetails = $"Switching to enhanced profile: {_selectedEnhancedProfile}";
+                LastUpdated = DateTime.Now;
+                
+                // If we have a SIP service, switch the profile
+                if (_sipService != null)
+                {
+                    var success = await _sipService.SwitchProfileAsync(_selectedEnhancedProfile);
+                    if (success)
+                    {
+                        StatusDetails = $"✅ Successfully switched to profile: {_selectedEnhancedProfile}";
+                        
+                        // If currently registered, may need to re-register with new profile settings
+                        if (_isRegistered)
+                        {
+                            StatusDetails += " - Re-registration may be required for full effect";
+                        }
+                    }
+                    else
+                    {
+                        StatusDetails = $"❌ Failed to switch to profile: {_selectedEnhancedProfile}";
+                    }
+                }
+                else
+                {
+                    StatusDetails = $"Profile '{_selectedEnhancedProfile}' selected - will be applied when connecting";
+                }
+                
+                LastUpdated = DateTime.Now;
+                OnPropertyChanged(nameof(EnhancedProfileDetails));
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"Error switching profile: {ex.Message}";
+                LastUpdated = DateTime.Now;
+            }
+        }
+        
+        /// <summary>
+        /// Gets detailed information about the selected enhanced profile
+        /// </summary>
+        public string EnhancedProfileDetails
+        {
+            get
+            {
+                if (_enhancedProfileManager == null || string.IsNullOrEmpty(_selectedEnhancedProfile)) 
+                    return "No enhanced profile selected";
+                  try
+                {
+                    var config = _enhancedProfileManager.CurrentConfig;
+                    if (config == null) return "Profile configuration not available";
+                      var details = new StringBuilder();
+                    details.AppendLine($"📋 Enhanced Profile: {config.Name}");
+                    details.AppendLine($"📝 Description: {config.Description}");
+                    details.AppendLine($"🏷️ Protocol: {config.Protocol}");
+                    details.AppendLine($"� Port: {config.Port}");
+                    
+                    if (config.IsCustom)
+                    {
+                        details.AppendLine("⚙️ Type: Custom Profile");
+                    }
+                    
+                    // Add SIP handling information
+                    details.AppendLine();
+                    details.AppendLine("🔧 SIP Configuration:");
+                    details.AppendLine($"   User Agent: {config.CustomUserAgent}");
+                    details.AppendLine($"   Transport: {config.PreferredTransport}");
+                    details.AppendLine($"   Registration Interval: {config.RegistrationRefreshInterval}s");
+                    details.AppendLine($"   Max Forwards: {config.MaxForwards}");
+                    
+                    if (config.SupportedCodecs.Any())
+                    {
+                        details.AppendLine($"   Codecs: {string.Join(", ", config.SupportedCodecs)}");
+                    }
+                    
+                    if (config.CustomHeaders.Any())
+                    {
+                        details.AppendLine($"   Custom Headers: {config.CustomHeaders.Count}");
+                    }
+                    
+                    return details.ToString().Trim();
+                }
+                catch
+                {
+                    return "Error loading profile details";
+                }
             }
         }
         

@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using WindowsSipPhone.Core.Managers;
+using WindowsSipPhone.Core.Models;
 
 namespace WindowsSipPhone;
 
@@ -13,7 +16,13 @@ public class SipPhoneService : IDisposable
     private bool _isRegistered = false;
     private string _serverAddress = "";
     private string _username = "";
-    private int _port = 5060;    public bool IsRegistered 
+    private int _port = 5060;
+    
+    // IMP-016: Enhanced Profile Management
+    private EnhancedProfileManager? _profileManager;
+    private string _currentProfileName = "Generic";
+    
+    public bool IsRegistered 
     { 
         get 
         {
@@ -36,8 +45,79 @@ public class SipPhoneService : IDisposable
     public SipPhoneService()
     {
         Console.WriteLine("SIP Phone Service initialized");
+        
+        // IMP-016: Initialize Enhanced Profile Manager
+        _profileManager = new EnhancedProfileManager();
+        Console.WriteLine("[SIP PHONE SERVICE] Enhanced Profile Manager initialized");
     }
-      public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
+    
+    /// <summary>
+    /// IMP-016: Get the current profile manager instance
+    /// </summary>
+    public EnhancedProfileManager? ProfileManager => _profileManager;
+    
+    /// <summary>
+    /// IMP-016: Get the current profile name
+    /// </summary>
+    public string CurrentProfileName => _currentProfileName;
+    
+    /// <summary>
+    /// IMP-016: Switch to a different profile by name
+    /// </summary>
+    /// <param name="profileName">The name of the profile to switch to</param>
+    /// <returns>True if profile was successfully switched</returns>
+    public Task<bool> SwitchProfileAsync(string profileName)
+    {        if (_profileManager == null)
+        {
+            StatusChanged?.Invoke(this, "❌ Profile manager not initialized");
+            return Task.FromResult(false);
+        }
+        
+        try
+        {            StatusChanged?.Invoke(this, $"🔄 Switching to profile: {profileName}");
+            
+            _profileManager.LoadProfile(profileName);
+            _currentProfileName = profileName;
+            StatusChanged?.Invoke(this, $"✅ Profile switched to: {profileName}");
+            
+            // If we have an active SIP client, integrate the profile manager
+            if (_sipClient != null)
+            {
+                _sipClient.SetProfileManager(_profileManager);
+                StatusChanged?.Invoke(this, $"🔗 Profile manager integrated with SIP client");
+            }
+            
+            return Task.FromResult(true);
+        }
+        catch (Exception ex)
+        {
+            StatusChanged?.Invoke(this, $"❌ Error switching profile: {ex.Message}");
+            return Task.FromResult(false);
+        }
+    }
+    
+    /// <summary>
+    /// IMP-016: Get list of available profiles
+    /// </summary>
+    /// <returns>Array of available profile names</returns>
+    public string[] GetAvailableProfiles()
+    {
+        if (_profileManager == null)
+        {
+            return new[] { "Generic" }; // Fallback
+        }
+        
+        try
+        {
+            return _profileManager.GetAvailableProfiles().ToArray();
+        }
+        catch
+        {
+            return new[] { "Generic" }; // Fallback
+        }
+    }
+    
+    public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
     {
         // Use default profile for backward compatibility
         var defaultProfile = WindowsSipPhone.Core.Models.SipProfile.GetDefaultProfile();

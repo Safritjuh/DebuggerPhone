@@ -86,8 +86,7 @@
                     <StackPanel Margin="20">
                         <TextBlock Text="📋 Registration Settings" FontSize="18" FontWeight="Bold" 
                                   Foreground="#2C3E50" Margin="0,0,0,20"/>
-                        
-                        <!-- SIP Profile Selection -->
+                          <!-- SIP Profile Selection -->
                         <Grid Margin="0,0,0,20">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -95,13 +94,30 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
-                            <TextBlock Grid.Row="0" Text="📞 SIP Profile" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="0" Text="📞 SIP Profile (Legacy)" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ComboBox Grid.Row="1" Name="ProfileComboBox" 
                                      ItemsSource="{Binding AvailableProfiles}"
                                      SelectedItem="{Binding SelectedProfile}"
                                      DisplayMemberPath="Name"
                                      Style="{StaticResource SettingsComboBoxStyle}"/>
                             <TextBlock Grid.Row="2" Text="{Binding SelectedProfile.Description}" 
+                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        </Grid>
+                        
+                        <!-- Enhanced SIP Profile Selection (IMP-016) -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="🚀 Enhanced SIP Profile (IMP-016)" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <ComboBox Grid.Row="1" Name="EnhancedProfileComboBox" 
+                                     ItemsSource="{Binding AvailableEnhancedProfiles}"
+                                     SelectedItem="{Binding SelectedEnhancedProfile}"
+                                     Style="{StaticResource SettingsComboBoxStyle}"/>
+                            <TextBlock Grid.Row="2" Text="{Binding EnhancedProfileDetails}" 
                                       FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </Grid>
                         

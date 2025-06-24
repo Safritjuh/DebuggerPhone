@@ -255,6 +255,20 @@ The application provides two separate debug windows that can be used independent
 - Keep only the main `README.md` in the project root
 - When creating new improvement documentation, always place it in the `Documents/` folder
 
+## Configuration File Management
+- **ALL SIP configuration profiles** must be placed in the `Profiles/` folder in the project root
+- **Standard location**: `/Profiles/` (not in subdirectories like `Infrastructure/Configuration/Profiles/`)
+- **File format**: Use `.ini` format for SIP provider configuration profiles
+- **Naming convention**: Use descriptive names like `Avaya_Aura.ini`, `Avaya_IP_Office.ini`, `Elevate.ini`
+- **Profile structure**: Each profile should contain SIP server settings, authentication details, and provider-specific configurations
+- **Examples of profiles**:
+  - `Avaya_Aura.ini` - Avaya Aura Communication Manager settings
+  - `Avaya_IP_Office.ini` - Avaya IP Office settings  
+  - `Elevate.ini` - Elevate Communications settings
+  - `Generic.ini` - Generic SIP provider template
+- **Version control**: Configuration profiles should be committed to the repository as templates
+- **Security**: Do not include actual passwords or sensitive credentials in committed profiles
+
 ## Styling
 
 - Modern Flat UI Design

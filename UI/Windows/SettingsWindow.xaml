@@ -5,21 +5,19 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         MinHeight="500" MinWidth="700">
-    
-    <Grid>
+      <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="160"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Left Navigation Panel -->
         <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
             <StackPanel Margin="0,20,0,0">
-                
-                <!-- SIP Settings -->
+                  <!-- SIP Settings -->
                 <Button Name="SipSettingsButton" 
                         Content="📞 SIP Settings"
-                        Padding="15,10"
+                        Padding="12,8"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Stretch"
@@ -30,7 +28,7 @@
                 <!-- Audio Settings -->
                 <Button Name="AudioSettingsButton" 
                         Content="🎧 Audio Settings"
-                        Padding="15,10"
+                        Padding="12,8"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Stretch"
@@ -41,7 +39,7 @@
                 <!-- Application Settings -->
                 <Button Name="AppSettingsButton" 
                         Content="⚙️ App Settings"
-                        Padding="15,10"
+                        Padding="12,8"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Stretch"
@@ -52,7 +50,7 @@
                 <!-- Debug Tools -->
                 <Button Name="DebugToolsButton" 
                         Content="🐛 Debug Tools"
-                        Padding="15,10"
+                        Padding="12,8"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Stretch"

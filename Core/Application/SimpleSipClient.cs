@@ -1573,6 +1573,9 @@ namespace WindowsSipPhone
                 _pendingIncomingCSeq = cseqHeader;
                 _pendingIncomingSdp = ExtractSdpContent(inviteMessage);
                 _pendingIncomingInvite = inviteMessage;
+                
+                Console.WriteLine($"[INVITE DEBUG] ✅ Stored pending incoming INVITE, length: {_pendingIncomingInvite?.Length ?? 0}");
+                Console.WriteLine($"[INVITE DEBUG] CallId: {callId}, From: {fromHeader.Substring(0, Math.Min(50, fromHeader.Length))}...");
                   // Send 180 Ringing response using message factory
                 var ringingResponse = _messageFactory.Create180RingingResponse(inviteMessage, dialog.LocalTag ?? GenerateTag());
                 
@@ -1736,23 +1739,72 @@ namespace WindowsSipPhone
                 
                 // Create our SDP answer
                 var sdpAnswer = SdpManager.CreateSdpOffer(localIp, rtpPort);
-                  // FIXED: Create 200 OK response using the proper factory method that parses headers from original INVITE
-                // This ensures headers have their proper prefixes (Via:, From:, To:, CSeq:)
+                  // ENHANCED: Create 200 OK response with comprehensive error handling
                 if (!string.IsNullOrEmpty(_pendingIncomingInvite))
                 {
                     Console.WriteLine($"[200 OK DEBUG] Creating 200 OK response for call {callId}");
-                    var okResponse = _messageFactory.Create200OkResponse(_pendingIncomingInvite, sdpAnswer, dialog?.LocalTag ?? GenerateTag());
+                    Console.WriteLine($"[200 OK DEBUG] _pendingIncomingInvite length: {_pendingIncomingInvite.Length}");
                     
-                    Console.WriteLine($"[200 OK DEBUG] Generated 200 OK response:\n{okResponse}");
-                    StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call (JSIP)");
+                    var localTag = dialog?.LocalTag ?? GenerateTag();
+                    Console.WriteLine($"[200 OK DEBUG] Using local tag: {localTag}");
                     
-                    await SendMessageAsync(okResponse);
-                    Console.WriteLine($"[200 OK DEBUG] 200 OK response sent successfully");
+                    try
+                    {
+                        var okResponse = _messageFactory.Create200OkResponse(_pendingIncomingInvite, sdpAnswer, localTag);
+                        
+                        if (string.IsNullOrEmpty(okResponse))
+                        {
+                            Console.WriteLine($"[200 OK DEBUG] ❌ ERROR: Message factory returned null/empty response");
+                            StatusChanged?.Invoke(this, "❌ Error: Failed to generate 200 OK response");
+                            return;
+                        }
+                        
+                        Console.WriteLine($"[200 OK DEBUG] ✅ 200 OK response generated successfully, length: {okResponse.Length}");
+                        Console.WriteLine($"[200 OK DEBUG] Generated 200 OK response:\n{okResponse}");
+                        StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call (JSIP)");
+                        
+                        try
+                        {
+                            await SendMessageAsync(okResponse);
+                            Console.WriteLine($"[200 OK DEBUG] ✅ 200 OK response sent successfully");
+                        }
+                        catch (Exception sendEx)
+                        {
+                            Console.WriteLine($"[200 OK DEBUG] ❌ SEND ERROR: {sendEx.Message}");
+                            Console.WriteLine($"[200 OK DEBUG] Send stack trace: {sendEx.StackTrace}");
+                            StatusChanged?.Invoke(this, $"❌ Error sending 200 OK: {sendEx.Message}");
+                            throw;
+                        }
+                    }
+                    catch (Exception factoryEx)
+                    {
+                        Console.WriteLine($"[200 OK DEBUG] ❌ FACTORY ERROR: {factoryEx.Message}");
+                        Console.WriteLine($"[200 OK DEBUG] Factory stack trace: {factoryEx.StackTrace}");
+                        StatusChanged?.Invoke(this, $"❌ Error creating 200 OK response: {factoryEx.Message}");
+                        throw;
+                    }
                 }
                 else
                 {
-                    Console.WriteLine($"[200 OK DEBUG] ERROR: Original INVITE message not stored");
+                    Console.WriteLine($"[200 OK DEBUG] ❌ CRITICAL ERROR: _pendingIncomingInvite is null or empty");
+                    Console.WriteLine($"[200 OK DEBUG] CallId: {callId}, Via: {via}");
+                    Console.WriteLine($"[200 OK DEBUG] From: {from}, To: {to}, CSeq: {cseq}");
                     StatusChanged?.Invoke(this, "❌ Error: Original INVITE message not stored, cannot create proper 200 OK response");
+                    
+                    // FALLBACK: Try to create response using legacy method with available parameters
+                    Console.WriteLine($"[200 OK DEBUG] Attempting fallback 200 OK creation with available parameters");
+                    try
+                    {
+                        await SendIncomingCallResponse(callId, via, from, to, cseq, remoteSdpContent);
+                        Console.WriteLine($"[200 OK DEBUG] ✅ Fallback 200 OK response sent successfully");
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        Console.WriteLine($"[200 OK DEBUG] ❌ FALLBACK ERROR: {fallbackEx.Message}");
+                        Console.WriteLine($"[200 OK DEBUG] Fallback stack trace: {fallbackEx.StackTrace}");
+                        StatusChanged?.Invoke(this, $"❌ All 200 OK response methods failed: {fallbackEx.Message}");
+                        throw;
+                    }
                     return;
                 }
                 

@@ -7,25 +7,25 @@ using WindowsSipPhone.Core.SipHandlers;
 using WindowsSipPhone.Core.Utilities;
 
 namespace WindowsSipPhone.Core.Managers
-{
-    /// <summary>
+{    /// <summary>
     /// Enhanced Profile Manager with provider-specific SIP handling support
     /// Implements IMP-016: Profile-Specific SIP Handling and Provider Optimization
     /// </summary>
     public class EnhancedProfileManager
     {
         private readonly Dictionary<string, ISipProfileHandler> _profileHandlers;
+        private readonly Dictionary<string, string> _profileNameToFileMap;
         private SipProfileConfiguration? _currentConfig;
         private ISipProfileHandler? _currentHandler;
         private SimpleSipClient? _sipClient;
-        
-        public event EventHandler<string>? ProfileChanged;
+          public event EventHandler<string>? ProfileChanged;
         public event EventHandler<string>? ProfileLoaded;
         public event EventHandler<string>? ProfileError;
         
         public EnhancedProfileManager()
         {
             _profileHandlers = new Dictionary<string, ISipProfileHandler>();
+            _profileNameToFileMap = new Dictionary<string, string>();
             InitializeProfileHandlers();
         }
         
@@ -65,18 +65,31 @@ namespace WindowsSipPhone.Core.Managers
                 Console.WriteLine($"[ENHANCED PROFILE MANAGER] - {handler.Key}: {handler.Value.GetType().Name}");
             }
         }
-        
-        /// <summary>
+          /// <summary>
         /// Loads a profile from the Profiles folder
         /// </summary>
-        /// <param name="profileName">Name of the profile file (without .ini extension)</param>
+        /// <param name="profileName">Display name of the profile (from dropdown)</param>
         public void LoadProfile(string profileName)
         {
             try
             {
                 Console.WriteLine($"[ENHANCED PROFILE MANAGER] Loading profile: {profileName}");
                 
-                var profilePath = Path.Combine("Profiles", $"{profileName}.ini");
+                // Use the mapping to find the actual filename
+                string actualFileName;
+                if (_profileNameToFileMap.ContainsKey(profileName))
+                {
+                    actualFileName = _profileNameToFileMap[profileName];
+                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] Mapped display name '{profileName}' to file '{actualFileName}'");
+                }
+                else
+                {
+                    // Fallback to original behavior for backwards compatibility
+                    actualFileName = profileName;
+                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] No mapping found for '{profileName}', using as filename");
+                }
+                
+                var profilePath = Path.Combine("Profiles", $"{actualFileName}.ini");
                 if (!File.Exists(profilePath))
                 {
                     throw new FileNotFoundException($"Profile file not found: {profilePath}");
@@ -88,8 +101,8 @@ namespace WindowsSipPhone.Core.Managers
                 // Create configuration from INI data
                 var config = SipProfileConfiguration.ParseFromIni(iniData);
                 
-                // Get the appropriate handler
-                var handler = GetProfileHandler(profileName);
+                // Get the appropriate handler using the actual filename
+                var handler = GetProfileHandler(actualFileName);
                 
                 if (handler != null)
                 {
@@ -110,7 +123,7 @@ namespace WindowsSipPhone.Core.Managers
                 }
                 else
                 {
-                    throw new InvalidOperationException($"No handler found for profile: {profileName}");
+                    throw new InvalidOperationException($"No handler found for profile: {actualFileName}");
                 }
             }
             catch (Exception ex)
@@ -248,17 +261,19 @@ namespace WindowsSipPhone.Core.Managers
         public bool RequiresCustomRouting(string destination)
         {
             return _currentHandler?.RequiresCustomRouting(destination) ?? false;
-        }
-          /// <summary>
+        }        /// <summary>
         /// Gets available profile names from the Profiles folder
         /// </summary>
-        /// <returns>List of available profile names</returns>
+        /// <returns>List of available profile display names</returns>
         public List<string> GetAvailableProfiles()
         {
             var profiles = new List<string>();
             
             try
             {
+                // Clear the mapping first
+                _profileNameToFileMap.Clear();
+                
                 var profilesPath = "Profiles";
                 if (Directory.Exists(profilesPath))
                 {
@@ -267,6 +282,8 @@ namespace WindowsSipPhone.Core.Managers
                     {
                         try
                         {
+                            var fileName = Path.GetFileNameWithoutExtension(file);
+                            
                             // Read the actual profile name from the INI file instead of using filename
                             var data = IniFileHandler.ReadIniFile(file);
                             if (data.ContainsKey("Profile"))
@@ -275,21 +292,23 @@ namespace WindowsSipPhone.Core.Managers
                                 if (!string.IsNullOrWhiteSpace(profileName))
                                 {
                                     profiles.Add(profileName);
+                                    _profileNameToFileMap[profileName] = fileName;
+                                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] Mapped '{profileName}' -> '{fileName}'");
                                 }
                                 else
                                 {
                                     // Fallback to filename if name is not specified
-                                    var fallbackName = Path.GetFileNameWithoutExtension(file);
-                                    profiles.Add(fallbackName);
-                                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no name, using filename: {fallbackName}");
+                                    profiles.Add(fileName);
+                                    _profileNameToFileMap[fileName] = fileName;
+                                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no name, using filename: {fileName}");
                                 }
                             }
                             else
                             {
                                 // Fallback to filename if Profile section is missing
-                                var fallbackName = Path.GetFileNameWithoutExtension(file);
-                                profiles.Add(fallbackName);
-                                Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no Profile section, using filename: {fallbackName}");
+                                profiles.Add(fileName);
+                                _profileNameToFileMap[fileName] = fileName;
+                                Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no Profile section, using filename: {fileName}");
                             }
                         }
                         catch (Exception fileEx)
@@ -298,6 +317,7 @@ namespace WindowsSipPhone.Core.Managers
                             // Add filename as fallback for corrupted files
                             var fallbackName = Path.GetFileNameWithoutExtension(file);
                             profiles.Add(fallbackName);
+                            _profileNameToFileMap[fallbackName] = fallbackName;
                         }
                     }
                 }

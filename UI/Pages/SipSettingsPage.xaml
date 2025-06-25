@@ -73,11 +73,10 @@
                           Margin="0,3,0,0"/>
             </StackPanel>
         </Border>
-        
-        <!-- Content -->
+          <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
                      PanningMode="VerticalOnly" 
-                     CanContentScroll="True">            <Grid Margin="20">
+                     CanContentScroll="False">            <Grid Margin="20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.5*"/>
                     <ColumnDefinition Width="320"/>
@@ -85,9 +84,7 @@
                 
                 <!-- Left Panel - Combined Registration & Advanced Settings -->
                 <Border Grid.Column="0" Background="#ECF0F1" CornerRadius="10" Margin="0,0,10,0">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                 PanningMode="VerticalOnly" 
-                                 CanContentScroll="True">                        <StackPanel Margin="15">
+                    <StackPanel Margin="15">
                             <TextBlock Text="⚙️ Registration &amp; Advanced Settings" FontSize="18" FontWeight="Bold" 
                                       Foreground="#2C3E50" Margin="0,0,0,15"/>
                             
@@ -243,13 +240,11 @@
                                        Command="{Binding SaveSettingsCommand}"
                                        Style="{StaticResource ActionButtonStyle}"
                                        Background="#3498DB" Margin="0,0,5,0"/>
-                                <Button Grid.Column="1" Content="🔄 Reset to Defaults" 
-                                       Command="{Binding ResetSettingsCommand}"
+                                <Button Grid.Column="1" Content="🔄 Reset to Defaults"                                       Command="{Binding ResetSettingsCommand}"
                                        Style="{StaticResource ActionButtonStyle}"
                                        Background="#95A5A6" Margin="5,0,0,0"/>
                             </Grid>
                         </StackPanel>
-                    </ScrollViewer>
                 </Border>
                 
                 <!-- Right Panel - Profile Selection -->                <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Margin="10,0,0,0">

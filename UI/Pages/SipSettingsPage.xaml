@@ -72,11 +72,10 @@
                           Foreground="#D6EAF8" 
                           Margin="0,3,0,0"/>
             </StackPanel>
-        </Border>
-          <!-- Content -->
+        </Border>          <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
                      PanningMode="VerticalOnly" 
-                     CanContentScroll="False">            <Grid Margin="20">
+                     CanContentScroll="False">            <Grid Margin="20" MouseWheel="Grid_MouseWheel">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.5*"/>
                     <ColumnDefinition Width="320"/>

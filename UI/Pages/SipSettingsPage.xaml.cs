@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows;
 using WindowsSipPhone.Core.Utilities;
 using WindowsSipPhone.Core.Models;
 using WindowsSipPhone.Core.Managers;
@@ -672,7 +673,35 @@ namespace WindowsSipPhone.UI.Pages
             {
                 StatusDetails = $"❌ Import failed: {ex.Message}";
                 LastUpdated = DateTime.Now;
+            }        }
+
+        #endregion
+
+        #region Mouse Wheel Event Handling
+
+        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            // Find the parent ScrollViewer
+            var scrollViewer = FindParent<ScrollViewer>((DependencyObject)sender);
+            if (scrollViewer != null)
+            {
+                // Forward the mouse wheel event to the ScrollViewer
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta / 3.0));
+                e.Handled = true;
             }
+        }
+
+        private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(child);
+            
+            if (parent == null)
+                return null;
+            
+            if (parent is T parentAsT)
+                return parentAsT;
+            
+            return FindParent<T>(parent);
         }
 
         #endregion

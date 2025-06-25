@@ -666,18 +666,30 @@ namespace WindowsSipPhone.UI.Pages
         {
             try
             {
-                StatusDetails = "Import functionality not yet implemented for enhanced profile system";
-                LastUpdated = DateTime.Now;
+                StatusDetails = "Import functionality not yet implemented for enhanced profile system";                LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
             {
                 StatusDetails = $"❌ Import failed: {ex.Message}";
                 LastUpdated = DateTime.Now;
-            }        }
+            }
+        }
 
         #endregion
 
         #region Mouse Wheel Event Handling
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var scrollViewer = sender as ScrollViewer;
+            if (scrollViewer != null)
+            {
+                // Scroll the ScrollViewer directly with improved responsiveness
+                double scrollAmount = e.Delta * 1.5; // Increased sensitivity for better UX
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - scrollAmount);
+                e.Handled = true;
+            }
+        }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
@@ -685,8 +697,8 @@ namespace WindowsSipPhone.UI.Pages
             var scrollViewer = FindParent<ScrollViewer>((DependencyObject)sender);
             if (scrollViewer != null)
             {
-                // Forward the mouse wheel event to the ScrollViewer
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta / 3.0));
+                // Forward the mouse wheel event to the ScrollViewer with improved responsiveness
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta * 1.5));
                 e.Handled = true;
             }
         }

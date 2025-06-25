@@ -494,8 +494,7 @@ namespace WindowsSipPhone.UI.Pages
                 AvailableProfiles = new List<string> { "Generic" };
                 SelectedProfile = "Generic";
             }        }
-        
-        private async void OnProfileChanged()
+          private async void OnProfileChanged()
         {
             if (string.IsNullOrEmpty(_selectedProfile)) return;
             
@@ -508,6 +507,9 @@ namespace WindowsSipPhone.UI.Pages
                 if (_profileManager != null)
                 {
                     _profileManager.LoadProfile(_selectedProfile);
+                    
+                    // Auto-fill Advanced SIP settings from profile (IMP-017)
+                    AutoFillAdvancedSettingsFromProfile();
                 }
                 
                 // If we have a SIP service, switch the profile
@@ -540,6 +542,57 @@ namespace WindowsSipPhone.UI.Pages
             catch (Exception ex)
             {
                 StatusDetails = $"Error switching profile: {ex.Message}";
+                LastUpdated = DateTime.Now;
+            }        }
+        
+        /// <summary>
+        /// Auto-fills Advanced SIP settings from the selected profile configuration (IMP-017)
+        /// Settings can still be overridden by the user after auto-fill
+        /// </summary>
+        private void AutoFillAdvancedSettingsFromProfile()
+        {
+            if (_profileManager?.CurrentConfig == null) return;
+            
+            try
+            {
+                var config = _profileManager.CurrentConfig;
+                
+                // Auto-fill Registration Expires from profile
+                if (config.RegistrationRefreshInterval > 0)
+                {
+                    RegistrationExpires = config.RegistrationRefreshInterval.ToString();
+                }
+                
+                // Auto-fill User Agent from profile
+                if (!string.IsNullOrWhiteSpace(config.CustomUserAgent))
+                {
+                    UserAgent = config.CustomUserAgent;
+                }
+                
+                // Auto-fill Transport from profile
+                if (!string.IsNullOrWhiteSpace(config.PreferredTransport))
+                {
+                    // Normalize transport value to match ComboBox options
+                    var transport = config.PreferredTransport.ToUpperInvariant();
+                    if (transport == "TCP" || transport == "UDP" || transport == "TLS")
+                    {
+                        SelectedTransport = transport;
+                    }
+                }
+                
+                // Auto-fill Server Port from profile
+                if (config.Port > 0)
+                {
+                    ServerPort = config.Port.ToString();
+                }
+                
+                // Update status to show auto-fill occurred
+                StatusDetails = $"Advanced SIP settings auto-filled from profile '{_selectedProfile}'. Settings can be customized as needed.";
+                LastUpdated = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                StatusDetails = $"Warning: Could not auto-fill some settings from profile: {ex.Message}";
                 LastUpdated = DateTime.Now;
             }
         }

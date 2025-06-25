@@ -157,12 +157,11 @@
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
                                         
-                                        <TextBlock Grid.Row="0" Text="Port" FontWeight="Bold" Margin="0,0,0,5"/>
-                                        <TextBox Grid.Row="1" Name="ServerPortTextBox" 
+                                        <TextBlock Grid.Row="0" Text="Port" FontWeight="Bold" Margin="0,0,0,5"/>                                        <TextBox Grid.Row="1" Name="ServerPortTextBox" 
                                                 Text="{Binding ServerPort, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource SettingsTextBoxStyle}"/>
-                                        <TextBlock Grid.Row="2" Text="Default: 5060 (TCP), 5061 (TLS)" 
-                                                  FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
+                                        <TextBlock Grid.Row="2" Text="Auto-filled from profile, editable" 
+                                                  FontSize="11" Foreground="#3498DB" Margin="0,3,0,0"/>
                                     </Grid>
                                     
                                     <!-- Transport Protocol -->
@@ -181,18 +180,21 @@
                                             <ComboBoxItem Content="TCP" Tag="TCP" IsSelected="True"/>
                                             <ComboBoxItem Content="UDP" Tag="UDP"/>
                                             <ComboBoxItem Content="TLS" Tag="TLS"/>
-                                        </ComboBox>
-                                        <TextBlock Grid.Row="2" Text="RFC 3261 compliant transport" 
-                                                  FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
+                                        </ComboBox>                                        <TextBlock Grid.Row="2" Text="Auto-filled from profile, editable" 
+                                                  FontSize="11" Foreground="#3498DB" Margin="0,3,0,0"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
-                            
-                            <!-- Advanced SIP Settings Section -->
+                              <!-- Advanced SIP Settings Section -->
                             <Border Background="#D5DBDB" CornerRadius="5" Padding="15" Margin="0,0,0,20">
                                 <StackPanel>
-                                    <TextBlock Text="🔧 Advanced SIP Settings" FontSize="14" FontWeight="Bold" 
-                                              Foreground="#2C3E50" Margin="0,0,0,15"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="🔧 Advanced SIP Settings" FontSize="14" FontWeight="Bold" 
+                                                  Foreground="#2C3E50"/>
+                                        <TextBlock Text="📋 Auto-filled from profile" FontSize="11" 
+                                                  Foreground="#3498DB" FontStyle="Italic" 
+                                                  Margin="10,2,0,0" VerticalAlignment="Bottom"/>
+                                    </StackPanel>
                                     
                                     <!-- Registration Interval -->
                                     <Grid Margin="0,0,0,15">
@@ -206,8 +208,8 @@
                                         <TextBox Grid.Row="1" Name="ExpiresTextBox" 
                                                 Text="{Binding RegistrationExpires, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource SettingsTextBoxStyle}"/>
-                                        <TextBlock Grid.Row="2" Text="Default: 300 (5 minutes)" 
-                                                  FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
+                                        <TextBlock Grid.Row="2" Text="Auto-filled from profile, editable" 
+                                                  FontSize="11" Foreground="#3498DB" Margin="0,3,0,0"/>
                                     </Grid>
                                     
                                     <!-- User Agent -->
@@ -217,13 +219,12 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-                                        
-                                        <TextBlock Grid.Row="0" Text="User Agent String" FontWeight="Bold" Margin="0,0,0,5"/>
+                                          <TextBlock Grid.Row="0" Text="User Agent String" FontWeight="Bold" Margin="0,0,0,5"/>
                                         <TextBox Grid.Row="1" Name="UserAgentTextBox" 
                                                 Text="{Binding UserAgent, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource SettingsTextBoxStyle}"/>
-                                        <TextBlock Grid.Row="2" Text="Identifies your SIP client" 
-                                                  FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
+                                        <TextBlock Grid.Row="2" Text="Auto-filled from profile, editable" 
+                                                  FontSize="11" Foreground="#3498DB" Margin="0,3,0,0"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>

@@ -51,7 +51,8 @@
             <Setter Property="BorderBrush" Value="#BDC3C7"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Background" Value="White"/>
-        </Style>    </UserControl.Resources>
+        </Style>
+    </UserControl.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
@@ -66,134 +67,236 @@
                           FontSize="20" 
                           FontWeight="Bold" 
                           Foreground="White"/>
-                <TextBlock Text="Configure SIP account registration and network settings" 
+                <TextBlock Text="Configure SIP profiles and unified registration settings" 
                           FontSize="12" 
                           Foreground="#D6EAF8" 
                           Margin="0,3,0,0"/>
             </StackPanel>
-        </Border>
-        
-        <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="20">
+        </Border>          <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+                     PanningMode="VerticalOnly" 
+                     CanContentScroll="False"
+                     PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">            <Grid Margin="20">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="320"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- Left Panel - Registration Settings -->
+                <!-- Left Panel - Combined Registration & Advanced Settings -->
                 <Border Grid.Column="0" Background="#ECF0F1" CornerRadius="10" Margin="0,0,10,0">
-                    <StackPanel Margin="20">
-                        <TextBlock Text="📋 Registration Settings" FontSize="18" FontWeight="Bold" 
-                                  Foreground="#2C3E50" Margin="0,0,0,20"/>
-                          <!-- SIP Profile Selection -->
-                        <Grid Margin="0,0,0,20">
+                    <StackPanel Margin="15">
+                            <TextBlock Text="⚙️ Registration &amp; Advanced Settings" FontSize="18" FontWeight="Bold" 
+                                      Foreground="#2C3E50" Margin="0,0,0,15"/>
+                            
+                            <!-- Account Credentials Section -->
+                            <Border Background="#D5DBDB" CornerRadius="5" Padding="12" Margin="0,0,0,15">
+                                <StackPanel>                                    <TextBlock Text="🔐 Account Credentials" FontSize="14" FontWeight="Bold" 
+                                              Foreground="#2C3E50" Margin="0,0,0,10"/>                                    <!-- Username -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="Username:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Name="UsernameTextBox" 
+                                                Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource SettingsTextBoxStyle}"/>
+                                    </Grid>
+                                    
+                                    <!-- Password -->
+                                    <Grid Margin="0,0,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="Password:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <PasswordBox Grid.Column="1" Name="PasswordBox" 
+                                                    Height="35" FontSize="14" Padding="10,5"
+                                                    BorderBrush="#BDC3C7" BorderThickness="2" Background="White"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                              <!-- Server Configuration Section -->
+                            <Border Background="#D5DBDB" CornerRadius="5" Padding="12" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="🌐 Server Configuration" FontSize="14" FontWeight="Bold" 
+                                              Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                      <!-- Server Host -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="SIP Server:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Name="ServerHostTextBox" 
+                                                Text="{Binding ServerHost, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource SettingsTextBoxStyle}"/>
+                                    </Grid>                                      <!-- Server Port -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="Port:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Name="ServerPortTextBox" 
+                                                Text="{Binding ServerPort, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource SettingsTextBoxStyle}"/>
+                                    </Grid>
+                                    
+                                    <!-- Transport Protocol -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="Transport:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <ComboBox Grid.Column="1" Name="TransportComboBox" 
+                                                 SelectedValue="{Binding SelectedTransport}"
+                                                 SelectedIndex="0"
+                                                 Style="{StaticResource SettingsComboBoxStyle}">
+                                            <ComboBoxItem Content="TCP" Tag="TCP" IsSelected="True"/>
+                                            <ComboBoxItem Content="UDP" Tag="UDP"/>
+                                            <ComboBoxItem Content="TLS" Tag="TLS"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    
+                                    <!-- Info text -->
+                                    <TextBlock Text="Auto-filled from profile, editable" 
+                                              FontSize="11" Foreground="#3498DB" Margin="120,0,0,0"/>
+                                </StackPanel>
+                            </Border>                              <!-- Advanced SIP Settings Section -->
+                            <Border Background="#D5DBDB" CornerRadius="5" Padding="12" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="🔧 Advanced SIP Settings" FontSize="14" FontWeight="Bold" 
+                                                  Foreground="#2C3E50"/>
+                                        <TextBlock Text="📋 Auto-filled from profile" FontSize="11" 
+                                                  Foreground="#3498DB" FontStyle="Italic" 
+                                                  Margin="10,2,0,0" VerticalAlignment="Bottom"/>
+                                    </StackPanel>                                    <!-- Registration Expires -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="Reg. Expires:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Name="ExpiresTextBox" 
+                                                Text="{Binding RegistrationExpires, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource SettingsTextBoxStyle}"/>
+                                    </Grid>
+                                    
+                                    <!-- User Agent -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="User Agent:" FontWeight="Bold" 
+                                                  VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Name="UserAgentTextBox" 
+                                                Text="{Binding UserAgent, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource SettingsTextBoxStyle}"/>
+                                    </Grid>
+                                    
+                                    <!-- Info text -->
+                                    <TextBlock Text="Auto-filled from profile, editable" 
+                                              FontSize="11" Foreground="#3498DB" Margin="120,0,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Registration Actions -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <Button Grid.Column="0" Content="🔌 Register" 
+                                       Command="{Binding RegisterCommand}"
+                                       Style="{StaticResource ActionButtonStyle}"
+                                       Background="#27AE60" Margin="0,0,5,0"/>
+                                <Button Grid.Column="1" Content="🔌 Unregister" 
+                                       Command="{Binding UnregisterCommand}"
+                                       Style="{StaticResource ActionButtonStyle}"
+                                       Background="#E74C3C" Margin="5,0,0,0"/>
+                            </Grid>
+                            
+                            <!-- Settings Action Buttons -->
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <Button Grid.Column="0" Content="💾 Save Settings" 
+                                       Command="{Binding SaveSettingsCommand}"
+                                       Style="{StaticResource ActionButtonStyle}"
+                                       Background="#3498DB" Margin="0,0,5,0"/>
+                                <Button Grid.Column="1" Content="🔄 Reset to Defaults"                                       Command="{Binding ResetSettingsCommand}"
+                                       Style="{StaticResource ActionButtonStyle}"
+                                       Background="#95A5A6" Margin="5,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                </Border>
+                
+                <!-- Right Panel - Profile Selection -->                <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Margin="10,0,0,0">
+                    <StackPanel Margin="15">
+                        <TextBlock Text="🚀 SIP Profile Selection" FontSize="18" FontWeight="Bold" 
+                                  Foreground="#2C3E50" Margin="0,0,0,15"/>
+                        
+                        <!-- SIP Profile Selection (Enhanced IMP-016) -->
+                        <Grid Margin="0,0,0,15">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
-                            <TextBlock Grid.Row="0" Text="📞 SIP Profile (Legacy)" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="0" Text="📞 Available Profiles" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ComboBox Grid.Row="1" Name="ProfileComboBox" 
                                      ItemsSource="{Binding AvailableProfiles}"
                                      SelectedItem="{Binding SelectedProfile}"
-                                     DisplayMemberPath="Name"
                                      Style="{StaticResource SettingsComboBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="{Binding SelectedProfile.Description}" 
+                            <TextBlock Grid.Row="2" Text="{Binding ProfileDetails}" 
                                       FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </Grid>
-                        
-                        <!-- Enhanced SIP Profile Selection (IMP-016) -->
-                        <Grid Margin="0,0,0,20">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="🚀 Enhanced SIP Profile (IMP-016)" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <ComboBox Grid.Row="1" Name="EnhancedProfileComboBox" 
-                                     ItemsSource="{Binding AvailableEnhancedProfiles}"
-                                     SelectedItem="{Binding SelectedEnhancedProfile}"
-                                     Style="{StaticResource SettingsComboBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="{Binding EnhancedProfileDetails}" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                        </Grid>
-                        
-                        <!-- Username -->
-                        <Grid Margin="0,0,0,15">
+                          <!-- Profile Quick Info -->
+                        <Border Background="#D5DBDB" CornerRadius="5" Padding="12" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="📋 Profile Overview" FontSize="14" FontWeight="Bold" 
+                                          Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding ProfileDetails}" FontSize="11" 
+                                          Foreground="#2C3E50" TextWrapping="Wrap" FontFamily="Consolas"/>
+                            </StackPanel>
+                        </Border>
+                          <!-- Profile Management Buttons -->
+                        <Grid Margin="0,8,0,15">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
-                            <TextBlock Grid.Row="0" Text="Username" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <TextBox Grid.Row="1" Name="UsernameTextBox" 
-                                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource SettingsTextBoxStyle}"/>
-                        </Grid>
-                        
-                        <!-- Password -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="Password" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <PasswordBox Grid.Row="1" Name="PasswordBox" 
-                                        Height="35" FontSize="14" Padding="10,5"
-                                        BorderBrush="#BDC3C7" BorderThickness="2" Background="White"/>
-                        </Grid>
-                        
-                        <!-- Server Host -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="SIP Server" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <TextBox Grid.Row="1" Name="ServerHostTextBox" 
-                                    Text="{Binding ServerHost, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource SettingsTextBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="IP address or domain name" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
-                        </Grid>
-                        
-                        <!-- Server Port -->
-                        <Grid Margin="0,0,0,20">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="Port" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <TextBox Grid.Row="1" Name="ServerPortTextBox" 
-                                    Text="{Binding ServerPort, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource SettingsTextBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="Default: 5060 (TCP), 5061 (TLS)" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
-                        </Grid>
-                        
-                        <!-- Registration Actions -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Button Grid.Column="0" Content="🔌 Register" 
-                                   Command="{Binding RegisterCommand}"
+                            <Button Grid.Row="0" Content="📤 Export Profile" 
+                                   Command="{Binding ExportProfileCommand}"
                                    Style="{StaticResource ActionButtonStyle}"
-                                   Background="#27AE60" Margin="0,0,5,0"/>
-                            <Button Grid.Column="1" Content="🔌 Unregister" 
-                                   Command="{Binding UnregisterCommand}"
+                                   Background="#8E44AD" Margin="0,0,0,10"/>
+                            <Button Grid.Row="1" Content="📥 Import Profile" 
+                                   Command="{Binding ImportProfileCommand}"
                                    Style="{StaticResource ActionButtonStyle}"
-                                   Background="#E74C3C" Margin="5,0,0,0"/>
+                                   Background="#E67E22"/>
                         </Grid>
                         
                         <!-- Registration Status -->
@@ -212,108 +315,6 @@
                         </Border>
                     </StackPanel>
                 </Border>
-                
-                <!-- Right Panel - Advanced Settings -->                <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Margin="10,0,0,0">
-                    <StackPanel Margin="20">
-                        <TextBlock Text="🔧 Advanced SIP Settings" FontSize="18" FontWeight="Bold" 
-                                  Foreground="#2C3E50" Margin="0,0,0,20"/>
-                        
-                        <!-- Profile Details -->
-                        <Border Background="#D5DBDB" CornerRadius="5" Padding="15" Margin="0,0,0,20">
-                            <StackPanel>
-                                <TextBlock Text="📋 Profile Details" FontSize="14" FontWeight="Bold" 
-                                          Foreground="#2C3E50" Margin="0,0,0,10"/>
-                                <TextBlock Text="{Binding ProfileDetails}" FontSize="11" 
-                                          Foreground="#2C3E50" TextWrapping="Wrap" FontFamily="Consolas"/>
-                            </StackPanel>
-                        </Border>
-                        
-                        <!-- Transport Protocol -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                              <TextBlock Grid.Row="0" Text="Transport Protocol" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <ComboBox Grid.Row="1" Name="TransportComboBox" 
-                                     SelectedValue="{Binding SelectedTransport}"
-                                     SelectedIndex="0"
-                                     Style="{StaticResource SettingsComboBoxStyle}">
-                                <ComboBoxItem Content="TCP" Tag="TCP" IsSelected="True"/>
-                                <ComboBoxItem Content="UDP" Tag="UDP"/>
-                                <ComboBoxItem Content="TLS" Tag="TLS"/>
-                            </ComboBox>
-                            <TextBlock Grid.Row="2" Text="RFC 3261 compliant transport" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
-                        </Grid>
-                        
-                        <!-- Registration Interval -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="Registration Expires (seconds)" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <TextBox Grid.Row="1" Name="ExpiresTextBox" 
-                                    Text="{Binding RegistrationExpires, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource SettingsTextBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="Default: 300 (5 minutes)" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
-                        </Grid>
-                        
-                        <!-- User Agent -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="User Agent String" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <TextBox Grid.Row="1" Name="UserAgentTextBox" 
-                                    Text="{Binding UserAgent, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource SettingsTextBoxStyle}"/>
-                            <TextBlock Grid.Row="2" Text="Identifies your SIP client" 
-                                      FontSize="11" Foreground="#7F8C8D" Margin="0,3,0,0"/>
-                        </Grid>
-                          <!-- SIP Timers Section - REMOVED per task requirements -->
-                        
-                        <!-- Action Buttons -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Button Grid.Column="0" Content="💾 Save Settings" 
-                                   Command="{Binding SaveSettingsCommand}"
-                                   Style="{StaticResource ActionButtonStyle}"
-                                   Background="#3498DB" Margin="0,0,5,0"/>
-                            <Button Grid.Column="1" Content="🔄 Reset to Defaults" 
-                                   Command="{Binding ResetSettingsCommand}"
-                                   Style="{StaticResource ActionButtonStyle}"
-                                   Background="#95A5A6" Margin="5,0,0,0"/>
-                        </Grid>
-                        
-                        <!-- Profile Management Buttons -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Button Grid.Column="0" Content="📤 Export Profile" 
-                                   Command="{Binding ExportProfileCommand}"
-                                   Style="{StaticResource ActionButtonStyle}"
-                                   Background="#8E44AD" Margin="0,0,5,0"/>
-                            <Button Grid.Column="1" Content="📥 Import Profile" 
-                                   Command="{Binding ImportProfileCommand}"
-                                   Style="{StaticResource ActionButtonStyle}"
-                                   Background="#E67E22" Margin="5,0,0,0"/>
-                        </Grid>                    </StackPanel>                </Border>
             </Grid>
         </ScrollViewer>
     </Grid>

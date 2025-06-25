@@ -469,8 +469,7 @@ namespace WindowsSipPhone.UI.Pages
         private void InitializeProfiles()
         {
             try
-            {
-                _profileManager = new EnhancedProfileManager();
+            {                _profileManager = new EnhancedProfileManager();
                 AvailableProfiles = _profileManager.GetAvailableProfiles().ToList();
                 
                 // Set default profile or load from SIP service

@@ -301,13 +301,19 @@ namespace WindowsSipPhone.UI.Pages
                     RegistrationStatus = "Registration Failed";
                     return;
                 }                // Use enhanced profile-based registration
+                Console.WriteLine($"[DEBUG] Looking up profile: '{SelectedProfile}'");
                 var profile = WindowsSipPhone.Core.Models.SipProfile.GetPredefinedProfile(SelectedProfile);
                 if (profile == null)
                 {
+                    Console.WriteLine($"[DEBUG] Profile '{SelectedProfile}' not found!");
                     RegistrationStatus = "Registration Failed";
                     StatusDetails = $"Profile '{SelectedProfile}' not found";
                     LastUpdated = DateTime.Now;
                     return;
+                }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] Profile '{SelectedProfile}' found successfully!");
                 }
                 
                 await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, profile, expires);
@@ -469,9 +475,15 @@ namespace WindowsSipPhone.UI.Pages
         private void InitializeProfiles()
         {
             try
-            {
-                _profileManager = new EnhancedProfileManager();
+            {                _profileManager = new EnhancedProfileManager();
                 AvailableProfiles = _profileManager.GetAvailableProfiles().ToList();
+                
+                // DEBUG: Log available profiles to console
+                Console.WriteLine($"[DEBUG] InitializeProfiles: {AvailableProfiles.Count} profiles loaded:");
+                foreach (var profile in AvailableProfiles)
+                {
+                    Console.WriteLine($"[DEBUG]   - '{profile}'");
+                }
                 
                 // Set default profile or load from SIP service
                 if (_sipService?.ProfileManager != null)

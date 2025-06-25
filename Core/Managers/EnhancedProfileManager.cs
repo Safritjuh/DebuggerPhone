@@ -249,8 +249,7 @@ namespace WindowsSipPhone.Core.Managers
         {
             return _currentHandler?.RequiresCustomRouting(destination) ?? false;
         }
-        
-        /// <summary>
+          /// <summary>
         /// Gets available profile names from the Profiles folder
         /// </summary>
         /// <returns>List of available profile names</returns>
@@ -266,8 +265,40 @@ namespace WindowsSipPhone.Core.Managers
                     var iniFiles = Directory.GetFiles(profilesPath, "*.ini");
                     foreach (var file in iniFiles)
                     {
-                        var profileName = Path.GetFileNameWithoutExtension(file);
-                        profiles.Add(profileName);
+                        try
+                        {
+                            // Read the actual profile name from the INI file instead of using filename
+                            var data = IniFileHandler.ReadIniFile(file);
+                            if (data.ContainsKey("Profile"))
+                            {
+                                var profileName = IniFileHandler.GetValue(data, "Profile", "Name", "");
+                                if (!string.IsNullOrWhiteSpace(profileName))
+                                {
+                                    profiles.Add(profileName);
+                                }
+                                else
+                                {
+                                    // Fallback to filename if name is not specified
+                                    var fallbackName = Path.GetFileNameWithoutExtension(file);
+                                    profiles.Add(fallbackName);
+                                    Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no name, using filename: {fallbackName}");
+                                }
+                            }
+                            else
+                            {
+                                // Fallback to filename if Profile section is missing
+                                var fallbackName = Path.GetFileNameWithoutExtension(file);
+                                profiles.Add(fallbackName);
+                                Console.WriteLine($"[ENHANCED PROFILE MANAGER] Profile {file} has no Profile section, using filename: {fallbackName}");
+                            }
+                        }
+                        catch (Exception fileEx)
+                        {
+                            Console.WriteLine($"[ENHANCED PROFILE MANAGER] Error reading profile file {file}: {fileEx.Message}");
+                            // Add filename as fallback for corrupted files
+                            var fallbackName = Path.GetFileNameWithoutExtension(file);
+                            profiles.Add(fallbackName);
+                        }
                     }
                 }
             }

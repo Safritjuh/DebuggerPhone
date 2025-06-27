@@ -36,8 +36,10 @@ namespace WindowsSipPhone.UI.Pages
         private string _selectedProfile = "Generic";
 
         // Reference to PasswordBox control
-        private PasswordBox PasswordBoxRef;        public SipSettingsPage()
-        {            
+        private PasswordBox PasswordBoxRef;
+        
+        public SipSettingsPage()
+        {
             InitializeComponent();
             DataContext = this;
             // Assign PasswordBoxRef after InitializeComponent
@@ -48,8 +50,9 @@ namespace WindowsSipPhone.UI.Pages
             
             // BUG-034 FIX: Ensure proper registration state initialization
             InitializeRegistrationState();
-        }        public SipPhoneService? SipService 
-        { 
+        }
+          public SipPhoneService? SipService
+        {
             get => _sipService;
             set
             {
@@ -59,9 +62,9 @@ namespace WindowsSipPhone.UI.Pages
                     _sipService.StatusChanged += OnSipStatusChanged;
                     
                     // BUG-034 FIX: Always update registration status when service is set
-                    Console.WriteLine($"[BUG-034 DEBUG] SipService set - updating registration status");
                     UpdateRegistrationStatus();
-                      // Sync profile selection with SIP service
+                      
+                    // Sync profile selection with SIP service
                     if (_sipService.ProfileManager != null)
                     {
                         var serviceProfiles = _sipService.GetAvailableProfiles();
@@ -72,7 +75,6 @@ namespace WindowsSipPhone.UI.Pages
                 else
                 {
                     // BUG-034 FIX: If service is removed, reset to unregistered state
-                    Console.WriteLine($"[BUG-034 DEBUG] SipService set to null - resetting registration state");
                     _isRegistered = false;
                     RegistrationStatus = "Not Registered";
                     StatusDetails = "SIP service not available";
@@ -427,24 +429,35 @@ namespace WindowsSipPhone.UI.Pages
                 StatusDetails = status;
                 LastUpdated = DateTime.Now;
 
-                if (status.Contains("Registration successful") || status.Contains("✅"))
+                // BUG-034 FIX: Be more specific about registration success patterns 
+                // to avoid false positives from profile switching or settings save messages
+                if (status.Contains("Registration successful") || 
+                    (status.Contains("✅") && (status.Contains("Registered") || status.Contains("registration"))))
                 {
+                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected registration success: '{status}'");
                     _isRegistered = true;
                     RegistrationStatus = "Registered";
                 }
                 else if (status.Contains("Registration failed") || status.Contains("❌") || status.Contains("Authentication failed"))
                 {
+                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected registration failure: '{status}'");
                     _isRegistered = false;
                     RegistrationStatus = "Registration Failed";
                 }
                 else if (status.Contains("Unregistered") || status.Contains("Disconnected"))
                 {
+                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected unregistered/disconnected: '{status}'");
                     _isRegistered = false;
                     RegistrationStatus = "Not Registered";
                 }
                 else if (status.Contains("Connecting") || status.Contains("Registering"))
                 {
                     RegistrationStatus = "Connecting...";
+                }
+                else
+                {
+                    // BUG-034 FIX: Log any other status messages that don't affect registration state
+                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged ignoring non-registration status: '{status}', _isRegistered remains: {_isRegistered}");
                 }
             });
         }
@@ -453,12 +466,30 @@ namespace WindowsSipPhone.UI.Pages
         {
             if (_sipService != null)
             {
-                _isRegistered = _sipService.IsRegistered;
-                RegistrationStatus = _isRegistered ? "Registered" : "Not Registered";
-                StatusDetails = _isRegistered ? $"Connected to {_sipService.ServerAddress}" : "Ready to register";
+                // BUG-034 FIX: Be extra careful about the service registration state
+                var serviceIsRegistered = _sipService.IsRegistered;
+                var hasClient = _sipService.SipClient != null;
+                
+                // Force UI to be conservative - only show registered if service actually has an active SIP client and is connected
+                _isRegistered = serviceIsRegistered && hasClient;
+                
+                var newStatus = _isRegistered ? "Registered" : "Not Registered";
+                var newDetails = _isRegistered ? $"Connected to {_sipService.ServerAddress}" : "Ready to register";
+                
+                RegistrationStatus = newStatus;
+                StatusDetails = newDetails;
                 LastUpdated = DateTime.Now;
                 
                 // BUG-034 FIX: Force command re-evaluation to update button states
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+            else
+            {
+                // BUG-034 FIX: If no service, definitely not registered
+                _isRegistered = false;
+                RegistrationStatus = "Not Registered";
+                StatusDetails = "SIP service not available";
+                LastUpdated = DateTime.Now;
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -476,8 +507,6 @@ namespace WindowsSipPhone.UI.Pages
             
             // Force initial command evaluation to set correct button states
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-            
-            Console.WriteLine($"[BUG-034 DEBUG] Initial registration state set: _isRegistered={_isRegistered}, Status='{RegistrationStatus}'");
         }
 
         #endregion
@@ -546,7 +575,7 @@ namespace WindowsSipPhone.UI.Pages
                 AvailableProfiles = new List<string> { "Generic" };
                 SelectedProfile = "Generic";
             }        }
-          private async void OnProfileChanged()
+        private async void OnProfileChanged()
         {
             if (string.IsNullOrEmpty(_selectedProfile)) return;
             
@@ -568,9 +597,11 @@ namespace WindowsSipPhone.UI.Pages
                 if (_sipService != null)
                 {
                     var success = await _sipService.SwitchProfileAsync(_selectedProfile);
+                    
+                    // BUG-034 FIX: Use different success messages that won't trigger registration state confusion
                     if (success)
                     {
-                        StatusDetails = $"✅ Successfully switched to profile: {_selectedProfile}";
+                        StatusDetails = $"Profile successfully switched to: {_selectedProfile}";
                         
                         // If currently registered, may need to re-register with new profile settings
                         if (_isRegistered)
@@ -580,7 +611,7 @@ namespace WindowsSipPhone.UI.Pages
                     }
                     else
                     {
-                        StatusDetails = $"❌ Failed to switch to profile: {_selectedProfile}";
+                        StatusDetails = $"Failed to switch to profile: {_selectedProfile}";
                     }
                 }
                 else
@@ -595,7 +626,8 @@ namespace WindowsSipPhone.UI.Pages
             {
                 StatusDetails = $"Error switching profile: {ex.Message}";
                 LastUpdated = DateTime.Now;
-            }        }
+            }
+        }
         
         /// <summary>
         /// Auto-fills Advanced SIP settings from the selected profile configuration (IMP-017)

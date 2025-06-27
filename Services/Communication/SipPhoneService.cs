@@ -26,12 +26,16 @@ public class SipPhoneService : IDisposable
     { 
         get 
         {
+            // BUG-034 FIX: Be extra conservative - only registered if we have a client AND both layers agree
             var serviceRegistered = _isRegistered;
+            var hasClient = _sipClient != null;
             var clientRegistered = _sipClient?.IsRegistered ?? false;
             
-            // Return true if both service and client agree on registration
-            // This ensures consistency between layers
-            return serviceRegistered && clientRegistered;
+            // All three conditions must be true: service thinks it's registered, has SIP client, and client is registered
+            var result = serviceRegistered && hasClient && clientRegistered;
+            
+            Console.WriteLine($"[SIP SERVICE DEBUG] IsRegistered check: service={serviceRegistered}, hasClient={hasClient}, client={clientRegistered} => result={result}");
+            return result;
         }
     }
     public string ServerAddress => _serverAddress;
@@ -44,11 +48,14 @@ public class SipPhoneService : IDisposable
     
     public SipPhoneService()
     {
-        Console.WriteLine("SIP Phone Service initialized");
+        Console.WriteLine("[SIP PHONE SERVICE] SIP Phone Service initializing...");
+        Console.WriteLine($"[SIP PHONE SERVICE] Initial _isRegistered: {_isRegistered}");
+        Console.WriteLine($"[SIP PHONE SERVICE] Initial _sipClient: {(_sipClient == null ? "null" : "exists")}");
         
         // IMP-016: Initialize Enhanced Profile Manager
         _profileManager = new EnhancedProfileManager();
         Console.WriteLine("[SIP PHONE SERVICE] Enhanced Profile Manager initialized");
+        Console.WriteLine($"[SIP PHONE SERVICE] Service IsRegistered property: {IsRegistered}");
     }
     
     /// <summary>
@@ -78,7 +85,8 @@ public class SipPhoneService : IDisposable
             
             _profileManager.LoadProfile(profileName);
             _currentProfileName = profileName;
-            StatusChanged?.Invoke(this, $"✅ Profile switched to: {profileName}");
+            // BUG-034 FIX: Use different success message that won't trigger registration state confusion
+            StatusChanged?.Invoke(this, $"Profile switched to: {profileName}");
             
             // If we have an active SIP client, integrate the profile manager
             if (_sipClient != null)

@@ -37,13 +37,17 @@ namespace WindowsSipPhone.UI.Pages
 
         // Reference to PasswordBox control
         private PasswordBox PasswordBoxRef;        public SipSettingsPage()
-        {            InitializeComponent();
+        {            
+            InitializeComponent();
             DataContext = this;
             // Assign PasswordBoxRef after InitializeComponent
             PasswordBoxRef = (PasswordBox)this.FindName("PasswordBox");
             InitializeProfiles(); // Initialize profile system
             InitializeCommands();
             LoadSettings();
+            
+            // BUG-034 FIX: Ensure proper registration state initialization
+            InitializeRegistrationState();
         }        public SipPhoneService? SipService 
         { 
             get => _sipService;
@@ -53,6 +57,9 @@ namespace WindowsSipPhone.UI.Pages
                 if (_sipService != null)
                 {
                     _sipService.StatusChanged += OnSipStatusChanged;
+                    
+                    // BUG-034 FIX: Always update registration status when service is set
+                    Console.WriteLine($"[BUG-034 DEBUG] SipService set - updating registration status");
                     UpdateRegistrationStatus();
                       // Sync profile selection with SIP service
                     if (_sipService.ProfileManager != null)
@@ -61,6 +68,16 @@ namespace WindowsSipPhone.UI.Pages
                         AvailableProfiles = serviceProfiles.ToList();
                         SelectedProfile = _sipService.CurrentProfileName;
                     }
+                }
+                else
+                {
+                    // BUG-034 FIX: If service is removed, reset to unregistered state
+                    Console.WriteLine($"[BUG-034 DEBUG] SipService set to null - resetting registration state");
+                    _isRegistered = false;
+                    RegistrationStatus = "Not Registered";
+                    StatusDetails = "SIP service not available";
+                    LastUpdated = DateTime.Now;
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
@@ -257,14 +274,29 @@ namespace WindowsSipPhone.UI.Pages
 
         private bool CanRegister()
         {
-            return !string.IsNullOrWhiteSpace(Username) && 
-                   !string.IsNullOrWhiteSpace(ServerHost) && 
-                   !string.IsNullOrWhiteSpace(ServerPort) &&
-                   !_isRegistered;
+            var canRegister = !string.IsNullOrWhiteSpace(Username) && 
+                              !string.IsNullOrWhiteSpace(ServerHost) && 
+                              !string.IsNullOrWhiteSpace(ServerPort) &&
+                              !_isRegistered;
+            
+            // BUG-034 DEBUG: Log button state evaluation
+            if (Console.Out != null)
+            {
+                Console.WriteLine($"[BUG-034 DEBUG] CanRegister() = {canRegister} " +
+                                $"(Username: '{Username}', Host: '{ServerHost}', Port: '{ServerPort}', _isRegistered: {_isRegistered})");
+            }
+            
+            return canRegister;
         }
 
         private bool CanUnregister()
         {
+            // BUG-034 DEBUG: Log button state evaluation
+            if (Console.Out != null)
+            {
+                Console.WriteLine($"[BUG-034 DEBUG] CanUnregister() = {_isRegistered}");
+            }
+            
             return _isRegistered;
         }
 
@@ -425,7 +457,27 @@ namespace WindowsSipPhone.UI.Pages
                 RegistrationStatus = _isRegistered ? "Registered" : "Not Registered";
                 StatusDetails = _isRegistered ? $"Connected to {_sipService.ServerAddress}" : "Ready to register";
                 LastUpdated = DateTime.Now;
+                
+                // BUG-034 FIX: Force command re-evaluation to update button states
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
+        }
+
+        /// <summary>
+        /// BUG-034 FIX: Initialize registration state to ensure UI starts in correct state
+        /// </summary>
+        private void InitializeRegistrationState()
+        {
+            // Ensure we start in unregistered state
+            _isRegistered = false;
+            RegistrationStatus = "Not Registered";
+            StatusDetails = "Configure settings and click Register to connect";
+            LastUpdated = DateTime.Now;
+            
+            // Force initial command evaluation to set correct button states
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            
+            Console.WriteLine($"[BUG-034 DEBUG] Initial registration state set: _isRegistered={_isRegistered}, Status='{RegistrationStatus}'");
         }
 
         #endregion

@@ -2,11 +2,6 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using WindowsSipPhone.SipCore;
-using WindowsSipPhone.Core.Managers;
-using WindowsSipPhone.Core.Interfaces;
-using WindowsSipPhone.Core.Models;
-using WindowsSipPhone.Core.Protocol;
-using WindowsSipPhone.Core.Validation;
 
 namespace WindowsSipPhone
 {
@@ -23,18 +18,10 @@ namespace WindowsSipPhone
         private readonly string _username;
         private readonly string _password;
         private readonly string _userAgent;
-        
-        // IMP-016: Enhanced Profile Management
-        private EnhancedProfileManager? _profileManager;
-        private ISipProfileHandler? _currentProfileHandler;
-        private SipProfileConfiguration? _currentProfileConfig;
           // JSIP-style components
         private WindowsSipPhone.SipCore.DialogManager _dialogManager;
         private WindowsSipPhone.SipCore.RegistrationManager _registrationManager;
         private WindowsSipPhone.SipCore.SipMessageFactory _messageFactory;
-          // RFC 3261 Enhanced Components
-        private EnhancedSipMessageFactory? _enhancedMessageFactory;
-        private Rfc3261Validator? _rfc3261Validator;
         
         // Legacy fields for backward compatibility
         private int _sequenceNumber = 1;
@@ -89,14 +76,10 @@ namespace WindowsSipPhone
             _dialogManager = new DialogManager();
             _registrationManager = new RegistrationManager(_messageFactory, SendMessageAsync);
             
-            // Initialize RFC 3261 Enhanced Components
-            _enhancedMessageFactory = new EnhancedSipMessageFactory(_localIp, _username);
-            _rfc3261Validator = new Rfc3261Validator();
-            
             // Wire up events
             _dialogManager.DialogStateChanged += OnDialogStateChanged;
             _registrationManager.RegistrationStatusChanged += OnRegistrationStatusChanged;
-            _registrationManager.AuthenticationRequired += OnAuthenticationRequired;_localIp = GetLocalIPAddress();
+            _registrationManager.AuthenticationRequired += OnAuthenticationRequired;            _localIp = GetLocalIPAddress();
             
             // Initialize bidirectional SIP transport
             _sipTransport = new SipTransport(_localIp, _serverPort);
@@ -138,59 +121,11 @@ namespace WindowsSipPhone
                 MessageReceived?.Invoke(this, $"INCOMING (Transport):\n{message}");
                 _ = Task.Run(async () => await ProcessIncomingMessage(message));
             };
-            _sipTransport.TransportError += (sender, error) => StatusChanged?.Invoke(this, $"Transport Error: {error}");            
+            _sipTransport.TransportError += (sender, error) => StatusChanged?.Invoke(this, $"Transport Error: {error}");
+            
             // Initialize audio manager for RTP streaming
             _audioManager = new RtpAudioManager();
-        }
-        
-        /// <summary>
-        /// IMP-016: Set the Enhanced Profile Manager for provider-specific SIP handling
-        /// </summary>
-        /// <param name="profileManager">The enhanced profile manager instance</param>
-        public void SetProfileManager(EnhancedProfileManager profileManager)
-        {
-            _profileManager = profileManager;
-            _profileManager.SetSipClient(this);
-            _profileManager.ProfileChanged += OnProfileChanged;
-            
-            // Set current profile handler and config if available
-            _currentProfileHandler = _profileManager.CurrentHandler;
-            _currentProfileConfig = _profileManager.CurrentConfig;
-            
-            StatusChanged?.Invoke(this, "✅ Enhanced Profile Manager integrated");
-            Console.WriteLine($"[PROFILE MANAGER] Integrated EnhancedProfileManager with SimpleSipClient");
-        }
-        
-        /// <summary>
-        /// IMP-016: Handle profile changes at runtime
-        /// </summary>
-        private void OnProfileChanged(object? sender, string profileName)
-        {
-            if (_profileManager != null)
-            {
-                _currentProfileHandler = _profileManager.CurrentHandler;
-                _currentProfileConfig = _profileManager.CurrentConfig;
-                
-                StatusChanged?.Invoke(this, $"📋 Profile switched to: {profileName}");
-                Console.WriteLine($"[PROFILE MANAGER] Profile changed to: {profileName}");
-                
-                // Update SIP message factory with new profile configuration if available
-                if (_currentProfileConfig != null && _messageFactory != null)
-                {
-                    // TODO: Update message factory with profile-specific settings
-                    Console.WriteLine($"[PROFILE MANAGER] Updated message factory with profile settings");
-                }
-            }
-        }
-          /// <summary>
-        /// IMP-016: Get current profile name for debugging/display
-        /// </summary>
-        public string GetCurrentProfileName()
-        {
-            return _currentProfileConfig?.Name ?? "Unknown";
-        }
-
-        public async Task<bool> ConnectAsync()
+        }        public async Task<bool> ConnectAsync()
         {
             try
             {
@@ -243,9 +178,6 @@ namespace WindowsSipPhone
             }            try
             {
                 StatusChanged?.Invoke(this, "🔄 Starting SIP registration...");
-                Console.WriteLine($"[REGISTER DEBUG] Registration CallID: {_callId}, FromTag: {_fromTag}");
-                Console.WriteLine($"[REGISTER DEBUG] Server: {_serverHost}:{_serverPort}, User: {_username}");
-                Console.WriteLine($"[REGISTER DEBUG] Registration Expires: {expires} seconds");
                 
                 // Store expires value for refresh timer
                 _registrationExpiry = expires;
@@ -256,7 +188,6 @@ namespace WindowsSipPhone
                 // Send initial REGISTER request using working legacy method
                 var registerMessage = CreateRegisterMessage(expires);
                 StatusChanged?.Invoke(this, "📤 Sending REGISTER request...");
-                Console.WriteLine($"[REGISTER DEBUG] REGISTER message length: {registerMessage.Length} bytes");
                 MessageReceived?.Invoke(this, $"OUTGOING (REGISTER):\n{registerMessage}");
 
                 var messageBytes = Encoding.UTF8.GetBytes(registerMessage);
@@ -385,7 +316,7 @@ namespace WindowsSipPhone
                 var dialog = _dialogManager.FindDialogByCallId(_activeCallId);                if (dialog != null)
                 {
                     StatusChanged?.Invoke(this, $"🔄 Terminating dialog: {dialog.CallId}");
-                    Console.WriteLine($"[DIALOG DEBUG] Dialog state - RemoteTarget: '{dialog.RemoteTarget}', RemoteTag: '{dialog.RemoteTag}', RemoteUri: '{dialog.RemoteUri}'");
+
                     
                     // Create BYE message using message factory
                     var byeMessage = _messageFactory.CreateByeRequest(dialog, dialog.GetNextLocalSequenceNumber());
@@ -833,55 +764,6 @@ namespace WindowsSipPhone
                 var statusLine = lines[0].Trim();
                 StatusChanged?.Invoke(this, $"📨 Processing SIP message");
                 
-                // IMP-016: Apply provider-specific preprocessing if profile handler is available
-                string processedMessage = actualSipMessage;
-                if (_currentProfileHandler != null)
-                {
-                    try
-                    {
-                        processedMessage = _currentProfileHandler.PreprocessIncomingMessage(actualSipMessage);
-                        if (processedMessage != actualSipMessage)
-                        {
-                            Console.WriteLine($"[PROFILE HANDLER] {GetCurrentProfileName()}: Preprocessed incoming message");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[PROFILE HANDLER] {GetCurrentProfileName()}: Preprocessing failed: {ex.Message}");
-                        // Continue with original message if preprocessing fails
-                    }
-                }
-                
-                actualSipMessage = processedMessage;
-                  // Validate incoming message for RFC 3261 compliance
-                try
-                {
-                    if (_rfc3261Validator != null)
-                    {
-                        var validationResult = _rfc3261Validator.ValidateMessage(actualSipMessage);
-                        if (validationResult.HasCriticalErrors)
-                        {
-                            StatusChanged?.Invoke(this, "⚠️ Incoming message has RFC 3261 compliance issues:");
-                            foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical).Take(3)) // Limit to first 3 errors
-                            {
-                                Console.WriteLine($"[RFC 3261 CRITICAL] {error.Message}");
-                            }
-                        }
-                        
-                        if (validationResult.Errors.Any(e => e.Severity == ValidationSeverity.Warning))
-                        {
-                            foreach (var warning in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Warning).Take(2)) // Limit warnings
-                            {
-                                Console.WriteLine($"[RFC 3261 WARNING] {warning.Message}");
-                            }
-                        }
-                    }
-                }
-                catch (Exception validationEx)
-                {
-                    Console.WriteLine($"[RFC 3261 VALIDATION] Error validating incoming message: {validationEx.Message}");
-                }
-                
                 // Extract common headers for dialog management
                 var callId = ExtractHeader(actualSipMessage, "Call-ID:");
                 var fromHeader = ExtractHeader(actualSipMessage, "From:");
@@ -948,55 +830,30 @@ namespace WindowsSipPhone
               // Find dialog for response
             var dialog = _dialogManager.FindDialog(callId, fromHeader, toHeader);
             
-            Console.WriteLine($"[DIALOG DEBUG] ==========================================");
-            Console.WriteLine($"[DIALOG DEBUG] Dialog lookup for response:");
-            Console.WriteLine($"[DIALOG DEBUG] - Call ID: '{callId}'");
-            Console.WriteLine($"[DIALOG DEBUG] - From Header: '{fromHeader}'");
-            Console.WriteLine($"[DIALOG DEBUG] - To Header: '{toHeader}'");
-            Console.WriteLine($"[DIALOG DEBUG] - Dialog found? {dialog != null}");
-            if (dialog != null)
+            if (dialog == null)
             {
-                Console.WriteLine($"[DIALOG DEBUG] - Dialog Local Tag: '{dialog.LocalTag}'");
-                Console.WriteLine($"[DIALOG DEBUG] - Dialog Remote Tag: '{dialog.RemoteTag}'");
-            }
-            else
-            {
-                Console.WriteLine($"[DIALOG DEBUG] *** NO DIALOG FOUND - CHECKING BY CALL ID ***");
                 var dialogByCallId = _dialogManager.FindDialogByCallId(callId);
-                Console.WriteLine($"[DIALOG DEBUG] - Dialog by Call ID? {dialogByCallId != null}");
                 if (dialogByCallId != null)
                 {
-                    Console.WriteLine($"[DIALOG DEBUG] - Found dialog via Call ID - Local Tag: '{dialogByCallId.LocalTag}'");
-                    Console.WriteLine($"[DIALOG DEBUG] - Found dialog via Call ID - Remote Tag: '{dialogByCallId.RemoteTag}'");
-                    Console.WriteLine($"[DIALOG DEBUG] - *** USING DIALOG FROM CALL ID LOOKUP ***");
+
                     dialog = dialogByCallId;
                 }
             }
-            Console.WriteLine($"[DIALOG DEBUG] ==========================================");            // Handle registration responses with legacy method (working version)
+            
+            // Handle registration responses with legacy method (working version)
             if (cseqHeader.ToUpper().Contains("REGISTER"))
             {
-                Console.WriteLine($"[REGISTER DEBUG] Processing REGISTER response - Status: {statusCode} {reasonPhrase}");
-                Console.WriteLine($"[REGISTER DEBUG] CSeq Header: '{cseqHeader}'");
-                Console.WriteLine($"[REGISTER DEBUG] Current _isRegistered: {_isRegistered}");
-                Console.WriteLine($"[REGISTER DEBUG] _registrationCompletion null? {_registrationCompletion == null}");
-                
                 switch (statusCode)
                 {
                     case "200":
                         StatusChanged?.Invoke(this, "✅ Registration successful");
                         _isRegistered = true;
-                        Console.WriteLine($"[REGISTER DEBUG] After setting _isRegistered: {_isRegistered}");
                         
                         if (_registrationCompletion != null)
                         {
-                            Console.WriteLine("[REGISTER DEBUG] Calling _registrationCompletion.SetResult(true)");
                             _registrationCompletion.SetResult(true);
-                            Console.WriteLine("[REGISTER DEBUG] _registrationCompletion.SetResult(true) completed");
                         }
-                        else
-                        {
-                            Console.WriteLine("[REGISTER DEBUG] _registrationCompletion is null - cannot complete registration task");
-                        }
+
                         break;
                         
                     case "401":
@@ -1581,9 +1438,6 @@ namespace WindowsSipPhone
                 _pendingIncomingCSeq = cseqHeader;
                 _pendingIncomingSdp = ExtractSdpContent(inviteMessage);
                 _pendingIncomingInvite = inviteMessage;
-                
-                Console.WriteLine($"[INVITE DEBUG] ✅ Stored pending incoming INVITE, length: {_pendingIncomingInvite?.Length ?? 0}");
-                Console.WriteLine($"[INVITE DEBUG] CallId: {callId}, From: {fromHeader.Substring(0, Math.Min(50, fromHeader.Length))}...");
                   // Send 180 Ringing response using message factory
                 var ringingResponse = _messageFactory.Create180RingingResponse(inviteMessage, dialog.LocalTag ?? GenerateTag());
                 
@@ -1642,7 +1496,7 @@ namespace WindowsSipPhone
                 
                 // Send 200 OK response using message factory
                 var okResponse = _messageFactory.CreateResponse(200, "OK", 
-                    callId, dialog?.LocalTag ?? GenerateTag(), dialog?.RemoteTag ?? "", 
+                    callId, dialog?.LocalTag ?? "", dialog?.RemoteTag ?? "", 
                     via, from, to, cseq);
                 
                 await SendMessageAsync(okResponse);
@@ -1690,7 +1544,7 @@ namespace WindowsSipPhone
                               $"{sdpAnswer}";
                   StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call");
                 MessageReceived?.Invoke(this, $"OUTGOING (Call Answer):\n{response}");
-
+                
                 // FIXED: Use SipTransport to send response back to incoming connection
                 if (_sipTransport != null)
                 {
@@ -1747,72 +1601,23 @@ namespace WindowsSipPhone
                 
                 // Create our SDP answer
                 var sdpAnswer = SdpManager.CreateSdpOffer(localIp, rtpPort);
-                  // ENHANCED: Create 200 OK response with comprehensive error handling
+                  // FIXED: Create 200 OK response using the proper factory method that parses headers from original INVITE
+                // This ensures headers have their proper prefixes (Via:, From:, To:, CSeq:)
                 if (!string.IsNullOrEmpty(_pendingIncomingInvite))
                 {
                     Console.WriteLine($"[200 OK DEBUG] Creating 200 OK response for call {callId}");
-                    Console.WriteLine($"[200 OK DEBUG] _pendingIncomingInvite length: {_pendingIncomingInvite.Length}");
+                    var okResponse = _messageFactory.Create200OkResponse(_pendingIncomingInvite, sdpAnswer, dialog?.LocalTag ?? GenerateTag());
                     
-                    var localTag = dialog?.LocalTag ?? GenerateTag();
-                    Console.WriteLine($"[200 OK DEBUG] Using local tag: {localTag}");
+                    Console.WriteLine($"[200 OK DEBUG] Generated 200 OK response:\n{okResponse}");
+                    StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call (JSIP)");
                     
-                    try
-                    {
-                        var okResponse = _messageFactory.Create200OkResponse(_pendingIncomingInvite, sdpAnswer, localTag);
-                        
-                        if (string.IsNullOrEmpty(okResponse))
-                        {
-                            Console.WriteLine($"[200 OK DEBUG] ❌ ERROR: Message factory returned null/empty response");
-                            StatusChanged?.Invoke(this, "❌ Error: Failed to generate 200 OK response");
-                            return;
-                        }
-                        
-                        Console.WriteLine($"[200 OK DEBUG] ✅ 200 OK response generated successfully, length: {okResponse.Length}");
-                        Console.WriteLine($"[200 OK DEBUG] Generated 200 OK response:\n{okResponse}");
-                        StatusChanged?.Invoke(this, "📤 Sending 200 OK response to incoming call (JSIP)");
-                        
-                        try
-                        {
-                            await SendMessageAsync(okResponse);
-                            Console.WriteLine($"[200 OK DEBUG] ✅ 200 OK response sent successfully");
-                        }
-                        catch (Exception sendEx)
-                        {
-                            Console.WriteLine($"[200 OK DEBUG] ❌ SEND ERROR: {sendEx.Message}");
-                            Console.WriteLine($"[200 OK DEBUG] Send stack trace: {sendEx.StackTrace}");
-                            StatusChanged?.Invoke(this, $"❌ Error sending 200 OK: {sendEx.Message}");
-                            throw;
-                        }
-                    }
-                    catch (Exception factoryEx)
-                    {
-                        Console.WriteLine($"[200 OK DEBUG] ❌ FACTORY ERROR: {factoryEx.Message}");
-                        Console.WriteLine($"[200 OK DEBUG] Factory stack trace: {factoryEx.StackTrace}");
-                        StatusChanged?.Invoke(this, $"❌ Error creating 200 OK response: {factoryEx.Message}");
-                        throw;
-                    }
+                    await SendMessageAsync(okResponse);
+                    Console.WriteLine($"[200 OK DEBUG] 200 OK response sent successfully");
                 }
                 else
                 {
-                    Console.WriteLine($"[200 OK DEBUG] ❌ CRITICAL ERROR: _pendingIncomingInvite is null or empty");
-                    Console.WriteLine($"[200 OK DEBUG] CallId: {callId}, Via: {via}");
-                    Console.WriteLine($"[200 OK DEBUG] From: {from}, To: {to}, CSeq: {cseq}");
+                    Console.WriteLine($"[200 OK DEBUG] ERROR: Original INVITE message not stored");
                     StatusChanged?.Invoke(this, "❌ Error: Original INVITE message not stored, cannot create proper 200 OK response");
-                    
-                    // FALLBACK: Try to create response using legacy method with available parameters
-                    Console.WriteLine($"[200 OK DEBUG] Attempting fallback 200 OK creation with available parameters");
-                    try
-                    {
-                        await SendIncomingCallResponse(callId, via, from, to, cseq, remoteSdpContent);
-                        Console.WriteLine($"[200 OK DEBUG] ✅ Fallback 200 OK response sent successfully");
-                    }
-                    catch (Exception fallbackEx)
-                    {
-                        Console.WriteLine($"[200 OK DEBUG] ❌ FALLBACK ERROR: {fallbackEx.Message}");
-                        Console.WriteLine($"[200 OK DEBUG] Fallback stack trace: {fallbackEx.StackTrace}");
-                        StatusChanged?.Invoke(this, $"❌ All 200 OK response methods failed: {fallbackEx.Message}");
-                        throw;
-                    }
                     return;
                 }
                 
@@ -2015,8 +1820,6 @@ namespace WindowsSipPhone
         }private async Task HandleAuthenticationChallenge(string challengeMessage)        {
             try
             {
-                Console.WriteLine("[AUTH DEBUG] HandleAuthenticationChallenge called");
-                Console.WriteLine($"[AUTH DEBUG] Challenge message length: {challengeMessage.Length} bytes");
                 StatusChanged?.Invoke(this, "🔍 Parsing authentication challenge...");
                 
                 // Extract WWW-Authenticate or Proxy-Authenticate header
@@ -2026,8 +1829,6 @@ namespace WindowsSipPhone
                     StatusChanged?.Invoke(this, "❌ No authentication header found in challenge");
                     return;
                 }
-
-                Console.WriteLine($"[AUTH DEBUG] Auth header: {authHeader}");
 
                 // Parse authentication parameters
                 var authParams = ParseAuthHeader(authHeader);
@@ -2050,7 +1851,7 @@ namespace WindowsSipPhone
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke(this, $"❌ Authentication failed: {ex.Message}");
+                StatusChanged?.Invoke(this, $"❌ Authentication error: {ex.Message}");
                 StatusChanged?.Invoke(this, $"Stack trace: {ex.StackTrace}");
             }
         }        
@@ -2122,10 +1923,11 @@ namespace WindowsSipPhone
                 // Build authenticated INVITE using existing dialog information
                 var authenticatedInvite = $"INVITE {inviteUri} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
-                   $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +                   $"To: <sip:{_currentTargetNumber}@{_serverHost}>\r\n" +
+                   $"From: <sip:{_username}@{localIp}>;tag={dialog.LocalTag}\r\n" +
+                   $"To: <sip:{_currentTargetNumber}@{_serverHost}>\r\n" +
                    $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
-                   $"Call-ID: {_activeCallId}\r\n" +
-                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
+                   $"Call-ID: {dialog.CallId}\r\n" +
+                   $"CSeq: {dialog.LocalSequenceNumber + 1} INVITE\r\n" +
                    $"Authorization: {authHeader}\r\n" +
                    $"User-Agent: {_userAgent}\r\n" +
                    $"Max-Forwards: 70\r\n"+
@@ -2169,50 +1971,25 @@ namespace WindowsSipPhone
             return string.Empty;
         }        private string CreateRegisterMessage(int expires = 3600)
         {
-            // Use enhanced RFC 3261 compliant factory
-            try
-            {                var enhancedMessage = _enhancedMessageFactory.CreateRegisterRequest(
-                    _username, _serverHost, _serverPort, (uint)_sequenceNumber++, null, expires);
-                
-                // Validate the message for compliance
-                var validationResult = _rfc3261Validator.ValidateMessage(enhancedMessage);
-                if (validationResult.HasCriticalErrors)
-                {
-                    StatusChanged?.Invoke(this, "⚠️ RFC 3261 compliance issues detected in REGISTER message");
-                    foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
-                    {
-                        StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
-                    }
-                }
-                
-                return enhancedMessage;
-            }
-            catch (Exception ex)
-            {
-                StatusChanged?.Invoke(this, $"⚠️ Enhanced factory failed, falling back to legacy: {ex.Message}");
-                
-                // Fallback to legacy implementation if enhanced factory fails
-                var sipUri = $"sip:{_serverHost}:{_serverPort}";
-                var userUri = $"sip:{_username}@{_serverHost}";
-                var contactUri = $"sip:{_username}@{_localIp}:5060";
-                var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
-                
-                var message = $"REGISTER {sipUri} SIP/2.0\r\n" +
-                             $"Via: SIP/2.0/TCP {_localIp}:5060;branch={branch}\r\n" +
-                             $"From: <{userUri}>;tag={_fromTag}\r\n" +
-                             $"To: <{userUri}>\r\n" +
-                             $"Contact: <{contactUri}>\r\n" +
-                             $"Call-ID: {_callId}\r\n" +
-                             $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
-                             $"User-Agent: {_userAgent}\r\n" +
-                             $"Max-Forwards: 70\r\n"+
-                             $"Expires: {expires}\r\n" +
-                             $"Content-Length: 0\r\n" +
-                             $"\r\n";
-                             
-                return message;
-            }
-        }private string CreateAuthenticatedRegisterMessage(Dictionary<string, string> authParams)
+            var sipUri = $"sip:{_serverHost}:{_serverPort}";
+            var userUri = $"sip:{_username}@{_serverHost}";
+            var contactUri = $"sip:{_username}@{_localIp}:5060";
+            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
+            
+            var message = $"REGISTER {sipUri} SIP/2.0\r\n" +
+                         $"Via: SIP/2.0/TCP {_localIp}:5060;branch={branch}\r\n" +
+                         $"From: <{userUri}>;tag={_fromTag}\r\n" +
+                         $"To: <{userUri}>\r\n" +                         $"Contact: <{contactUri}>\r\n" +
+                         $"Call-ID: {_callId}\r\n" +
+                         $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
+                         $"User-Agent: {_userAgent}\r\n" +
+                         $"Max-Forwards: 70\r\n"+
+                         $"Expires: {expires}\r\n" +
+                         $"Content-Length: 0\r\n" +
+                         $"\r\n";
+                         
+            return message;
+        }        private string CreateAuthenticatedRegisterMessage(Dictionary<string, string> authParams)
         {
             var sipUri = $"sip:{_serverHost}:{_serverPort}";
             var userUri = $"sip:{_username}@{_serverHost}";
@@ -2230,7 +2007,7 @@ namespace WindowsSipPhone
                          $"Call-ID: {_callId}\r\n" +                         $"CSeq: {_sequenceNumber++} REGISTER\r\n" +
                          $"Authorization: {authHeader}\r\n" +
                          $"User-Agent: {_userAgent}\r\n" +
-                         $"Max-Forwards: 70\r\n" +
+                         $"Max-Forwards: 70\r\n"+
                          $"Expires: {_registrationExpiry}\r\n" +
                          $"Content-Length: 0\r\n" +
                          $"\r\n";
@@ -2305,63 +2082,30 @@ namespace WindowsSipPhone
             var localIp = GetLocalIPAddress();
             var newCallId = Guid.NewGuid().ToString().Replace("-", "");
             _activeCallId = newCallId; // Store the active call ID for later BYE message
+            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
             
-            // CRITICAL FIX: Prepare RTP socket early to get valid port for SDP offer
+            // CRITICAL FIX: Prepare RTP socket to get valid port for SDP offer
             var rtpPort = 5004; // Default fallback port
             if (_audioManager != null)
             {
                 if (_audioManager.PrepareRtpSocket())
                 {
                     rtpPort = _audioManager.LocalRtpPort;
-                    Console.WriteLine($"[INVITE DEBUG] ✅ RTP socket prepared, using port: {rtpPort}");
+                    Console.WriteLine($"[LEGACY INVITE DEBUG] ✅ RTP socket prepared, using port: {rtpPort}");
                 }
                 else
                 {
-                    Console.WriteLine($"[INVITE DEBUG] ⚠️ Failed to prepare RTP socket, using fallback port: {rtpPort}");
+                    Console.WriteLine($"[LEGACY INVITE DEBUG] ⚠️ Failed to prepare RTP socket, using fallback port: {rtpPort}");
                 }
             }
             
             // Create SDP offer for audio negotiation
             var sdpContent = SdpManager.CreateSdpOffer(localIp, rtpPort);
-            
-            // Try to use enhanced RFC 3261 compliant factory
-            try
-            {
-                if (_enhancedMessageFactory != null && _rfc3261Validator != null)
-                {
-                    // Use enhanced message factory
-                    var enhancedMessage = _enhancedMessageFactory.CreateInviteRequest(
-                        _username, targetNumber, _serverHost, _serverPort, 
-                        (uint)_sequenceNumber++, newCallId, GenerateTag(), sdpContent);
-                    
-                    // Validate the message for compliance
-                    var validationResult = _rfc3261Validator.ValidateMessage(enhancedMessage);
-                    if (validationResult.HasCriticalErrors)
-                    {
-                        StatusChanged?.Invoke(this, "⚠️ RFC 3261 compliance issues detected in INVITE message");
-                        foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
-                        {
-                            StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
-                        }
-                    }
-                    
-                    return enhancedMessage;
-                }
-            }
-            catch (Exception ex)
-            {
-                StatusChanged?.Invoke(this, $"⚠️ Enhanced factory failed, falling back to legacy: {ex.Message}");
-            }
-            
-            // Fallback to legacy implementation if enhanced factory fails or is null
-            var branch = $"z9hG4bK{Guid.NewGuid().ToString().Replace("-", "")}";
             var contentLength = SdpManager.GetSdpLength(sdpContent);
-              
-            return $"INVITE sip:{targetNumber}@{_serverHost}:{_serverPort} SIP/2.0\r\n" +
+              return $"INVITE sip:{targetNumber}@{_serverHost}:{_serverPort} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
                    $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +
-                   $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +
-                   $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
+                   $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +                   $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
                    $"Call-ID: {newCallId}\r\n" +
                    $"CSeq: {_sequenceNumber++} INVITE\r\n" +
                    $"User-Agent: {_userAgent}\r\n" +
@@ -2370,7 +2114,7 @@ namespace WindowsSipPhone
                    $"Content-Length: {contentLength}\r\n" +
                    $"\r\n" +
                    $"{sdpContent}";
-        }private string CreateAuthenticatedInviteMessage(string targetNumber, Dictionary<string, string> authParams)
+        }        private string CreateAuthenticatedInviteMessage(string targetNumber, Dictionary<string, string> authParams)
         {
             var localIp = GetLocalIPAddress();            var newCallId = Guid.NewGuid().ToString().Replace("-", "");
             _activeCallId = newCallId; // Store the active call ID for later BYE message
@@ -2398,23 +2142,19 @@ namespace WindowsSipPhone
             // Create authorization header for INVITE
             var inviteUri = $"sip:{targetNumber}@{_serverHost}:{_serverPort}";
             var authHeader = CreateAuthorizationHeader(_username, _password, "INVITE", inviteUri, authParams);
-            
-            // Build authenticated INVITE using existing dialog information
-            var authenticatedInvite = $"INVITE {inviteUri} SIP/2.0\r\n" +
+              return $"INVITE {inviteUri} SIP/2.0\r\n" +
                    $"Via: SIP/2.0/TCP {localIp}:5060;branch={branch}\r\n" +
                    $"From: <sip:{_username}@{localIp}>;tag={Guid.NewGuid().ToString().Replace("-", "")[..8]}\r\n" +
                    $"To: <sip:{targetNumber}@{_serverHost}>\r\n" +
                    $"Contact: <sip:{_username}@{localIp}:5060>\r\n"+
-                   $"Call-ID: {newCallId}\r\n" +
-                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
+                   $"Call-ID: {newCallId}\r\n" +                   $"CSeq: {_sequenceNumber++} INVITE\r\n" +
                    $"Authorization: {authHeader}\r\n" +
-                   $"User-Agent: {_userAgent}\r\n" +                   $"Max-Forwards: 70\r\n"+
+                   $"User-Agent: {_userAgent}\r\n" +
+                   $"Max-Forwards: 70\r\n"+
                    $"Content-Type: application/sdp\r\n" +
                    $"Content-Length: {contentLength}\r\n" +
                    $"\r\n" +
                    $"{sdpContent}";
-                   
-            return authenticatedInvite;
         }
 
         private string ExtractTargetNumberFromChallenge(string challengeMessage)
@@ -2608,15 +2348,9 @@ namespace WindowsSipPhone
             var nonce = challengeParams["nonce"];
             var nc = "00000001";
             var cnonce = Guid.NewGuid().ToString("N")[..8];
-            var qop = challengeParams.ContainsKey("qop") ? challengeParams["qop"] : "";            // DEBUG: Log digest calculation inputs
-            Console.WriteLine($"[DIGEST DEBUG] Username: {username}");
-            Console.WriteLine($"[DIGEST DEBUG] Password: {password}");
-            Console.WriteLine($"[DIGEST DEBUG] Realm: {realm}");
-            Console.WriteLine($"[DIGEST DEBUG] Nonce: {nonce}");
-            Console.WriteLine($"[DIGEST DEBUG] Method: {method}");
-            Console.WriteLine($"[DIGEST DEBUG] URI: {uri}");            Console.WriteLine($"[DIGEST DEBUG] QOP: '{qop}' (empty={string.IsNullOrEmpty(qop)})");
+            var qop = challengeParams.ContainsKey("qop") ? challengeParams["qop"] : "";
 
-            var response = CalculateDigestResponse(username, password, realm, nonce, method, uri, nc, cnonce, qop);            Console.WriteLine($"[DIGEST DEBUG] Calculated Response: {response}");            var authHeader = $"Digest username=\"{username}\", " +
+            var response = CalculateDigestResponse(username, password, realm, nonce, method, uri, nc, cnonce, qop);            var authHeader = $"Digest username=\"{username}\", " +
                            $"realm=\"{realm}\", " +
                            $"nonce=\"{nonce}\", " +
                            $"uri=\"{uri}\", " +
@@ -2628,8 +2362,6 @@ namespace WindowsSipPhone
                 authHeader += $", nc={nc}, cnonce=\"{cnonce}\", qop={qop}";
             }
 
-            Console.WriteLine($"[DIGEST DEBUG] Authorization Header: {authHeader}");
-
             return authHeader;
         }        private static string CalculateDigestResponse(string username, string password, string realm, 
             string nonce, string method, string uri, string nc = "00000001", string? cnonce = null, string qop = "")
@@ -2640,14 +2372,10 @@ namespace WindowsSipPhone
             }            // Calculate HA1 = MD5(username:realm:password)
             var ha1Input = $"{username}:{realm}:{password}";
             var ha1 = CalculateMD5Hash(ha1Input);
-            Console.WriteLine($"[DIGEST DEBUG] HA1 Input: {ha1Input}");
-            Console.WriteLine($"[DIGEST DEBUG] HA1: {ha1}");
 
             // Calculate HA2 = MD5(method:uri)
             var ha2Input = $"{method}:{uri}";
             var ha2 = CalculateMD5Hash(ha2Input);
-            Console.WriteLine($"[DIGEST DEBUG] HA2 Input: {ha2Input}");
-            Console.WriteLine($"[DIGEST DEBUG] HA2: {ha2}");
 
             // Calculate response
             string responseInput;
@@ -2655,18 +2383,14 @@ namespace WindowsSipPhone
             {
                 // With qop: response = MD5(HA1:nonce:nc:cnonce:qop:HA2)
                 responseInput = $"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}";
-                Console.WriteLine($"[DIGEST DEBUG] Using qop calculation: {qop}");
             }
             else
             {
                 // Without qop: response = MD5(HA1:nonce:HA2)
                 responseInput = $"{ha1}:{nonce}:{ha2}";
-                Console.WriteLine($"[DIGEST DEBUG] Using NO qop calculation");
             }
             
-            Console.WriteLine($"[DIGEST DEBUG] Response Input: {responseInput}");
             var response = CalculateMD5Hash(responseInput);
-            Console.WriteLine($"[DIGEST DEBUG] Final Response: {response}");
             
             return response;
         }
@@ -2978,9 +2702,7 @@ namespace WindowsSipPhone
                               $"To: {to}\r\n" +
                               $"Call-ID: {callId}\r\n" +
                               $"CSeq: {cseq}\r\n" +                              $"Contact: <sip:{_username}@{localIp}:5060>\r\n" +
-                              $"User-Agent: {_userAgent}\r\n" +
-                              $"Content-Length: 0\r\n"+
-                              $"\r\n";
+                              $"User-Agent: {_userAgent}\r\n";
                   // If remote sent SDP, respond with our SDP
                 if (!string.IsNullOrEmpty(remoteSdpContent) && _audioManager != null)
                 {
@@ -3139,40 +2861,12 @@ namespace WindowsSipPhone
                 // Keep timer running to retry later
             }
         }
-        #region JSIP-Style Event Handlers and Helper Methods        /// <summary>
+        #region JSIP-Style Event Handlers and Helper Methods
+          /// <summary>
         /// Sends a SIP message through the bidirectional transport layer
         /// </summary>
         private async Task SendMessageAsync(string message)
         {
-            // Validate outgoing message for RFC 3261 compliance
-            try
-            {
-                if (_rfc3261Validator != null)
-                {
-                    var validationResult = _rfc3261Validator.ValidateMessage(message);
-                    if (validationResult.HasCriticalErrors)
-                    {
-                        StatusChanged?.Invoke(this, "⚠️ Outgoing message has RFC 3261 compliance issues:");
-                        foreach (var error in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Critical))
-                        {
-                            StatusChanged?.Invoke(this, $"  Critical: {error.Message}");
-                        }
-                    }
-                    
-                    if (validationResult.Errors.Any(e => e.Severity == ValidationSeverity.Warning))
-                    {
-                        foreach (var warning in validationResult.Errors.Where(e => e.Severity == ValidationSeverity.Warning))
-                        {
-                            Console.WriteLine($"[RFC 3261 WARNING] {warning.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception validationEx)
-            {
-                Console.WriteLine($"[RFC 3261 VALIDATION] Error validating message: {validationEx.Message}");
-            }
-            
             // Try to send through SipTransport first (for bidirectional communication)
             if (_sipTransport != null)
             {                try
@@ -3308,15 +3002,7 @@ namespace WindowsSipPhone
                 
                 if (!string.IsNullOrEmpty(callId) && !string.IsNullOrEmpty(localTag))
                 {
-                    Console.WriteLine($"[DIALOG DEBUG] Updating dialog from response - CallId: {callId}, LocalTag: {localTag}, StatusCode: {statusCode}");
                     _dialogManager.UpdateDialogFromResponse(callId, localTag, statusCode, toHeader, contactHeader);
-                    
-                    // Debug: Check dialog state after update
-                    var updatedDialog = _dialogManager.FindDialog(callId, localTag);
-                    if (updatedDialog != null)
-                    {
-                        Console.WriteLine($"[DIALOG DEBUG] Dialog after update - RemoteTarget: '{updatedDialog.RemoteTarget}', RemoteTag: '{updatedDialog.RemoteTag}', RemoteUri: '{updatedDialog.RemoteUri}'");
-                    }
                 }
             }
             catch (Exception ex)

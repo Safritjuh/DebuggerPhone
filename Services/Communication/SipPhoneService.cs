@@ -1,8 +1,5 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using WindowsSipPhone.Core.Managers;
-using WindowsSipPhone.Core.Models;
 
 namespace WindowsSipPhone;
 
@@ -16,26 +13,16 @@ public class SipPhoneService : IDisposable
     private bool _isRegistered = false;
     private string _serverAddress = "";
     private string _username = "";
-    private int _port = 5060;
-    
-    // IMP-016: Enhanced Profile Management
-    private EnhancedProfileManager? _profileManager;
-    private string _currentProfileName = "Generic";
-    
-    public bool IsRegistered 
+    private int _port = 5060;    public bool IsRegistered 
     { 
         get 
         {
-            // BUG-034 FIX: Be extra conservative - only registered if we have a client AND both layers agree
             var serviceRegistered = _isRegistered;
-            var hasClient = _sipClient != null;
             var clientRegistered = _sipClient?.IsRegistered ?? false;
             
-            // All three conditions must be true: service thinks it's registered, has SIP client, and client is registered
-            var result = serviceRegistered && hasClient && clientRegistered;
-            
-            Console.WriteLine($"[SIP SERVICE DEBUG] IsRegistered check: service={serviceRegistered}, hasClient={hasClient}, client={clientRegistered} => result={result}");
-            return result;
+            // Return true if both service and client agree on registration
+            // This ensures consistency between layers
+            return serviceRegistered && clientRegistered;
         }
     }
     public string ServerAddress => _serverAddress;
@@ -48,84 +35,8 @@ public class SipPhoneService : IDisposable
     
     public SipPhoneService()
     {
-        Console.WriteLine("[SIP PHONE SERVICE] SIP Phone Service initializing...");
-        Console.WriteLine($"[SIP PHONE SERVICE] Initial _isRegistered: {_isRegistered}");
-        Console.WriteLine($"[SIP PHONE SERVICE] Initial _sipClient: {(_sipClient == null ? "null" : "exists")}");
-        
-        // IMP-016: Initialize Enhanced Profile Manager
-        _profileManager = new EnhancedProfileManager();
-        Console.WriteLine("[SIP PHONE SERVICE] Enhanced Profile Manager initialized");
-        Console.WriteLine($"[SIP PHONE SERVICE] Service IsRegistered property: {IsRegistered}");
     }
-    
-    /// <summary>
-    /// IMP-016: Get the current profile manager instance
-    /// </summary>
-    public EnhancedProfileManager? ProfileManager => _profileManager;
-    
-    /// <summary>
-    /// IMP-016: Get the current profile name
-    /// </summary>
-    public string CurrentProfileName => _currentProfileName;
-    
-    /// <summary>
-    /// IMP-016: Switch to a different profile by name
-    /// </summary>
-    /// <param name="profileName">The name of the profile to switch to</param>
-    /// <returns>True if profile was successfully switched</returns>
-    public Task<bool> SwitchProfileAsync(string profileName)
-    {        if (_profileManager == null)
-        {
-            StatusChanged?.Invoke(this, "❌ Profile manager not initialized");
-            return Task.FromResult(false);
-        }
-        
-        try
-        {            StatusChanged?.Invoke(this, $"🔄 Switching to profile: {profileName}");
-            
-            _profileManager.LoadProfile(profileName);
-            _currentProfileName = profileName;
-            // BUG-034 FIX: Use different success message that won't trigger registration state confusion
-            StatusChanged?.Invoke(this, $"Profile switched to: {profileName}");
-            
-            // If we have an active SIP client, integrate the profile manager
-            if (_sipClient != null)
-            {
-                _sipClient.SetProfileManager(_profileManager);
-                StatusChanged?.Invoke(this, $"🔗 Profile manager integrated with SIP client");
-            }
-            
-            return Task.FromResult(true);
-        }
-        catch (Exception ex)
-        {
-            StatusChanged?.Invoke(this, $"❌ Error switching profile: {ex.Message}");
-            return Task.FromResult(false);
-        }
-    }
-    
-    /// <summary>
-    /// IMP-016: Get list of available profiles
-    /// </summary>
-    /// <returns>Array of available profile names</returns>
-    public string[] GetAvailableProfiles()
-    {
-        if (_profileManager == null)
-        {
-            return new[] { "Generic" }; // Fallback
-        }
-        
-        try
-        {
-            return _profileManager.GetAvailableProfiles().ToArray();
-        }
-        catch
-        {
-            return new[] { "Generic" }; // Fallback
-        }
-    }
-    
-    public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
+      public async Task RegisterAsync(string username, string password, string server, int port, string userAgent = "Windows-SIP-Phone/2.0", int expires = 300)
     {
         // Use default profile for backward compatibility
         var defaultProfile = WindowsSipPhone.Core.Models.SipProfile.GetDefaultProfile();
@@ -278,26 +189,19 @@ public class SipPhoneService : IDisposable
     }
       public async Task AcceptIncomingCallAsync()
     {
-        Console.WriteLine($"[SIP SERVICE DEBUG] AcceptIncomingCallAsync called");
-        
         if (_sipClient == null || !_isRegistered)
         {
-            Console.WriteLine($"[SIP SERVICE DEBUG] Cannot accept call - client: {_sipClient != null}, registered: {_isRegistered}");
             StatusChanged?.Invoke(this, "Not registered - cannot accept call");
             return;
         }
         
         try
         {
-            Console.WriteLine($"[SIP SERVICE DEBUG] Accepting incoming call through SIP client");
             StatusChanged?.Invoke(this, "Accepting incoming call...");
             await _sipClient.AcceptIncomingCallAsync();
-            Console.WriteLine($"[SIP SERVICE DEBUG] SIP client AcceptIncomingCallAsync completed");
             CallStateChanged?.Invoke(this, "Call accepted");        }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SIP SERVICE DEBUG] Exception in AcceptIncomingCallAsync: {ex.Message}");
-            Console.WriteLine($"[SIP SERVICE DEBUG] Stack trace: {ex.StackTrace}");
             StatusChanged?.Invoke(this, $"Failed to accept call: {ex.Message}");
             CallStateChanged?.Invoke(this, "Call accept failed");
         }
@@ -339,12 +243,10 @@ public class SipPhoneService : IDisposable
         try
         {
             StatusChanged?.Invoke(this, "Placing call on hold...");
-            Console.WriteLine("[SIP SERVICE] HoldCallAsync: Initiating call hold");
             
             // First pause the RTP audio streams
             if (_sipClient.AudioManager != null)
             {
-                Console.WriteLine("[SIP SERVICE] HoldCallAsync: Pausing RTP streams");
                 _sipClient.AudioManager.PauseRtpStreams();
             }
             
@@ -355,7 +257,7 @@ public class SipPhoneService : IDisposable
             {
                 StatusChanged?.Invoke(this, "Call placed on hold successfully");
                 CallStateChanged?.Invoke(this, "Call on hold");
-                Console.WriteLine("[SIP SERVICE] HoldCallAsync: ✅ Call hold successful");
+                Console.WriteLine("[HOLD DEBUG] Hold successful");
                 return true;
             }
             else
@@ -363,17 +265,16 @@ public class SipPhoneService : IDisposable
                 // If SIP hold failed, resume audio streams
                 if (_sipClient.AudioManager != null)
                 {
-                    Console.WriteLine("[SIP SERVICE] HoldCallAsync: Hold failed, resuming audio streams");
                     await _sipClient.AudioManager.ResumeRtpStreams();
                 }
                 StatusChanged?.Invoke(this, "Failed to place call on hold");
-                Console.WriteLine("[SIP SERVICE] HoldCallAsync: ❌ Call hold failed");
+                Console.WriteLine("[HOLD DEBUG] Hold failed");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SIP SERVICE] HoldCallAsync exception: {ex.Message}");
+            Console.WriteLine($"[HOLD DEBUG] Hold error: {ex.Message}");
             StatusChanged?.Invoke(this, $"Hold call error: {ex.Message}");
             
             // On exception, try to resume audio streams
@@ -386,7 +287,7 @@ public class SipPhoneService : IDisposable
             }
             catch (Exception resumeEx)
             {
-                Console.WriteLine($"[SIP SERVICE] HoldCallAsync: Failed to resume after error: {resumeEx.Message}");
+                Console.WriteLine($"[HOLD DEBUG] Failed to resume after hold error: {resumeEx.Message}");
             }
             
             return false;
@@ -409,7 +310,6 @@ public class SipPhoneService : IDisposable
         try
         {
             StatusChanged?.Invoke(this, "Resuming call from hold...");
-            Console.WriteLine("[SIP SERVICE] ResumeCallAsync: Initiating call resume");
             
             // Send SIP re-INVITE with active SDP to resume media
             bool resumeResult = await _sipClient.ResumeCallAsync();
@@ -419,20 +319,19 @@ public class SipPhoneService : IDisposable
                 // Resume RTP audio streams after successful SIP resume
                 if (_sipClient.AudioManager != null)
                 {
-                    Console.WriteLine("[SIP SERVICE] ResumeCallAsync: Resuming RTP streams");
                     bool audioResumed = await _sipClient.AudioManager.ResumeRtpStreams();
                     
                     if (audioResumed)
                     {
                         StatusChanged?.Invoke(this, "Call resumed successfully");
                         CallStateChanged?.Invoke(this, "Call active");
-                        Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ✅ Call resume successful");
+                        Console.WriteLine("[HOLD DEBUG] Resume successful");
                         return true;
                     }
                     else
                     {
                         StatusChanged?.Invoke(this, "Call resumed but audio may not be working");
-                        Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ⚠️ SIP resume OK but audio resume failed");
+                        Console.WriteLine("[HOLD DEBUG] Resume OK but audio resume failed");
                         return false;
                     }
                 }
@@ -440,20 +339,20 @@ public class SipPhoneService : IDisposable
                 {
                     StatusChanged?.Invoke(this, "Call resumed successfully");
                     CallStateChanged?.Invoke(this, "Call active");
-                    Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ✅ Call resume successful (no audio manager)");
+                    Console.WriteLine("[HOLD DEBUG] Resume successful (no audio manager)");
                     return true;
                 }
             }
             else
             {
                 StatusChanged?.Invoke(this, "Failed to resume call");
-                Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ❌ Call resume failed");
+                Console.WriteLine("[HOLD DEBUG] Resume failed");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SIP SERVICE] ResumeCallAsync exception: {ex.Message}");
+            Console.WriteLine($"[HOLD DEBUG] Resume error: {ex.Message}");
             StatusChanged?.Invoke(this, $"Resume call error: {ex.Message}");
             return false;
         }
@@ -524,7 +423,6 @@ public class SipPhoneService : IDisposable
     {
         // Audio volume control is handled by the RTP audio manager
         // This method is for future extension when volume control is implemented
-        Console.WriteLine($"[AUDIO] Volume set to: {volume:P0}");
     }
     
     public string GetConnectionStatus()

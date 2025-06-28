@@ -151,7 +151,7 @@ namespace WindowsSipPhone.UI.Windows
                 if (_sipService.RtpAudioManager != null)
                 {
                     _sipService.RtpAudioManager.ApplySettings(settings);
-                    Console.WriteLine("[MAIN WINDOW] Applied saved audio settings to RTP audio manager on startup");
+
                 }
             }
             catch (Exception ex)

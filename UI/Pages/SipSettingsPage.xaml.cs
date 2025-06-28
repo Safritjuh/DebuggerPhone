@@ -1,13 +1,12 @@
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows;
 using WindowsSipPhone.Core.Utilities;
 using WindowsSipPhone.Core.Models;
-using WindowsSipPhone.Core.Managers;
 using System.Linq;
 using System.Text;
 using WindowsSipPhone.Services.Data;
@@ -30,29 +29,27 @@ namespace WindowsSipPhone.UI.Pages
         private DateTime _lastUpdated = DateTime.Now;
         private bool _isRegistered = false;
         private SipPhoneService? _sipService;
-          // Profile Management (IMP-016)
-        private EnhancedProfileManager? _profileManager;
-        private List<string> _availableProfiles = new();
-        private string _selectedProfile = "Generic";
+        
+        // Profile system properties
+        private List<SipProfile> _availableProfiles = new();
+        private SipProfile _selectedProfile = SipProfile.GetDefaultProfile();
 
         // Reference to PasswordBox control
         private PasswordBox PasswordBoxRef;
-        
+
         public SipSettingsPage()
         {
             InitializeComponent();
             DataContext = this;
             // Assign PasswordBoxRef after InitializeComponent
             PasswordBoxRef = (PasswordBox)this.FindName("PasswordBox");
-            InitializeProfiles(); // Initialize profile system
+            InitializeProfiles();
             InitializeCommands();
             LoadSettings();
-            
-            // BUG-034 FIX: Ensure proper registration state initialization
-            InitializeRegistrationState();
         }
-          public SipPhoneService? SipService
-        {
+
+        public SipPhoneService? SipService 
+        { 
             get => _sipService;
             set
             {
@@ -60,26 +57,7 @@ namespace WindowsSipPhone.UI.Pages
                 if (_sipService != null)
                 {
                     _sipService.StatusChanged += OnSipStatusChanged;
-                    
-                    // BUG-034 FIX: Always update registration status when service is set
                     UpdateRegistrationStatus();
-                      
-                    // Sync profile selection with SIP service
-                    if (_sipService.ProfileManager != null)
-                    {
-                        var serviceProfiles = _sipService.GetAvailableProfiles();
-                        AvailableProfiles = serviceProfiles.ToList();
-                        SelectedProfile = _sipService.CurrentProfileName;
-                    }
-                }
-                else
-                {
-                    // BUG-034 FIX: If service is removed, reset to unregistered state
-                    _isRegistered = false;
-                    RegistrationStatus = "Not Registered";
-                    StatusDetails = "SIP service not available";
-                    LastUpdated = DateTime.Now;
-                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
@@ -228,7 +206,7 @@ namespace WindowsSipPhone.UI.Pages
         }
         
         // Profile System Properties
-        public List<string> AvailableProfiles
+        public List<SipProfile> AvailableProfiles
         {
             get => _availableProfiles;
             set
@@ -238,7 +216,7 @@ namespace WindowsSipPhone.UI.Pages
             }
         }
         
-        public string SelectedProfile
+        public SipProfile SelectedProfile
         {
             get => _selectedProfile;
             set
@@ -276,29 +254,14 @@ namespace WindowsSipPhone.UI.Pages
 
         private bool CanRegister()
         {
-            var canRegister = !string.IsNullOrWhiteSpace(Username) && 
-                              !string.IsNullOrWhiteSpace(ServerHost) && 
-                              !string.IsNullOrWhiteSpace(ServerPort) &&
-                              !_isRegistered;
-            
-            // BUG-034 DEBUG: Log button state evaluation
-            if (Console.Out != null)
-            {
-                Console.WriteLine($"[BUG-034 DEBUG] CanRegister() = {canRegister} " +
-                                $"(Username: '{Username}', Host: '{ServerHost}', Port: '{ServerPort}', _isRegistered: {_isRegistered})");
-            }
-            
-            return canRegister;
+            return !string.IsNullOrWhiteSpace(Username) && 
+                   !string.IsNullOrWhiteSpace(ServerHost) && 
+                   !string.IsNullOrWhiteSpace(ServerPort) &&
+                   !_isRegistered;
         }
 
         private bool CanUnregister()
         {
-            // BUG-034 DEBUG: Log button state evaluation
-            if (Console.Out != null)
-            {
-                Console.WriteLine($"[BUG-034 DEBUG] CanUnregister() = {_isRegistered}");
-            }
-            
             return _isRegistered;
         }
 
@@ -308,10 +271,12 @@ namespace WindowsSipPhone.UI.Pages
             {
                 StatusDetails = "SIP service not available";
                 return;
-            }            try
+            }
+
+            try
             {
                 RegistrationStatus = "Registering...";
-                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile}'";
+                StatusDetails = $"Connecting to {ServerHost}:{ServerPort} using profile '{SelectedProfile.Name}'";
                 LastUpdated = DateTime.Now;
 
                 var password = PasswordBoxRef.Password;
@@ -320,9 +285,7 @@ namespace WindowsSipPhone.UI.Pages
                     StatusDetails = "Password is required";
                     RegistrationStatus = "Registration Failed";
                     return;
-                }
-
-                if (!int.TryParse(ServerPort, out var port))
+                }                if (!int.TryParse(ServerPort, out var port))
                 {
                     StatusDetails = "Invalid port number";
                     RegistrationStatus = "Registration Failed";
@@ -334,17 +297,10 @@ namespace WindowsSipPhone.UI.Pages
                     StatusDetails = "Invalid registration expires value";
                     RegistrationStatus = "Registration Failed";
                     return;
-                }                // Use enhanced profile-based registration
-                var profile = WindowsSipPhone.Core.Models.SipProfile.GetPredefinedProfile(SelectedProfile);
-                if (profile == null)
-                {
-                    RegistrationStatus = "Registration Failed";
-                    StatusDetails = $"Profile '{SelectedProfile}' not found";
-                    LastUpdated = DateTime.Now;
-                    return;
                 }
-                
-                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, profile, expires);
+
+                // Use profile-based registration
+                await _sipService.RegisterWithProfileAsync(Username, password, ServerHost, port, SelectedProfile, expires);
             }
             catch (Exception ex)
             {
@@ -375,7 +331,9 @@ namespace WindowsSipPhone.UI.Pages
                 StatusDetails = $"Unregister error: {ex.Message}";
                 LastUpdated = DateTime.Now;
             }
-        }        private void SaveSettings()
+        }
+
+        private void SaveSettings()
         {
             try
             {
@@ -387,7 +345,7 @@ namespace WindowsSipPhone.UI.Pages
                     Transport = SelectedTransport,
                     RememberCredentials = true, // Could be a checkbox in UI
                     AutoRegisterOnStartup = false,
-                    SelectedProfileName = SelectedProfile
+                    SelectedProfileName = SelectedProfile.Name
                 };
                 
                 config.Save();
@@ -404,7 +362,7 @@ namespace WindowsSipPhone.UI.Pages
         private void ResetSettings()
         {
             // Reset to Generic profile (default)
-            SelectedProfile = "Generic";
+            SelectedProfile = SipProfile.GetDefaultProfile();
             
             // Reset basic settings
             Username = "103";
@@ -429,35 +387,24 @@ namespace WindowsSipPhone.UI.Pages
                 StatusDetails = status;
                 LastUpdated = DateTime.Now;
 
-                // BUG-034 FIX: Be more specific about registration success patterns 
-                // to avoid false positives from profile switching or settings save messages
-                if (status.Contains("Registration successful") || 
-                    (status.Contains("✅") && (status.Contains("Registered") || status.Contains("registration"))))
+                if (status.Contains("Registration successful") || status.Contains("✅"))
                 {
-                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected registration success: '{status}'");
                     _isRegistered = true;
                     RegistrationStatus = "Registered";
                 }
                 else if (status.Contains("Registration failed") || status.Contains("❌") || status.Contains("Authentication failed"))
                 {
-                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected registration failure: '{status}'");
                     _isRegistered = false;
                     RegistrationStatus = "Registration Failed";
                 }
                 else if (status.Contains("Unregistered") || status.Contains("Disconnected"))
                 {
-                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged detected unregistered/disconnected: '{status}'");
                     _isRegistered = false;
                     RegistrationStatus = "Not Registered";
                 }
                 else if (status.Contains("Connecting") || status.Contains("Registering"))
                 {
                     RegistrationStatus = "Connecting...";
-                }
-                else
-                {
-                    // BUG-034 FIX: Log any other status messages that don't affect registration state
-                    Console.WriteLine($"[BUG-034 FIX] OnSipStatusChanged ignoring non-registration status: '{status}', _isRegistered remains: {_isRegistered}");
                 }
             });
         }
@@ -466,53 +413,17 @@ namespace WindowsSipPhone.UI.Pages
         {
             if (_sipService != null)
             {
-                // BUG-034 FIX: Be extra careful about the service registration state
-                var serviceIsRegistered = _sipService.IsRegistered;
-                var hasClient = _sipService.SipClient != null;
-                
-                // Force UI to be conservative - only show registered if service actually has an active SIP client and is connected
-                _isRegistered = serviceIsRegistered && hasClient;
-                
-                var newStatus = _isRegistered ? "Registered" : "Not Registered";
-                var newDetails = _isRegistered ? $"Connected to {_sipService.ServerAddress}" : "Ready to register";
-                
-                RegistrationStatus = newStatus;
-                StatusDetails = newDetails;
+                _isRegistered = _sipService.IsRegistered;
+                RegistrationStatus = _isRegistered ? "Registered" : "Not Registered";
+                StatusDetails = _isRegistered ? $"Connected to {_sipService.ServerAddress}" : "Ready to register";
                 LastUpdated = DateTime.Now;
-                
-                // BUG-034 FIX: Force command re-evaluation to update button states
-                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
-            else
-            {
-                // BUG-034 FIX: If no service, definitely not registered
-                _isRegistered = false;
-                RegistrationStatus = "Not Registered";
-                StatusDetails = "SIP service not available";
-                LastUpdated = DateTime.Now;
-                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
-        /// <summary>
-        /// BUG-034 FIX: Initialize registration state to ensure UI starts in correct state
-        /// </summary>
-        private void InitializeRegistrationState()
-        {
-            // Ensure we start in unregistered state
-            _isRegistered = false;
-            RegistrationStatus = "Not Registered";
-            StatusDetails = "Configure settings and click Register to connect";
-            LastUpdated = DateTime.Now;
-            
-            // Force initial command evaluation to set correct button states
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         #endregion
 
         #region Helper Methods
-        
+
         private void LoadSettings()
         {
             try
@@ -524,10 +435,11 @@ namespace WindowsSipPhone.UI.Pages
                 ServerPort = config.ServerPort;
                 SelectedTransport = config.Transport;
                 
-                // Load selected profile name
-                SelectedProfile = config.SelectedProfileName ?? "Generic";
+                // Load selected profile
+                var selectedProfile = config.GetSelectedProfile();
+                SelectedProfile = selectedProfile;
                 
-                StatusDetails = $"Settings loaded from configuration (Profile: {SelectedProfile})";
+                StatusDetails = $"Settings loaded from configuration (Profile: {selectedProfile.Name})";
                 LastUpdated = DateTime.Now;
             }
             catch (Exception ex)
@@ -540,203 +452,111 @@ namespace WindowsSipPhone.UI.Pages
                 ServerHost = "192.168.1.180";
                 ServerPort = "5060";
                 SelectedTransport = "TCP";
-                SelectedProfile = "Generic";
-            }
-        }
+            }        }
 
         #endregion
-          #region Profile Management
+        
+        #region Profile Management
         
         private void InitializeProfiles()
         {
-            try
-            {                _profileManager = new EnhancedProfileManager();
-                AvailableProfiles = _profileManager.GetAvailableProfiles().ToList();
-                
-                // Set default profile or load from SIP service
-                if (_sipService?.ProfileManager != null)
-                {
-                    SelectedProfile = _sipService.CurrentProfileName;
-                }
-                else
-                {
-                    SelectedProfile = AvailableProfiles.FirstOrDefault() ?? "Generic";
-                }
-                
-                StatusDetails = $"Enhanced profile system initialized - {AvailableProfiles.Count} profiles available";
-                LastUpdated = DateTime.Now;
-            }
-            catch (Exception ex)
-            {
-                StatusDetails = $"Failed to initialize enhanced profiles: {ex.Message}";
-                LastUpdated = DateTime.Now;
-                
-                // Fallback to at least generic profile
-                AvailableProfiles = new List<string> { "Generic" };
-                SelectedProfile = "Generic";
-            }        }
-        private async void OnProfileChanged()
-        {
-            if (string.IsNullOrEmpty(_selectedProfile)) return;
+            // Create default INI files if they don't exist
+            SipProfile.CreateDefaultProfilesIfNeeded();
             
-            try
+            // Load predefined profiles
+            AvailableProfiles = SipProfile.GetPredefinedProfiles();
+            
+            // Load selected profile from configuration
+            var config = SipConfiguration.Load();
+            var selectedProfile = config.GetSelectedProfile();
+            SelectedProfile = selectedProfile;
+        }
+        
+        private void OnProfileChanged()
+        {
+            if (_selectedProfile != null)
             {
-                StatusDetails = $"Switching to enhanced profile: {_selectedProfile}";
+                // Update UI fields based on selected profile
+                RegistrationExpires = _selectedProfile.RegistrationExpiry.ToString();
+                UserAgent = _selectedProfile.UserAgentString;
+                SelectedTransport = _selectedProfile.Transport;
+                
+                StatusDetails = $"Profile '{_selectedProfile.Name}' selected - {_selectedProfile.Description}";
                 LastUpdated = DateTime.Now;
                 
-                // Load the profile using the enhanced profile manager
-                if (_profileManager != null)
-                {
-                    _profileManager.LoadProfile(_selectedProfile);
-                    
-                    // Auto-fill Advanced SIP settings from profile (IMP-017)
-                    AutoFillAdvancedSettingsFromProfile();
-                }
-                
-                // If we have a SIP service, switch the profile
-                if (_sipService != null)
-                {
-                    var success = await _sipService.SwitchProfileAsync(_selectedProfile);
-                    
-                    // BUG-034 FIX: Use different success messages that won't trigger registration state confusion
-                    if (success)
-                    {
-                        StatusDetails = $"Profile successfully switched to: {_selectedProfile}";
-                        
-                        // If currently registered, may need to re-register with new profile settings
-                        if (_isRegistered)
-                        {
-                            StatusDetails += " - Re-registration may be required for full effect";
-                        }
-                    }
-                    else
-                    {
-                        StatusDetails = $"Failed to switch to profile: {_selectedProfile}";
-                    }
-                }
-                else
-                {
-                    StatusDetails = $"Profile '{_selectedProfile}' selected - will be applied when connecting";
-                }
-                
-                LastUpdated = DateTime.Now;
+                // Trigger property changed for profile-dependent display values
                 OnPropertyChanged(nameof(ProfileDetails));
-            }
-            catch (Exception ex)
-            {
-                StatusDetails = $"Error switching profile: {ex.Message}";
-                LastUpdated = DateTime.Now;
             }
         }
         
         /// <summary>
-        /// Auto-fills Advanced SIP settings from the selected profile configuration (IMP-017)
-        /// Settings can still be overridden by the user after auto-fill
-        /// </summary>
-        private void AutoFillAdvancedSettingsFromProfile()
-        {
-            if (_profileManager?.CurrentConfig == null) return;
-            
-            try
-            {
-                var config = _profileManager.CurrentConfig;
-                
-                // Auto-fill Registration Expires from profile
-                if (config.RegistrationRefreshInterval > 0)
-                {
-                    RegistrationExpires = config.RegistrationRefreshInterval.ToString();
-                }
-                
-                // Auto-fill User Agent from profile
-                if (!string.IsNullOrWhiteSpace(config.CustomUserAgent))
-                {
-                    UserAgent = config.CustomUserAgent;
-                }
-                
-                // Auto-fill Transport from profile
-                if (!string.IsNullOrWhiteSpace(config.PreferredTransport))
-                {
-                    // Normalize transport value to match ComboBox options
-                    var transport = config.PreferredTransport.ToUpperInvariant();
-                    if (transport == "TCP" || transport == "UDP" || transport == "TLS")
-                    {
-                        SelectedTransport = transport;
-                    }
-                }
-                
-                // Auto-fill Server Port from profile
-                if (config.Port > 0)
-                {
-                    ServerPort = config.Port.ToString();
-                }
-                
-                // Update status to show auto-fill occurred
-                StatusDetails = $"Advanced SIP settings auto-filled from profile '{_selectedProfile}'. Settings can be customized as needed.";
-                LastUpdated = DateTime.Now;
-            }
-            catch (Exception ex)
-            {
-                StatusDetails = $"Warning: Could not auto-fill some settings from profile: {ex.Message}";
-                LastUpdated = DateTime.Now;
-            }
-        }
-          /// <summary>
-        /// Gets detailed information about the selected enhanced profile
+        /// Gets detailed information about the selected profile
         /// </summary>
         public string ProfileDetails
         {
             get
             {
-                if (_profileManager == null || string.IsNullOrEmpty(_selectedProfile)) 
-                    return "No profile selected";
-                  
-                try
+                if (_selectedProfile == null) return "";
+                
+                var details = new StringBuilder();
+                details.AppendLine($"📋 Profile: {_selectedProfile.Name}");
+                details.AppendLine($"📝 Description: {_selectedProfile.Description}");
+                details.AppendLine($"⏱️ Registration Expiry: {_selectedProfile.RegistrationExpiry}s");
+                details.AppendLine($"🚀 Transport: {_selectedProfile.Transport}");
+                details.AppendLine($"🤖 User Agent: {_selectedProfile.UserAgentString}");
+                
+                if (_selectedProfile.RequireKeepAlive)
                 {
-                    var config = _profileManager.CurrentConfig;
-                    if (config == null) return "Profile configuration not available";
-                      
-                    var details = new StringBuilder();
-                    details.AppendLine($"📋 Enhanced Profile: {config.Name}");
-                    details.AppendLine($"📝 Description: {config.Description}");
-                    details.AppendLine($"🏷️ Protocol: {config.Protocol}");
-                    details.AppendLine($"� Port: {config.Port}");
-                    
-                    if (config.IsCustom)
-                    {
-                        details.AppendLine("⚙️ Type: Custom Profile");
-                    }
-                    
-                    // Add SIP handling information
-                    details.AppendLine();
-                    details.AppendLine("🔧 SIP Configuration:");
-                    details.AppendLine($"   User Agent: {config.CustomUserAgent}");
-                    details.AppendLine($"   Transport: {config.PreferredTransport}");
-                    details.AppendLine($"   Registration Interval: {config.RegistrationRefreshInterval}s");
-                    details.AppendLine($"   Max Forwards: {config.MaxForwards}");
-                    
-                    if (config.SupportedCodecs.Any())
-                    {
-                        details.AppendLine($"   Codecs: {string.Join(", ", config.SupportedCodecs)}");
-                    }
-                    
-                    if (config.CustomHeaders.Any())
-                    {
-                        details.AppendLine($"   Custom Headers: {config.CustomHeaders.Count}");
-                    }
-                    
-                    return details.ToString().Trim();
+                    details.AppendLine($"💓 Keep-Alive: Every {_selectedProfile.KeepAliveInterval}s");
                 }
-                catch
+                
+                if (_selectedProfile.PreferredCodecs.Any())
                 {
-                    return "Error loading profile details";
+                    details.AppendLine($"🎵 Preferred Codecs: {string.Join(", ", _selectedProfile.PreferredCodecs)}");
                 }
+                
+                if (_selectedProfile.CustomHeaders.Any())
+                {
+                    details.AppendLine($"📎 Custom Headers: {_selectedProfile.CustomHeaders.Count}");
+                }
+                
+                // Add compatibility information
+                details.AppendLine();
+                details.AppendLine("🔧 Compatibility:");
+                var compatInfo = ProfileManager.GetProfileCompatibilityInfo(_selectedProfile);
+                details.AppendLine(compatInfo);
+                
+                return details.ToString().Trim();
             }
-        }          private void ExportProfile()
+        }
+        
+        private void ExportProfile()
         {
             try
             {
-                StatusDetails = "Export functionality not yet implemented for enhanced profile system";
-                LastUpdated = DateTime.Now;
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export SIP Profile",
+                    Filter = "INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    FileName = $"{SelectedProfile.Name.Replace(" ", "_")}.ini"
+                };
+                
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var extension = Path.GetExtension(saveDialog.FileName).ToLower();
+                    if (extension == ".ini")
+                    {
+                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfileToIni(SelectedProfile, saveDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        WindowsSipPhone.Services.Data.ProfileManager.ExportProfile(SelectedProfile, saveDialog.FileName);
+                    }
+                    
+                    StatusDetails = $"✅ Profile '{SelectedProfile.Name}' exported successfully";
+                    LastUpdated = DateTime.Now;
+                }
             }
             catch (Exception ex)
             {
@@ -749,54 +569,49 @@ namespace WindowsSipPhone.UI.Pages
         {
             try
             {
-                StatusDetails = "Import functionality not yet implemented for enhanced profile system";                LastUpdated = DateTime.Now;
+                var openDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Import SIP Profile", 
+                    Filter = "Profile files (*.ini;*.json)|*.ini;*.json|INI files (*.ini)|*.ini|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    Multiselect = false
+                };
+                
+                if (openDialog.ShowDialog() == true)
+                {
+                    SipProfile importedProfile;
+                    var extension = Path.GetExtension(openDialog.FileName).ToLower();
+                    
+                    if (extension == ".ini")
+                    {
+                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfileFromIni(openDialog.FileName);
+                    }
+                    else
+                    {
+                        // Fallback to JSON for backward compatibility
+                        importedProfile = WindowsSipPhone.Services.Data.ProfileManager.ImportProfile(openDialog.FileName);
+                    }
+                    
+                    // Add to available profiles if not already present
+                    var existingProfile = AvailableProfiles.FirstOrDefault(p => p.Name == importedProfile.Name);
+                    if (existingProfile == null)
+                    {
+                        var newList = AvailableProfiles.ToList();
+                        newList.Add(importedProfile);
+                        AvailableProfiles = newList;
+                    }
+                    
+                    // Select the imported profile
+                    SelectedProfile = importedProfile;
+                    
+                    StatusDetails = $"✅ Profile '{importedProfile.Name}' imported successfully";
+                    LastUpdated = DateTime.Now;
+                }
             }
             catch (Exception ex)
             {
                 StatusDetails = $"❌ Import failed: {ex.Message}";
                 LastUpdated = DateTime.Now;
             }
-        }
-
-        #endregion
-
-        #region Mouse Wheel Event Handling
-
-        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
-            {
-                // Scroll the ScrollViewer directly with improved responsiveness
-                double scrollAmount = e.Delta * 1.5; // Increased sensitivity for better UX
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - scrollAmount);
-                e.Handled = true;
-            }
-        }
-
-        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            // Find the parent ScrollViewer
-            var scrollViewer = FindParent<ScrollViewer>((DependencyObject)sender);
-            if (scrollViewer != null)
-            {
-                // Forward the mouse wheel event to the ScrollViewer with improved responsiveness
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta * 1.5));
-                e.Handled = true;
-            }
-        }
-
-        private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            DependencyObject parent = VisualTreeHelper.GetParent(child);
-            
-            if (parent == null)
-                return null;
-            
-            if (parent is T parentAsT)
-                return parentAsT;
-            
-            return FindParent<T>(parent);
         }
 
         #endregion
@@ -808,6 +623,18 @@ namespace WindowsSipPhone.UI.Pages
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Handle mouse wheel scrolling in the ScrollViewer
+        /// </summary>
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3);
+                e.Handled = true;
+            }
         }
 
         #endregion

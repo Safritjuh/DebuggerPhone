@@ -66,32 +66,17 @@ namespace WindowsSipPhone.SipCore
         {
             lock (_lock)
             {
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] FindDialog called:");
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - CallId: '{callId}'");
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - LocalTag: '{localTag}'");
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - RemoteTag: '{remoteTag}'");
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - Total dialogs: {_dialogs.Count}");
-                
-                // List all dialogs for debugging
-                foreach (var kvp in _dialogs)
-                {
-                    Console.WriteLine($"[DIALOG MANAGER DEBUG] - Dialog Key: '{kvp.Key}', CallId: '{kvp.Value.CallId}', LocalTag: '{kvp.Value.LocalTag}', RemoteTag: '{kvp.Value.RemoteTag}'");
-                }
                 
                 // For outgoing calls: Find dialog by CallId and LocalTag, even if RemoteTag is empty in the stored dialog
                 // This handles the case where we created a dialog for outgoing INVITE but haven't received response yet
                 var matchingDialogs = _dialogs.Values.Where(d => d.CallId == callId).ToList();
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - Dialogs matching CallId: {matchingDialogs.Count}");
                 
                 foreach (var dialog in matchingDialogs)
                 {
-                    Console.WriteLine($"[DIALOG MANAGER DEBUG] - Checking dialog: LocalTag='{dialog.LocalTag}', RemoteTag='{dialog.RemoteTag}'");
-                    
                     // Exact match with both tags
                     if (!string.IsNullOrEmpty(localTag) && !string.IsNullOrEmpty(remoteTag) &&
                         dialog.LocalTag == localTag && dialog.RemoteTag == remoteTag)
                     {
-                        Console.WriteLine($"[DIALOG MANAGER DEBUG] - ✅ Found exact match with both tags");
                         return dialog;
                     }
                     
@@ -99,7 +84,6 @@ namespace WindowsSipPhone.SipCore
                     if (!string.IsNullOrEmpty(localTag) && dialog.LocalTag == localTag &&
                         (string.IsNullOrEmpty(dialog.RemoteTag) || string.IsNullOrEmpty(remoteTag) || dialog.RemoteTag == remoteTag))
                     {
-                        Console.WriteLine($"[DIALOG MANAGER DEBUG] - ✅ Found match by CallId and LocalTag (outgoing call pattern)");
                         return dialog;
                     }
                     
@@ -107,7 +91,6 @@ namespace WindowsSipPhone.SipCore
                     if (!string.IsNullOrEmpty(remoteTag) && dialog.RemoteTag == remoteTag &&
                         (string.IsNullOrEmpty(localTag) || dialog.LocalTag == localTag))
                     {
-                        Console.WriteLine($"[DIALOG MANAGER DEBUG] - ✅ Found match by CallId and RemoteTag (incoming call pattern)");
                         return dialog;
                     }
                 }
@@ -116,11 +99,9 @@ namespace WindowsSipPhone.SipCore
                 var callIdMatch = _dialogs.Values.FirstOrDefault(d => d.CallId == callId);
                 if (callIdMatch != null)
                 {
-                    Console.WriteLine($"[DIALOG MANAGER DEBUG] - ✅ Found fallback match by CallId only");
                     return callIdMatch;
                 }
                 
-                Console.WriteLine($"[DIALOG MANAGER DEBUG] - ❌ No dialog found");
                 return null;
             }
         }

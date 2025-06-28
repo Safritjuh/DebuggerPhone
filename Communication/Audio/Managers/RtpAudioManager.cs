@@ -213,7 +213,6 @@ namespace WindowsSipPhone
 
         public RtpAudioManager()
         {
-            Console.WriteLine("[RTPAUDIO] Enhanced NAudio RtpAudioManager - Device conflict resolution enabled for Windows 10+");
             InitializeAudioDevices();
         }
 
@@ -224,29 +223,12 @@ namespace WindowsSipPhone
         {
             try
             {
-                Console.WriteLine("[RTPAUDIO] Initializing audio devices for Windows 10+...");
-                
-                // Log available input devices
-                Console.WriteLine($"[RTPAUDIO] Available WaveIn devices: {WaveIn.DeviceCount}");
-                for (int i = 0; i < WaveIn.DeviceCount; i++)
-                {
-                    var caps = WaveIn.GetCapabilities(i);
-                    Console.WriteLine($"[RTPAUDIO] Device {i}: {caps.ProductName} (Channels: {caps.Channels})");
-                }
-                
-                // Log available output devices
-                Console.WriteLine($"[RTPAUDIO] Available WaveOut devices: {WaveOut.DeviceCount}");
-                for (int i = 0; i < WaveOut.DeviceCount; i++)
-                {
-                    var caps = WaveOut.GetCapabilities(i);
-                    Console.WriteLine($"[RTPAUDIO] Device {i}: {caps.ProductName}");
-                }
-                
-                Console.WriteLine("[RTPAUDIO] ✅ Audio device initialization complete");
+                // Initialize audio devices silently - full device list available in debug mode only
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RTPAUDIO] ⚠️ Error initializing audio devices: {ex.Message}");
+                Console.WriteLine($"[RTPAUDIO] Error initializing audio devices: {ex.Message}");
                 AudioError?.Invoke($"Audio device initialization failed: {ex.Message}");
             }
         }
@@ -264,7 +246,6 @@ namespace WindowsSipPhone
                     // If socket already exists, return current port
                     if (_rtpSocket != null && _localRtpPort > 0)
                     {
-                        Console.WriteLine($"[RTPAUDIO] ✅ RTP socket already prepared on port: {_localRtpPort}");
                         return true;
                     }
                     
@@ -275,14 +256,13 @@ namespace WindowsSipPhone
                     // Explicitly bind to any available port to ensure LocalEndPoint is set
                     _rtpSocket.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
                     _localRtpPort = ((IPEndPoint)_rtpSocket.Client.LocalEndPoint!).Port;
-                    Console.WriteLine($"[RTPAUDIO] ✅ RTP socket prepared and bound to local port: {_localRtpPort}");
                     
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RTPAUDIO] ❌ Failed to prepare RTP socket: {ex.Message}");
+                Console.WriteLine($"[RTPAUDIO] Failed to prepare RTP socket: {ex.Message}");
                 AudioError?.Invoke($"Failed to prepare RTP socket: {ex.Message}");
                 return false;
             }
@@ -294,8 +274,7 @@ namespace WindowsSipPhone
         public async Task<bool> StartRtpSession(string remoteIp, int remoteRtpPort, string audioCodec = "PCMA", int payloadType = 8)
         {
             try
-            {                Console.WriteLine($"[RTPAUDIO] Starting RTP session to {remoteIp}:{remoteRtpPort} (Codec: {audioCodec}, PayloadType: {payloadType})");
-                
+            {
                 // Store remote RTP endpoint info
                 _remoteIp = remoteIp;
                 _remoteRtpPort = remoteRtpPort;
@@ -334,7 +313,7 @@ namespace WindowsSipPhone
                 _remoteRtpEndpoint = new IPEndPoint(ipAddress, remoteRtpPort);
                 _remoteIp = remoteIp;
                 _remoteRtpPort = remoteRtpPort;
-                Console.WriteLine($"[RTPAUDIO] ✅ Remote RTP endpoint created: {_remoteRtpEndpoint}");
+
                 
                 // Create or reuse RTP socket with Windows 10+ optimizations
                 if (_rtpSocket == null || _localRtpPort == 0)
@@ -345,11 +324,11 @@ namespace WindowsSipPhone
                     // Explicitly bind to any available port to ensure LocalEndPoint is set
                     _rtpSocket.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
                     _localRtpPort = ((IPEndPoint)_rtpSocket.Client.LocalEndPoint!).Port;
-                    Console.WriteLine($"[RTPAUDIO] ✅ RTP socket bound to local port: {_localRtpPort}");
+
                 }
                 else
                 {
-                    Console.WriteLine($"[RTPAUDIO] ✅ Reusing prepared RTP socket on port: {_localRtpPort}");
+
                 }
                   // Initialize enhanced audio input with optimal settings for voice quality
                 _audioInput = new WaveInEvent
@@ -376,7 +355,7 @@ namespace WindowsSipPhone
 
                     _audioInput.StartRecording();
                     _isRecording = true;
-                    Console.WriteLine("[RTPAUDIO] ✅ Audio input recording started successfully");
+
                 }
                 catch (Exception ex)
                 {
@@ -407,7 +386,7 @@ namespace WindowsSipPhone
                 // Start incoming RTP packet listener for audio playback
                 StartIncomingRtpListener();
 
-                Console.WriteLine("[RTPAUDIO] ✅ RTP session started successfully");
+
                 AudioStatusChanged?.Invoke(true);
                 
                 return true;
@@ -517,7 +496,7 @@ namespace WindowsSipPhone
         {
             try
             {
-                Console.WriteLine("[RTPAUDIO] Pausing RTP streams for hold operation...");
+                Console.WriteLine("[HOLD DEBUG] Pausing RTP streams...");
                 
                 lock (_deviceLock)
                 {
@@ -528,11 +507,10 @@ namespace WindowsSipPhone
                         {
                             _audioInput.StopRecording();
                             _isRecording = false;
-                            Console.WriteLine("[RTPAUDIO] ✅ Audio recording paused");
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"[RTPAUDIO] ⚠️ Error pausing audio input: {ex.Message}");
+                            Console.WriteLine($"[HOLD DEBUG] Error pausing audio input: {ex.Message}");
                         }
                     }
 
@@ -542,11 +520,10 @@ namespace WindowsSipPhone
                         try
                         {
                             _audioOutput.Stop();
-                            Console.WriteLine("[RTPAUDIO] ✅ Audio output paused");
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"[RTPAUDIO] ⚠️ Error pausing audio output: {ex.Message}");
+                            Console.WriteLine($"[HOLD DEBUG] Error pausing audio output: {ex.Message}");
                         }
                     }
 
@@ -571,10 +548,10 @@ namespace WindowsSipPhone
         {
             try
             {
-                Console.WriteLine("[RTPAUDIO] Resuming RTP streams after hold operation...");
+                Console.WriteLine("[HOLD DEBUG] Resuming RTP streams...");
                   if (_rtpSocket == null || _localRtpPort == 0 || _remoteRtpEndpoint == null)
                 {
-                    Console.WriteLine("[RTPAUDIO] ❌ Cannot resume - RTP session not properly initialized");
+                    Console.WriteLine("[HOLD DEBUG] Cannot resume - RTP session not properly initialized");
                     return Task.FromResult(false);
                 }
 
@@ -587,10 +564,9 @@ namespace WindowsSipPhone
                         {
                             _audioInput.StartRecording();
                             _isRecording = true;
-                            Console.WriteLine("[RTPAUDIO] ✅ Audio recording resumed");
                         }                        catch (Exception ex)
                         {
-                            Console.WriteLine($"[RTPAUDIO] ❌ Failed to resume recording: {ex.Message}");
+                            Console.WriteLine($"[HOLD DEBUG] Failed to resume recording: {ex.Message}");
                             return Task.FromResult(false);
                         }
                     }

@@ -17,17 +17,7 @@ namespace WindowsSipPhone.Core.SipHandlers
         
         public void ConfigureSipClient(SimpleSipClient client, SipProfileConfiguration config)
         {
-            Console.WriteLine($"[GENERIC HANDLER] Configuring SIP client with RFC 3261 compliance");
-            
-            // Generic RFC 3261 configurations
-            Console.WriteLine($"[GENERIC HANDLER] UserAgent: {config.CustomUserAgent}");
-            Console.WriteLine($"[GENERIC HANDLER] StrictRFCCompliance: {config.StrictRFCCompliance}");
-            Console.WriteLine($"[GENERIC HANDLER] MinimalHeaders: {config.MinimalHeaders}");
-            Console.WriteLine($"[GENERIC HANDLER] PreferredTransport: {config.PreferredTransport}");
-            Console.WriteLine($"[GENERIC HANDLER] RegistrationRefresh: {config.RegistrationRefreshInterval}s");
-            
-            // Log that we're using minimal headers
-            Console.WriteLine($"[GENERIC HANDLER] Using minimal custom headers for maximum compatibility");
+            // Configure silently - detailed logs available in debug mode only
         }
         
         public Dictionary<string, string> GetCustomHeaders()

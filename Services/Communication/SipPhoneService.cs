@@ -324,6 +324,142 @@ public class SipPhoneService : IDisposable
         }    }
     
     /// <summary>
+    /// BUG-001 FIX: Hold the current active call
+    /// Sends SIP re-INVITE with hold SDP and pauses RTP audio streams
+    /// </summary>
+    /// <returns>True if call was successfully placed on hold</returns>
+    public async Task<bool> HoldCallAsync()
+    {
+        if (_sipClient == null || !_isRegistered)
+        {
+            StatusChanged?.Invoke(this, "Not registered - cannot hold call");
+            return false;
+        }
+        
+        try
+        {
+            StatusChanged?.Invoke(this, "Placing call on hold...");
+            Console.WriteLine("[SIP SERVICE] HoldCallAsync: Initiating call hold");
+            
+            // First pause the RTP audio streams
+            if (_sipClient.AudioManager != null)
+            {
+                Console.WriteLine("[SIP SERVICE] HoldCallAsync: Pausing RTP streams");
+                _sipClient.AudioManager.PauseRtpStreams();
+            }
+            
+            // Send SIP re-INVITE with hold SDP (inactive media)
+            bool holdResult = await _sipClient.HoldCallAsync();
+            
+            if (holdResult)
+            {
+                StatusChanged?.Invoke(this, "Call placed on hold successfully");
+                CallStateChanged?.Invoke(this, "Call on hold");
+                Console.WriteLine("[SIP SERVICE] HoldCallAsync: ✅ Call hold successful");
+                return true;
+            }
+            else
+            {
+                // If SIP hold failed, resume audio streams
+                if (_sipClient.AudioManager != null)
+                {
+                    Console.WriteLine("[SIP SERVICE] HoldCallAsync: Hold failed, resuming audio streams");
+                    await _sipClient.AudioManager.ResumeRtpStreams();
+                }
+                StatusChanged?.Invoke(this, "Failed to place call on hold");
+                Console.WriteLine("[SIP SERVICE] HoldCallAsync: ❌ Call hold failed");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SIP SERVICE] HoldCallAsync exception: {ex.Message}");
+            StatusChanged?.Invoke(this, $"Hold call error: {ex.Message}");
+            
+            // On exception, try to resume audio streams
+            try
+            {
+                if (_sipClient.AudioManager != null)
+                {
+                    await _sipClient.AudioManager.ResumeRtpStreams();
+                }
+            }
+            catch (Exception resumeEx)
+            {
+                Console.WriteLine($"[SIP SERVICE] HoldCallAsync: Failed to resume after error: {resumeEx.Message}");
+            }
+            
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// BUG-001 FIX: Resume the held call
+    /// Sends SIP re-INVITE with active SDP and resumes RTP audio streams
+    /// </summary>
+    /// <returns>True if call was successfully resumed</returns>
+    public async Task<bool> ResumeCallAsync()
+    {
+        if (_sipClient == null || !_isRegistered)
+        {
+            StatusChanged?.Invoke(this, "Not registered - cannot resume call");
+            return false;
+        }
+        
+        try
+        {
+            StatusChanged?.Invoke(this, "Resuming call from hold...");
+            Console.WriteLine("[SIP SERVICE] ResumeCallAsync: Initiating call resume");
+            
+            // Send SIP re-INVITE with active SDP to resume media
+            bool resumeResult = await _sipClient.ResumeCallAsync();
+            
+            if (resumeResult)
+            {
+                // Resume RTP audio streams after successful SIP resume
+                if (_sipClient.AudioManager != null)
+                {
+                    Console.WriteLine("[SIP SERVICE] ResumeCallAsync: Resuming RTP streams");
+                    bool audioResumed = await _sipClient.AudioManager.ResumeRtpStreams();
+                    
+                    if (audioResumed)
+                    {
+                        StatusChanged?.Invoke(this, "Call resumed successfully");
+                        CallStateChanged?.Invoke(this, "Call active");
+                        Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ✅ Call resume successful");
+                        return true;
+                    }
+                    else
+                    {
+                        StatusChanged?.Invoke(this, "Call resumed but audio may not be working");
+                        Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ⚠️ SIP resume OK but audio resume failed");
+                        return false;
+                    }
+                }
+                else
+                {
+                    StatusChanged?.Invoke(this, "Call resumed successfully");
+                    CallStateChanged?.Invoke(this, "Call active");
+                    Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ✅ Call resume successful (no audio manager)");
+                    return true;
+                }
+            }
+            else
+            {
+                StatusChanged?.Invoke(this, "Failed to resume call");
+                Console.WriteLine("[SIP SERVICE] ResumeCallAsync: ❌ Call resume failed");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SIP SERVICE] ResumeCallAsync exception: {ex.Message}");
+            StatusChanged?.Invoke(this, $"Resume call error: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Send an UPDATE request to modify session parameters
     /// </summary>
     /// <param name="sdpContent">Optional SDP content for media re-negotiation</param>
@@ -373,98 +509,6 @@ public class SipPhoneService : IDisposable
             return false;
         }    }
     
-    /// <summary>
-    /// Put the current call on hold using SIP re-INVITE with inactive SDP
-    /// </summary>
-    /// <returns>True if hold was successful</returns>
-    public async Task<bool> HoldCallAsync()
-    {
-        Console.WriteLine("=== [SERVICE DEBUG] HOLD CALL ASYNC ===");
-        Console.WriteLine($"[SERVICE DEBUG] SipClient Available: {_sipClient != null}");
-        Console.WriteLine($"[SERVICE DEBUG] Service Registered: {_isRegistered}");
-        Console.WriteLine($"[SERVICE DEBUG] SipClient Registered: {_sipClient?.IsRegistered ?? false}");
-        
-        if (_sipClient == null || !_isRegistered)
-        {
-            Console.WriteLine("[SERVICE DEBUG] ❌ HOLD FAILED: Not registered or no SIP client");
-            StatusChanged?.Invoke(this, "Not registered - cannot hold call");
-            return false;
-        }
-        
-        try
-        {
-            Console.WriteLine("[SERVICE DEBUG] 🔄 Starting hold operation...");
-            StatusChanged?.Invoke(this, "Putting call on hold...");
-            
-            bool result = await _sipClient.HoldCallAsync();
-            
-            Console.WriteLine($"[SERVICE DEBUG] Hold operation result: {result}");
-            if (result)
-            {
-                Console.WriteLine("[SERVICE DEBUG] ✅ Hold operation completed successfully");
-            }
-            else
-            {
-                Console.WriteLine("[SERVICE DEBUG] ❌ Hold operation failed (returned false)");
-            }
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[SERVICE DEBUG] ❌ HOLD EXCEPTION: {ex.Message}");
-            Console.WriteLine($"[SERVICE DEBUG] Exception Stack Trace: {ex.StackTrace}");
-            StatusChanged?.Invoke(this, $"Hold failed: {ex.Message}");
-            return false;
-        }
-    }
-    
-    /// <summary>
-    /// Resume a call that was put on hold using SIP re-INVITE with active SDP
-    /// </summary>
-    /// <returns>True if resume was successful</returns>
-    public async Task<bool> ResumeCallAsync()
-    {
-        Console.WriteLine("=== [SERVICE DEBUG] RESUME CALL ASYNC ===");
-        Console.WriteLine($"[SERVICE DEBUG] SipClient Available: {_sipClient != null}");
-        Console.WriteLine($"[SERVICE DEBUG] Service Registered: {_isRegistered}");
-        Console.WriteLine($"[SERVICE DEBUG] SipClient Registered: {_sipClient?.IsRegistered ?? false}");
-        
-        if (_sipClient == null || !_isRegistered)
-        {
-            Console.WriteLine("[SERVICE DEBUG] ❌ RESUME FAILED: Not registered or no SIP client");
-            StatusChanged?.Invoke(this, "Not registered - cannot resume call");
-            return false;
-        }
-        
-        try
-        {
-            Console.WriteLine("[SERVICE DEBUG] 🔄 Starting resume operation...");
-            StatusChanged?.Invoke(this, "Resuming call...");
-            
-            bool result = await _sipClient.ResumeCallAsync();
-            
-            Console.WriteLine($"[SERVICE DEBUG] Resume operation result: {result}");
-            if (result)
-            {
-                Console.WriteLine("[SERVICE DEBUG] ✅ Resume operation completed successfully");
-            }
-            else
-            {
-                Console.WriteLine("[SERVICE DEBUG] ❌ Resume operation failed (returned false)");
-            }
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[SERVICE DEBUG] ❌ RESUME EXCEPTION: {ex.Message}");
-            Console.WriteLine($"[SERVICE DEBUG] Exception Stack Trace: {ex.StackTrace}");
-            StatusChanged?.Invoke(this, $"Resume failed: {ex.Message}");
-            return false;
-        }
-    }
-
     /// <summary>
     /// Get audio manager for advanced audio control
     /// </summary>

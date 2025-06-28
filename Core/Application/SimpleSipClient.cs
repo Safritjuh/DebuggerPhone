@@ -1387,48 +1387,48 @@ namespace WindowsSipPhone
                     {
                         try
                         {                            Console.WriteLine($"[AUDIO SETUP DEBUG] *** ENTERING AUDIO TASK ***");                            bool success = false;
-                              // IMPROVED: Use multiple indicators to detect resume operation more reliably
-                            bool resumeFlagSet = _isResumeInProgress; // Flag may be unreliable due to timing
+                              // BUG-001 FIX: Simplified and more reliable resume detection
+                            // Use clearer logic: if we were on hold and now receiving 200 OK, this is resume
                             bool hasRtpSocket = _audioManager.HasActiveSocket(); // Check if socket exists
-                            bool wasOnHold = _isCallOnHold; // Were we on hold before this?
-                            bool audioNotRunning = !_audioManager.IsRunning; // Audio is currently stopped
+                            bool isResumeOperation = _isCallOnHold || _isResumeInProgress;
                             
-                            // A resume operation is likely if we have an existing socket but audio is stopped
-                            bool isResumeOperation = (resumeFlagSet || (hasRtpSocket && wasOnHold)) && audioNotRunning;
-                            
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] RESUME DETECTION:");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Hold state: {_isCallOnHold}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Resume flag: {_isResumeInProgress}");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] BUG-001 FIX - RESUME DETECTION:");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Was on hold: {_isCallOnHold}");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Resume in progress: {_isResumeInProgress}");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Has RTP socket: {hasRtpSocket}");
                             Console.WriteLine($"[AUDIO SETUP DEBUG] - Audio Manager IsRunning: {_audioManager.IsRunning}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Local RTP Port: {_audioManager.LocalRtpPort}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Has active RTP socket: {hasRtpSocket}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Was on hold: {wasOnHold}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - Audio not running: {audioNotRunning}");
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] - FINAL RESUME DECISION: {isResumeOperation}");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] - DECISION: Resume operation = {isResumeOperation}");
                             
                             // Try resume if conditions indicate this is a resume operation
                             if (isResumeOperation)
                             {
-                                Console.WriteLine($"[AUDIO SETUP DEBUG] *** ATTEMPTING RESUME PATH ***");
+                                Console.WriteLine($"[AUDIO SETUP DEBUG] *** ATTEMPTING BUG-001 FIX RESUME PATH ***");
                                 StatusChanged?.Invoke(this, $"🔄 Attempting to resume existing RTP session...");
                                 
-                                // Update remote endpoint in case it changed
+                                // BUG-001 FIX: Ensure remote endpoint is updated before resume attempt
                                 _audioManager.UpdateRemoteEndpoint(sdpInfo.RemoteIp, sdpInfo.RemoteRtpPort);
+                                Console.WriteLine($"[AUDIO SETUP DEBUG] Remote endpoint updated to {sdpInfo.RemoteIp}:{sdpInfo.RemoteRtpPort}");
                                 
                                 success = await _audioManager.ResumeRtpStreams();
-                                Console.WriteLine($"[AUDIO SETUP DEBUG] Resume result: {success}");                                if (success)
+                                Console.WriteLine($"[AUDIO SETUP DEBUG] ResumeRtpStreams result: {success}");
+
+                                if (success)
                                 {
-                                    // Clear hold state and resume flags after successful resume
+                                    // BUG-001 FIX: Clear hold state and resume flags after successful resume
                                     _isCallOnHold = false;
                                     _isResumeInProgress = false;
                                     StatusChanged?.Invoke(this, $"✅ Audio session resumed successfully");
-                                    Console.WriteLine($"[AUDIO SETUP DEBUG] ✅ RESUME PATH SUCCESS - AUDIO RESTORED");
+                                    Console.WriteLine($"[AUDIO SETUP DEBUG] ✅ BUG-001 FIX: RESUME PATH SUCCESS - AUDIO RESTORED");
                                     return;
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"[AUDIO SETUP DEBUG] Resume failed, falling back...");
+                                    Console.WriteLine($"[AUDIO SETUP DEBUG] BUG-001 FIX: Resume failed, falling back to full restart...");
                                     StatusChanged?.Invoke(this, $"⚠️ Resume failed, falling back to full restart...");
+                                    
+                                    // BUG-001 FIX: On resume failure, ensure we clean up before full restart
+                                    _audioManager.StopRtpSession();
+                                    Console.WriteLine($"[AUDIO SETUP DEBUG] BUG-001 FIX: Stopped RTP session before full restart");
                                 }
                             }                            else
                             {
@@ -1442,6 +1442,14 @@ namespace WindowsSipPhone
                             Console.WriteLine($"[AUDIO SETUP DEBUG] *** StartRtpSession RESULT: {success} ***");
                               if (success)
                             {
+                                // BUG-001 FIX: Always clear hold flags after successful audio restart
+                                if (isResumeOperation)
+                                {
+                                    _isCallOnHold = false;
+                                    _isResumeInProgress = false;
+                                    Console.WriteLine($"[AUDIO SETUP DEBUG] BUG-001 FIX: Hold flags cleared after successful restart");
+                                }
+                                
                                 StatusChanged?.Invoke(this, $"✅ Audio session started successfully");
                                 Console.WriteLine($"[AUDIO SETUP DEBUG] *** AUDIO SESSION SUCCESS ***");
                             }
@@ -1451,9 +1459,9 @@ namespace WindowsSipPhone
                                 Console.WriteLine($"[AUDIO SETUP DEBUG] *** AUDIO SESSION FAILED ***");
                             }
                             
-                            // Clear resume flag regardless of success/failure
+                            // BUG-001 FIX: Always clear resume flag regardless of success/failure
                             _isResumeInProgress = false;
-                            Console.WriteLine($"[AUDIO SETUP DEBUG] Resume in progress flag cleared");
+                            Console.WriteLine($"[AUDIO SETUP DEBUG] BUG-001 FIX: Resume in progress flag cleared");
                         }                        catch (Exception ex)
                         {
                             Console.WriteLine($"[AUDIO SETUP DEBUG] *** AUDIO TASK EXCEPTION: {ex.Message} ***");

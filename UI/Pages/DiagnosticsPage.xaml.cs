@@ -31,7 +31,7 @@ namespace WindowsSipPhone.UI.Pages
         private string _connectionStatus = "Disconnected";
         private System.Windows.Media.Brush _statusBrush = System.Windows.Media.Brushes.Red;
         private DiagnosticReportGenerator _reportGenerator;
-        private WindowsSipPhone.Services.Communication.SipPhoneService? _attachedSipService;
+        private WindowsSipPhone.SipPhoneService? _attachedSipService;
           // Logging-related fields
         private ApplicationLogger _applicationLogger;
         private ObservableCollection<LogEntry> _filteredLogEntries;
@@ -416,7 +416,7 @@ namespace WindowsSipPhone.UI.Pages
         /// real protocol traffic instead of simulated messages. Falls back to
         /// simulated tracing (StartSimulatedTracing) when no service is attached.
         /// </summary>
-        public void AttachSipService(WindowsSipPhone.Services.Communication.SipPhoneService sipService)
+        public void AttachSipService(WindowsSipPhone.SipPhoneService sipService)
         {
             if (sipService == null) throw new ArgumentNullException(nameof(sipService));
 

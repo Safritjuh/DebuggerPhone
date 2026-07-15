@@ -33,17 +33,7 @@
     <Compile Remove="WindowsSipPhone.Tests/**/*.cs" />
     <None Include="WindowsSipPhone.Tests/**/*.cs" />
   </ItemGroup>
-    <!-- Exclude alternative XAML files from build to prevent duplicate class definitions -->
-  <ItemGroup>
-    <Page Remove="UI\Windows\Archive\IncomingCallWindow_Clean.xaml" />
-    <Page Remove="UI\Windows\Archive\IncomingCallWindow_Fixed.xaml" />
-    <Page Remove="UI\Windows\Archive\IncomingCallWindow_New.xaml" />
-    <None Include="UI\Windows\Archive\IncomingCallWindow_Clean.xaml" />
-    <None Include="UI\Windows\Archive\IncomingCallWindow_Fixed.xaml" />
-    <None Include="UI\Windows\Archive\IncomingCallWindow_New.xaml" />
-  </ItemGroup>
-  
-  <!-- Audio packages for RTP functionality -->
+    <!-- Audio packages for RTP functionality -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
     <PackageReference Include="NAudio" Version="2.2.1" />

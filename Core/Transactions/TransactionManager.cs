@@ -332,18 +332,4 @@ namespace WindowsSipPhone.Core.Transactions
         }
     }
 
-    // Placeholder classes for server transactions (to be implemented)
-    public class InviteServerTransaction : SipTransaction
-    {
-        public InviteServerTransaction(string transactionId) : base(transactionId, "INVITE", true) { }
-        public override void ProcessMessage(string sipMessage) { /* TODO: Implement */ }
-        protected override void OnTimerElapsed(object? sender, ElapsedEventArgs e) { /* TODO: Implement */ }
-    }
-
-    public class NonInviteServerTransaction : SipTransaction
-    {
-        public NonInviteServerTransaction(string transactionId, string method) : base(transactionId, method, true) { }
-        public override void ProcessMessage(string sipMessage) { /* TODO: Implement */ }
-        protected override void OnTimerElapsed(object? sender, ElapsedEventArgs e) { /* TODO: Implement */ }
-    }
 }

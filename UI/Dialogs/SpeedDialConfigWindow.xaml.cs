@@ -217,11 +217,11 @@ namespace WindowsSipPhone.UI.Dialogs
                         return;
                     }
 
+                    // SetSpeedDialNumber persists to AppData internally
+                    // (KeyboardShortcutService.SaveSpeedDialConfiguration), so
+                    // there's no separate save step needed here.
                     _shortcutService.SetSpeedDialNumber(kvp.Key, number);
                 }
-
-                // TODO: Save to configuration file for persistence
-                SaveToConfiguration();
 
                 System.Windows.MessageBox.Show("Speed dial configuration saved successfully!", 
                     "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -251,20 +251,6 @@ namespace WindowsSipPhone.UI.Dialogs
             }
             
             return true;
-        }
-
-        private void SaveToConfiguration()
-        {
-            try
-            {
-                // TODO: Implement configuration persistence
-                // For now, just log the action
-                Console.WriteLine("[SPEED DIAL] Configuration saved to keyboard shortcut service");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[SPEED DIAL] ⚠️ Error saving configuration: {ex.Message}");
-            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)

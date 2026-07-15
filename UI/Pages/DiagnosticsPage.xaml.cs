@@ -31,6 +31,7 @@ namespace WindowsSipPhone.UI.Pages
         private string _connectionStatus = "Disconnected";
         private System.Windows.Media.Brush _statusBrush = System.Windows.Media.Brushes.Red;
         private DiagnosticReportGenerator _reportGenerator;
+        private WindowsSipPhone.Services.Communication.SipPhoneService? _attachedSipService;
           // Logging-related fields
         private ApplicationLogger _applicationLogger;
         private ObservableCollection<LogEntry> _filteredLogEntries;
@@ -69,6 +70,7 @@ namespace WindowsSipPhone.UI.Pages
             DataContext = this;
             
             SipMessages = new ObservableCollection<SipMessageEntry>();
+            SipMessages.CollectionChanged += (s, e) => FilterMessages(SelectedFilter);
             NetworkStatistics = new NetworkStatisticsModel();
             _reportGenerator = new DiagnosticReportGenerator();
             
@@ -232,6 +234,13 @@ namespace WindowsSipPhone.UI.Pages
         #region Properties
 
         public ObservableCollection<SipMessageEntry> SipMessages { get; set; }
+
+        /// <summary>
+        /// The subset of SipMessages matching SelectedFilter. Bound to by the
+        /// SIP message ladder ListBox in DiagnosticsPage.xaml.
+        /// </summary>
+        public ObservableCollection<SipMessageEntry> FilteredSipMessages { get; } = new ObservableCollection<SipMessageEntry>();
+
         public NetworkStatisticsModel NetworkStatistics { get; set; }
 
         public bool IsTracingEnabled
@@ -293,10 +302,14 @@ namespace WindowsSipPhone.UI.Pages
         {
             IsTracingEnabled = true;
             AddSipMessage("INFO", "SIP Tracing Started", "System", DateTime.Now);
-            
-            // TODO: Connect to actual SIP service for real tracing
-            // For now, simulate with timer
-            StartSimulatedTracing();
+
+            // Prefer real SIP traffic when a live service has been attached
+            // (see AttachSipService); otherwise fall back to simulated tracing
+            // so the diagnostics UI is still demonstrable standalone.
+            if (_attachedSipService == null)
+            {
+                StartSimulatedTracing();
+            }
         }
 
         private void StopTracing()
@@ -375,11 +388,64 @@ namespace WindowsSipPhone.UI.Pages
 
         private void FilterMessages(string filter)
         {
-            // TODO: Implement actual filtering logic
-            // For now, just update the selected filter
-            SelectedFilter = filter;
-              // In a real implementation, you would filter the ObservableCollection
-            // or use a CollectionView with filtering
+            if (_selectedFilter != filter)
+            {
+                _selectedFilter = filter;
+                OnPropertyChanged(nameof(SelectedFilter));
+            }
+
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                FilteredSipMessages.Clear();
+
+                var matching = string.IsNullOrEmpty(filter) || filter == "All"
+                    ? SipMessages
+                    : SipMessages.Where(m => string.Equals(m.Type, filter, StringComparison.OrdinalIgnoreCase));
+
+                foreach (var entry in matching)
+                {
+                    FilteredSipMessages.Add(entry);
+                }
+
+                OnPropertyChanged(nameof(FilteredEntriesText));
+            });
+        }
+
+        /// <summary>
+        /// Wires this page up to a live SipPhoneService so the SIP ladder shows
+        /// real protocol traffic instead of simulated messages. Falls back to
+        /// simulated tracing (StartSimulatedTracing) when no service is attached.
+        /// </summary>
+        public void AttachSipService(WindowsSipPhone.Services.Communication.SipPhoneService sipService)
+        {
+            if (sipService == null) throw new ArgumentNullException(nameof(sipService));
+
+            _attachedSipService = sipService;
+            sipService.MessageReceived += OnSipServiceMessageReceived;
+            Console.WriteLine("[DIAGNOSTICS PAGE] Attached to live SipPhoneService for real SIP tracing");
+        }
+
+        private void OnSipServiceMessageReceived(object? sender, string message)
+        {
+            if (!IsTracingEnabled) return;
+
+            var (type, direction) = ClassifySipServiceMessage(message);
+            AddSipMessage(type, message, direction, DateTime.Now);
+        }
+
+        private (string type, string direction) ClassifySipServiceMessage(string message)
+        {
+            var trimmed = message.TrimStart();
+            var direction = trimmed.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase) ? "System" :
+                             trimmed.StartsWith("SIP/2.0", StringComparison.OrdinalIgnoreCase) ? "Inbound" : "Outbound";
+
+            var type = trimmed.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase) ? "ERROR" :
+                       trimmed.StartsWith("REGISTER", StringComparison.OrdinalIgnoreCase) ? "REGISTER" :
+                       trimmed.StartsWith("INVITE", StringComparison.OrdinalIgnoreCase) ? "INVITE" :
+                       trimmed.StartsWith("BYE", StringComparison.OrdinalIgnoreCase) ? "BYE" :
+                       trimmed.StartsWith("SIP/2.0", StringComparison.OrdinalIgnoreCase) ? "INFO" : "INFO";
+
+            return (type, direction);
         }
 
         #endregion

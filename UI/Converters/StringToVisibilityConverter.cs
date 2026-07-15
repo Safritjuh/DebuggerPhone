@@ -25,7 +25,7 @@ namespace WindowsSipPhone.UI.Converters
             // This conversion is inherently lossy (Visibility -> string has no
             // meaningful inverse), so we decline the back-conversion instead of
             // throwing, which would crash any two-way binding using this converter.
-            return Binding.DoNothing;
+            return System.Windows.Data.Binding.DoNothing;
         }
     }
 }

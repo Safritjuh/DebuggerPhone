@@ -598,7 +598,16 @@ namespace WindowsSipPhone.UI.Windows
                         // Subscribe to SIP service events for real-time message capture
                         _sipService.MessageReceived += (sender, message) => 
                         {
-                            _messagesWindow?.AddSipMessage("INCOMING", message);
+                            // SimpleSipClient/SipTransport already prefix every message with
+                            // "OUTGOING (...)" or "INCOMING (...)" - derive the ladder direction
+                            // from that instead of hardcoding it, otherwise every arrow in the
+                            // SIP ladder points the same way regardless of actual direction.
+                            var direction = message.TrimStart().StartsWith("OUTGOING", StringComparison.OrdinalIgnoreCase)
+                                ? "OUTGOING"
+                                : message.TrimStart().StartsWith("INCOMING", StringComparison.OrdinalIgnoreCase)
+                                    ? "INCOMING"
+                                    : "SYSTEM";
+                            _messagesWindow?.AddSipMessage(direction, message);
                         };
                         
                         // Update window with current connection info if registered

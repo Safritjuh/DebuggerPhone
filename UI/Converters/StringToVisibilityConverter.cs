@@ -22,7 +22,10 @@ namespace WindowsSipPhone.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            // This conversion is inherently lossy (Visibility -> string has no
+            // meaningful inverse), so we decline the back-conversion instead of
+            // throwing, which would crash any two-way binding using this converter.
+            return Binding.DoNothing;
         }
     }
 }

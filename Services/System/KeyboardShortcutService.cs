@@ -89,26 +89,39 @@ namespace WindowsSipPhone
             // Hook into window message processing
             _hwndSource.AddHook(WndProc);
 
-            // Initialize speed dial mappings with default numbers
-            _speedDialMappings = new Dictionary<Key, string>
+            // Load persisted speed dial mappings (falls back to defaults
+            // F1-F12 -> 101-112 when no configuration file exists yet)
+            var persisted = WindowsSipPhone.Core.Models.SpeedDialConfiguration.Load();
+            _speedDialMappings = new Dictionary<Key, string>();
+            foreach (var kvp in persisted.Mappings)
             {
-                { Key.F1, "101" },
-                { Key.F2, "102" },
-                { Key.F3, "103" },
-                { Key.F4, "104" },
-                { Key.F5, "105" },
-                { Key.F6, "106" },
-                { Key.F7, "107" },
-                { Key.F8, "108" },
-                { Key.F9, "109" },
-                { Key.F10, "110" },
-                { Key.F11, "111" },
-                { Key.F12, "112" }
-            };
+                if (Enum.TryParse<Key>(kvp.Key, out var key))
+                {
+                    _speedDialMappings[key] = kvp.Value ?? "";
+                }
+            }
 
             // Register global hotkeys
             RegisterGlobalHotkeys();
-        }        /// <summary>
+        }
+
+        /// <summary>
+        /// Persist the current speed dial mappings to AppData. Called after
+        /// every mutation so changes survive restarts, matching the
+        /// AudioConfiguration persistence pattern used elsewhere.
+        /// </summary>
+        private void SaveSpeedDialConfiguration()
+        {
+            var config = new WindowsSipPhone.Core.Models.SpeedDialConfiguration();
+            config.Mappings.Clear();
+            foreach (var kvp in _speedDialMappings)
+            {
+                config.Mappings[kvp.Key.ToString()] = kvp.Value;
+            }
+            config.Save();
+        }
+
+        /// <summary>
         /// Get current speed dial mappings
         /// </summary>
         public Dictionary<Key, string> GetSpeedDialMappings()
@@ -137,6 +150,7 @@ namespace WindowsSipPhone
             if (Enum.TryParse<Key>(keyName, out Key key) && _speedDialMappings.ContainsKey(key))
             {
                 _speedDialMappings[key] = phoneNumber ?? "";
+                SaveSpeedDialConfiguration();
             }
         }
 
@@ -148,6 +162,7 @@ namespace WindowsSipPhone
             if (_speedDialMappings.ContainsKey(key))
             {
                 _speedDialMappings[key] = phoneNumber ?? "";
+                SaveSpeedDialConfiguration();
             }
         }
 
@@ -165,6 +180,7 @@ namespace WindowsSipPhone
                     _speedDialMappings[kvp.Key] = kvp.Value ?? "";
                 }
             }
+            SaveSpeedDialConfiguration();
         }
 
         /// <summary>
@@ -184,7 +200,10 @@ namespace WindowsSipPhone
             _speedDialMappings[Key.F10] = "110";
             _speedDialMappings[Key.F11] = "111";
             _speedDialMappings[Key.F12] = "112";
-        }        /// <summary>
+            SaveSpeedDialConfiguration();
+        }
+
+        /// <summary>
         /// Handle application-level key presses (for Ctrl combinations)
         /// This should be called from the main window's KeyDown event
         /// </summary>

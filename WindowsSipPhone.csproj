@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -8,7 +8,23 @@
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-  </PropertyGroup>  <!-- Include profile files as content to be copied to output -->
+  </PropertyGroup>
+
+  <!-- Single-file, self-contained publish settings - ONLY applied during
+       `dotnet publish`, not `dotnet build`/`dotnet run`, so day-to-day dev
+       builds stay fast and framework-dependent. See Documents/PUBLISHING.md
+       for the exact publish command. No .NET runtime install required on
+       the target PC, no installer - copy the publish output folder and run
+       WindowsSipPhone.exe. -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <!-- WPF apps can't be trimmed reliably (reflection-heavy XAML), leave off -->
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <!-- Include profile files as content to be copied to output -->
   <ItemGroup>
     <Content Include="Profiles\*.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

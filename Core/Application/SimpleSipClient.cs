@@ -2163,11 +2163,11 @@ namespace WindowsSipPhone
         {
             // Use enhanced RFC 3261 compliant factory
             try
-            {                var enhancedMessage = _enhancedMessageFactory.CreateRegisterRequest(
+            {                var enhancedMessage = _enhancedMessageFactory!.CreateRegisterRequest(
                     _username, _serverHost, _serverPort, (uint)_sequenceNumber++, null, expires);
                 
                 // Validate the message for compliance
-                var validationResult = _rfc3261Validator.ValidateMessage(enhancedMessage);
+                var validationResult = _rfc3261Validator!.ValidateMessage(enhancedMessage);
                 if (validationResult.HasCriticalErrors)
                 {
                     StatusChanged?.Invoke(this, "⚠️ RFC 3261 compliance issues detected in REGISTER message");

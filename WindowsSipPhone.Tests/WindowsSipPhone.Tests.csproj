@@ -29,6 +29,8 @@
     <Compile Include="../Core/Models/SipConfiguration.cs" />
     <Compile Include="../Core/Utilities/IniFileHandler.cs" />
     <Compile Include="../Services/Data/ProfileManager.cs" />
+    <Compile Include="../Communication/Sip/Auth/SipDigestAuth.cs" />
+    <Compile Include="../Communication/Sip/Protocol/SdpManager.cs" />
   </ItemGroup>
 
 </Project>
